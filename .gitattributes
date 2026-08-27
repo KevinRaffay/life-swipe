@@ -1,0 +1,23 @@
+# Line endings
+#
+# Store every text file with LF in the repository and check it out with LF,
+# regardless of each developer's core.autocrlf. Without this, Windows clones
+# convert on checkout and the whole tree shows as modified on other machines.
+* text=auto eol=lf
+
+# Binary assets: never normalize, never diff as text. None are committed yet,
+# but a game accretes them.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.mp3  binary
+*.ogg  binary
+*.wav  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
