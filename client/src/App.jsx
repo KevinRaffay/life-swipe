@@ -1,0 +1,141 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import seedScenarios from '@data/scenarios-seed.json';
+import { Deck } from '@shared/deck.js';
+import {
+  createState, applyChoice, stageOf, finalStats, stateSummary, recentDecisions,
+} from '@shared/engine.js';
+
+import { fetchScenarios, getConfig } from './api.js';
+import CardStack from './components/CardStack.jsx';
+import Hud from './components/Hud.jsx';
+import EventToast from './components/EventToast.jsx';
+import Obituary from './components/Obituary.jsx';
+import StartScreen from './components/StartScreen.jsx';
+
+export default function App() {
+  const [phase, setPhase] = useState('title');       // title | playing | ended
+  const [state, setState] = useState(null);
+  const [cards, setCards] = useState([]);            // [current, peek]
+  const [events, setEvents] = useState([]);
+  const [config, setConfig] = useState({ llmEnabled: false, model: null });
+  const deckRef = useRef(null);
+
+  // decide() is handed to CardStack and fired from a timer, so it must always
+  // read the latest values rather than whatever was current when it was built.
+  const stateRef = useRef(state);
+  const cardsRef = useRef(cards);
+  const phaseRef = useRef(phase);
+  stateRef.current = state;
+  cardsRef.current = cards;
+  phaseRef.current = phase;
+
+  useEffect(() => { getConfig().then(setConfig); }, []);
+
+  // The deck's fetcher is the only place the client talks to the storyteller.
+  // It is called in the background by Deck.maybeRefill and its failures are
+  // absorbed there, so a dead API never blocks a swipe.
+  const makeDeck = useCallback(() => new Deck({
+    seedScenarios,
+    lookahead: 6,
+    fetchBatch: (gameState) => fetchScenarios({
+      summary: stateSummary(gameState),
+      recent: recentDecisions(gameState, 10),
+      count: 5,
+    }),
+  }), []);
+
+  const start = useCallback(() => {
+    const deck = makeDeck();
+    deckRef.current = deck;
+    const fresh = createState({ seed: `${Date.now()}-${Math.random()}` });
+    const first = deck.draw(fresh);
+    const second = deck.draw(fresh);
+    setState(fresh);
+    setCards([first, second]);
+    setEvents([]);
+    setPhase('playing');
+  }, [makeDeck]);
+
+  const decide = useCallback((side) => {
+    const state = stateRef.current;
+    const cards = cardsRef.current;
+    if (!state || state.ended || phaseRef.current !== 'playing') return;
+    const card = cards[0];
+    if (!card) return;
+
+    const result = applyChoice(state, card, side);
+    setEvents(result.events.filter((e) => e.text));
+
+    if (result.ended) {
+      setState(result.state);
+      setCards([]);
+      setPhase('ended');
+      return;
+    }
+
+    // Draw against the NEW state so the next card fits who you now are.
+    const deck = deckRef.current;
+    const promoted = cards[1] || deck.draw(result.state);
+    const nextPeek = deck.draw(result.state);
+    setState(result.state);
+    setCards([promoted, nextPeek]);
+  }, []);
+
+  const deltas = useMemo(() => {
+    if (!state || !state.history.length) return null;
+    const d = state.history[state.history.length - 1].delta;
+    const parts = [];
+    if (d.money) parts.push(`${d.money > 0 ? '+' : '-'}$${Math.abs(d.money).toLocaleString('en-US')}`);
+    if (d.health) parts.push(`${d.health > 0 ? '+' : ''}${d.health} health`);
+    if (d.happiness) parts.push(`${d.happiness > 0 ? '+' : ''}${d.happiness} mood`);
+    return parts.length ? <span className="deltas">{parts.join('   ')}</span> : null;
+  }, [state]);
+
+  if (phase === 'title') {
+    return (
+      <main className="app">
+        <StartScreen onStart={start} llmEnabled={config.llmEnabled} model={config.model} />
+      </main>
+    );
+  }
+
+  if (phase === 'ended') {
+    return (
+      <main className="app">
+        <Obituary stats={finalStats(state)} history={state.history} onRestart={start} />
+      </main>
+    );
+  }
+
+  const deck = deckRef.current;
+  const storyteller = config.llmEnabled
+    ? { mode: deck && deck.ready() ? 'live' : 'thinking', label: deck && deck.ready() ? 'storyteller ready' : 'storyteller writing ahead' }
+    : { mode: 'offline', label: 'offline deck' };
+
+  return (
+    <main className="app">
+      <Hud state={state} stage={stageOf(state)} storyteller={storyteller} />
+
+      <EventToast events={events} deltas={deltas} />
+
+      <CardStack
+        card={cards[0]}
+        peek={cards[1]}
+        onDecide={decide}
+        disabled={phase !== 'playing'}
+      />
+
+      <div className="choices">
+        <button className="choice choice--left" onClick={() => decide('left')}>
+          {cards[0] ? cards[0].leftLabel : ''}
+        </button>
+        <button className="choice choice--right" onClick={() => decide('right')}>
+          {cards[0] ? cards[0].rightLabel : ''}
+        </button>
+      </div>
+
+      <p className="app__hint">drag the card, tap a choice, or use &larr; &rarr;</p>
+    </main>
+  );
+}

@@ -1,0 +1,776 @@
+[
+  {
+    "id": "hs_route",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "trivial",
+    "scenario": "The light on Harlow turns yellow. Left gets you home in nine minutes. Right is the long way, past the reservoir, where nothing has ever happened to anybody.",
+    "leftLabel": "Beat the light",
+    "rightLabel": "Take the long way",
+    "leftEffects": {
+      "happiness": 2,
+      "risk": {
+        "probability": 0.02,
+        "outcome": "injury",
+        "description": "A minivan you did not see had the same idea about the same yellow light."
+      }
+    },
+    "rightEffects": {
+      "happiness": 1,
+      "health": 1
+    }
+  },
+  {
+    "id": "hs_party",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "trivial",
+    "scenario": "Dev's parents are in Sedona. There will be a bathtub of something blue in it. Priya says she will go if you go.",
+    "leftLabel": "Go to the party",
+    "rightLabel": "Stay in, sleep",
+    "leftEffects": {
+      "happiness": 8,
+      "health": -3,
+      "money": -30,
+      "flags": [
+        "party_kid"
+      ],
+      "relationship": {
+        "name": "Priya",
+        "role": "best friend",
+        "qualityDelta": 8
+      },
+      "risk": {
+        "probability": 0.04,
+        "outcome": "injury",
+        "description": "The trampoline was not designed for this. Neither was your collarbone."
+      }
+    },
+    "rightEffects": {
+      "health": 3,
+      "happiness": -3,
+      "flags": [
+        "studious"
+      ]
+    }
+  },
+  {
+    "id": "hs_job",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "minor",
+    "scenario": "The garden center is hiring. Eleven dollars an hour to water things and watch a man named Rick describe his divorce.",
+    "leftLabel": "Take the job",
+    "rightLabel": "Keep your afternoons",
+    "leftEffects": {
+      "money": 2400,
+      "happiness": -4,
+      "flags": [
+        "worked_young"
+      ],
+      "career": {
+        "title": "Garden Center Associate",
+        "salary": 4800
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "unhurried"
+      ]
+    }
+  },
+  {
+    "id": "hs_sat",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "minor",
+    "scenario": "Six Saturdays of test prep, or six Saturdays of the marching band, which you are told will matter to you forever and which you will remember in flashes.",
+    "leftLabel": "Test prep",
+    "rightLabel": "Marching band",
+    "leftEffects": {
+      "happiness": -6,
+      "money": -400,
+      "flags": [
+        "good_test_scores"
+      ],
+      "education": "High school (test-optimized)"
+    },
+    "rightEffects": {
+      "happiness": 9,
+      "flags": [
+        "band_kid"
+      ]
+    }
+  },
+  {
+    "id": "hs_crush",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "trivial",
+    "scenario": "Casey has been leaving a very specific amount of space next to them at lunch for three weeks.",
+    "leftLabel": "Say something",
+    "rightLabel": "Say nothing",
+    "leftEffects": {
+      "happiness": 10,
+      "relationship": {
+        "name": "Casey",
+        "role": "first love",
+        "quality": 78
+      },
+      "flags": [
+        "first_love"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "avoidant"
+      ]
+    }
+  },
+  {
+    "id": "hs_car",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "minor",
+    "scenario": "A 1998 Corolla, $1,600, described by its owner as 'basically immortal.' It is the color of an old bandage.",
+    "leftLabel": "Buy the Corolla",
+    "rightLabel": "Keep the money",
+    "leftEffects": {
+      "money": -1600,
+      "happiness": 12,
+      "flags": [
+        "has_car"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "flags": [
+        "saver"
+      ]
+    }
+  },
+  {
+    "id": "hs_cheat",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "trivial",
+    "scenario": "The chemistry final is tomorrow and someone has a photograph of it. You did not ask for the photograph. It is simply on your phone now.",
+    "leftLabel": "Look at it",
+    "rightLabel": "Delete it",
+    "leftEffects": {
+      "happiness": 3,
+      "flags": [
+        "cut_corners"
+      ],
+      "risk": {
+        "probability": 0.15,
+        "outcome": "injury",
+        "description": "Mr. Alvarez recognizes his own typo in your answer. The word 'academic dishonesty' enters your permanent file and your parents' vocabulary."
+      }
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "flags": [
+        "principled"
+      ]
+    }
+  },
+  {
+    "id": "hs_football",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "minor",
+    "scenario": "Varsity tryouts. Coach Bell says you have the frame for it. Coach Bell says this to everyone with a frame.",
+    "leftLabel": "Try out",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "health": 8,
+      "happiness": 6,
+      "flags": [
+        "athlete"
+      ],
+      "risk": {
+        "probability": 0.12,
+        "outcome": "injury",
+        "description": "Your knee makes a sound the trainer describes only as 'yeah.'"
+      }
+    },
+    "rightEffects": {
+      "happiness": 1
+    }
+  },
+  {
+    "id": "hs_smoke",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "trivial",
+    "scenario": "Behind the auditorium, someone holds out a cigarette like it is a small, glowing invitation to a different personality.",
+    "leftLabel": "Take one",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "happiness": 4,
+      "health": -4,
+      "flags": [
+        "smoker"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -1
+    }
+  },
+  {
+    "id": "hs_summer",
+    "stages": [
+      "highschool"
+    ],
+    "weight": "minor",
+    "scenario": "Last summer before everything gets scheduled forever. There is a hospital volunteer program, and there is the reservoir.",
+    "leftLabel": "Volunteer program",
+    "rightLabel": "The reservoir",
+    "leftEffects": {
+      "happiness": -3,
+      "flags": [
+        "resume_padded"
+      ],
+      "education": "High school (with a lanyard)"
+    },
+    "rightEffects": {
+      "happiness": 14,
+      "health": 3,
+      "flags": [
+        "good_summer"
+      ]
+    }
+  },
+  {
+    "id": "col_choice",
+    "stages": [
+      "college"
+    ],
+    "weight": "major",
+    "scenario": "Two envelopes. Brackwood College, private, $58,000 a year, ivy grown deliberately. State, $11,000 a year, and a parking problem.",
+    "leftLabel": "Brackwood (loans)",
+    "rightLabel": "State school",
+    "leftEffects": {
+      "money": -68000,
+      "happiness": 8,
+      "flags": [
+        "student_debt",
+        "prestige_school",
+        "in_school"
+      ],
+      "education": "Brackwood College",
+      "clearFlags": [
+        "lives_with_parents"
+      ],
+      "timeCostMonths": 18
+    },
+    "rightEffects": {
+      "money": -9000,
+      "happiness": 2,
+      "flags": [
+        "state_school",
+        "in_school"
+      ],
+      "education": "State University",
+      "clearFlags": [
+        "lives_with_parents"
+      ],
+      "timeCostMonths": 18
+    },
+    "priority": 3
+  },
+  {
+    "id": "col_major",
+    "stages": [
+      "college"
+    ],
+    "weight": "major",
+    "scenario": "Declare a major. Computer science, which pays, or philosophy, which explains why that matters and then does not help.",
+    "leftLabel": "Computer science",
+    "rightLabel": "Philosophy",
+    "leftEffects": {
+      "happiness": -4,
+      "flags": [
+        "technical",
+        "in_school"
+      ],
+      "education": "B.S. Computer Science",
+      "timeCostMonths": 24
+    },
+    "rightEffects": {
+      "happiness": 9,
+      "flags": [
+        "humanities",
+        "in_school"
+      ],
+      "education": "B.A. Philosophy",
+      "timeCostMonths": 24
+    },
+    "priority": 2
+  },
+  {
+    "id": "col_sam",
+    "stages": [
+      "college"
+    ],
+    "weight": "minor",
+    "scenario": "Your roommate Sam has opinions about music, a fake ID, and a bottle of gin they refer to as 'the emergency.' Sam wants to be friends.",
+    "leftLabel": "Be friends with Sam",
+    "rightLabel": "Keep it polite",
+    "leftEffects": {
+      "happiness": 11,
+      "health": -2,
+      "flags": [
+        "knows_sam"
+      ],
+      "relationship": {
+        "name": "Sam",
+        "role": "close friend",
+        "quality": 82,
+        "flags": [
+          "heavy_drinker"
+        ]
+      }
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "relationship": {
+        "name": "Sam",
+        "role": "roommate",
+        "quality": 40,
+        "flags": [
+          "heavy_drinker"
+        ]
+      }
+    }
+  },
+  {
+    "id": "col_abroad",
+    "stages": [
+      "college"
+    ],
+    "weight": "minor",
+    "scenario": "A semester in Lisbon. It costs $9,000 you would have to borrow and it is, everyone agrees, the sort of thing you only get to do now.",
+    "leftLabel": "Borrow and go",
+    "rightLabel": "Stay",
+    "leftEffects": {
+      "money": -9000,
+      "happiness": 16,
+      "flags": [
+        "went_abroad",
+        "student_debt"
+      ],
+      "timeCostMonths": 6
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "col_internship",
+    "stages": [
+      "college"
+    ],
+    "weight": "minor",
+    "scenario": "An unpaid internship at a firm whose name opens doors, or $19/hour at a warehouse whose name opens a loading bay.",
+    "leftLabel": "Unpaid, prestigious",
+    "rightLabel": "Paid, forgettable",
+    "leftEffects": {
+      "money": -1200,
+      "happiness": -2,
+      "flags": [
+        "good_network"
+      ],
+      "timeCostMonths": 4
+    },
+    "rightEffects": {
+      "money": 6800,
+      "happiness": -4,
+      "timeCostMonths": 4
+    }
+  },
+  {
+    "id": "col_dropout",
+    "stages": [
+      "college"
+    ],
+    "weight": "major",
+    "scenario": "Two friends want you to drop out for a company that makes an app for splitting restaurant bills. They have a deck. The deck has a hockey stick on it.",
+    "leftLabel": "Drop out, join them",
+    "rightLabel": "Finish the degree",
+    "leftEffects": {
+      "money": -3000,
+      "happiness": 6,
+      "flags": [
+        "invested_startup",
+        "dropout"
+      ],
+      "career": {
+        "title": "Co-founder, BillSplit",
+        "salary": 24000
+      },
+      "education": "Some college",
+      "risk": {
+        "probability": 0.2,
+        "outcome": "windfall",
+        "description": "BillSplit is acquired for parts, and your parts are worth something."
+      },
+      "timeCostMonths": 24,
+      "clearFlags": [
+        "in_school"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "flags": [
+        "graduate",
+        "in_school"
+      ],
+      "timeCostMonths": 24
+    }
+  },
+  {
+    "id": "col_crypto",
+    "stages": [
+      "college",
+      "early"
+    ],
+    "weight": "minor",
+    "scenario": "A guy from your dorm has moved $4,000 into a coin named after a frog. He is extremely calm about it, which is the frightening part.",
+    "leftLabel": "Put in what you have",
+    "rightLabel": "Watch from a distance",
+    "leftEffects": {
+      "money": -2500,
+      "happiness": 4,
+      "flags": [
+        "speculator"
+      ],
+      "risk": {
+        "probability": 0.18,
+        "outcome": "windfall",
+        "description": "The frog goes up. You sell near the top, which will make you insufferable for a decade."
+      }
+    },
+    "rightEffects": {
+      "happiness": -1,
+      "flags": [
+        "cautious_investor"
+      ]
+    }
+  },
+  {
+    "id": "col_sam_serious",
+    "stages": [
+      "college",
+      "early"
+    ],
+    "requiresFlags": [
+      "knows_sam"
+    ],
+    "weight": "minor",
+    "scenario": "Sam kisses you on a fire escape in March and asks, without much preamble, whether this is a thing now.",
+    "leftLabel": "It's a thing",
+    "rightLabel": "It's not",
+    "leftEffects": {
+      "happiness": 15,
+      "flags": [
+        "dating_sam"
+      ],
+      "relationship": {
+        "name": "Sam",
+        "role": "partner",
+        "qualityDelta": 12
+      }
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "relationship": {
+        "name": "Sam",
+        "role": "former friend",
+        "qualityDelta": -30
+      }
+    }
+  },
+  {
+    "id": "ec_firstjob",
+    "stages": [
+      "college",
+      "early"
+    ],
+    "weight": "major",
+    "scenario": "Two offers. Ninety-four thousand at an insurance company with a wellness room. Sixty-one thousand at a startup that pays partly in a number on a spreadsheet.",
+    "leftLabel": "Insurance, $94k",
+    "rightLabel": "Startup, $61k + equity",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "corporate_track"
+      ],
+      "career": {
+        "title": "Claims Analyst",
+        "salary": 94000
+      },
+      "clearFlags": [
+        "lives_with_parents",
+        "in_school"
+      ],
+      "timeCostMonths": 18
+    },
+    "rightEffects": {
+      "happiness": 7,
+      "flags": [
+        "invested_startup",
+        "risk_tolerant"
+      ],
+      "career": {
+        "title": "Employee #11",
+        "salary": 61000
+      },
+      "clearFlags": [
+        "lives_with_parents",
+        "in_school"
+      ],
+      "risk": {
+        "probability": 0.14,
+        "outcome": "windfall",
+        "description": "The spreadsheet number becomes a real number. Not a life-changing one. A car-changing one."
+      },
+      "timeCostMonths": 18
+    },
+    "priority": 2
+  },
+  {
+    "id": "ec_move",
+    "stages": [
+      "early"
+    ],
+    "weight": "major",
+    "scenario": "A job in a city where you know one person. Rent doubles. So does everything else, including, allegedly, you.",
+    "leftLabel": "Move",
+    "rightLabel": "Stay near home",
+    "leftEffects": {
+      "money": -6000,
+      "happiness": 6,
+      "flags": [
+        "moved_away"
+      ],
+      "career": {
+        "salary": 118000
+      },
+      "relationship": {
+        "name": "Mom",
+        "qualityDelta": -12
+      },
+      "timeCostMonths": 24
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "flags": [
+        "stayed_close"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 24
+    }
+  },
+  {
+    "id": "ec_marry_sam",
+    "stages": [
+      "early",
+      "family"
+    ],
+    "requiresFlags": [
+      "dating_sam"
+    ],
+    "forbidsFlags": [
+      "married"
+    ],
+    "weight": "major",
+    "scenario": "Sam proposes in a parking garage, which Sam insists is romantic because of the acoustics. Sam has been drinking, but Sam has been drinking for eleven years, so this tells you nothing.",
+    "leftLabel": "Marry Sam",
+    "rightLabel": "Not yet",
+    "leftEffects": {
+      "money": -14000,
+      "happiness": 18,
+      "flags": [
+        "married",
+        "married_sam",
+        "sam_heavy_drinker"
+      ],
+      "relationship": {
+        "name": "Sam",
+        "role": "spouse",
+        "quality": 88,
+        "flags": [
+          "heavy_drinker"
+        ]
+      },
+      "timeCostMonths": 18
+    },
+    "rightEffects": {
+      "happiness": -10,
+      "flags": [
+        "cold_feet"
+      ],
+      "relationship": {
+        "name": "Sam",
+        "qualityDelta": -22
+      },
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "ec_401k",
+    "stages": [
+      "early",
+      "family"
+    ],
+    "weight": "minor",
+    "scenario": "HR needs your retirement allocation by Friday. There is a slider. Nobody will ever explain the slider to you.",
+    "leftLabel": "All equities",
+    "rightLabel": "Bonds, safely",
+    "leftEffects": {
+      "money": -3000,
+      "flags": [
+        "aggressive_portfolio"
+      ],
+      "risk": {
+        "probability": 0.2,
+        "outcome": "windfall",
+        "description": "A decade of quiet compounding does what nobody in the building expected."
+      }
+    },
+    "rightEffects": {
+      "money": -1500,
+      "flags": [
+        "conservative_portfolio"
+      ],
+      "happiness": 1
+    }
+  },
+  {
+    "id": "ec_gym",
+    "stages": [
+      "early",
+      "family",
+      "late"
+    ],
+    "weight": "trivial",
+    "scenario": "The gym is $54 a month and eleven minutes away. You have driven past it 400 times.",
+    "leftLabel": "Actually go",
+    "rightLabel": "Next month",
+    "leftEffects": {
+      "money": -650,
+      "health": 9,
+      "happiness": 3,
+      "flags": [
+        "exercises"
+      ]
+    },
+    "rightEffects": {
+      "health": -3,
+      "happiness": 1
+    }
+  },
+  {
+    "id": "ec_kid",
+    "stages": [
+      "early",
+      "family"
+    ],
+    "requiresFlags": [
+      "married"
+    ],
+    "weight": "major",
+    "scenario": "The conversation you have both been circling for two years arrives at the table on a Tuesday, uninvited, between the salad and the check.",
+    "leftLabel": "Have a kid",
+    "rightLabel": "Keep the apartment quiet",
+    "leftEffects": {
+      "money": -12000,
+      "happiness": 14,
+      "health": -5,
+      "kid": true,
+      "flags": [
+        "parent"
+      ],
+      "timeCostMonths": 24
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "money": 4000,
+      "flags": [
+        "child_free"
+      ],
+      "timeCostMonths": 24
+    }
+  },
+  {
+    "id": "ec_house",
+    "stages": [
+      "early",
+      "family"
+    ],
+    "weight": "major",
+    "scenario": "A house with a cracked driveway and a kitchen from 1987. The mortgage is a number you will say out loud to people for thirty years.",
+    "leftLabel": "Buy it",
+    "rightLabel": "Keep renting",
+    "leftEffects": {
+      "money": -48000,
+      "happiness": 10,
+      "flags": [
+        "homeowner"
+      ],
+      "timeCostMonths": 24
+    },
+    "rightEffects": {
+      "money": -2000,
+      "happiness": -2,
+      "flags": [
+        "renter"
+      ],
+      "timeCostMonths": 18
+    }
+  },
+  {
+    "id": "ec_sideproject",
+    "stages": [
+      "early",
+      "family"
+    ],
+    "weight": "minor",
+    "scenario": "You could build the thing on nights and weekends. Sleep is, statistically, optional for about four months.",
+    "leftLabel": "Build it",
+    "rightLabel": "Sleep",
+    "leftEffects": {
+      "health": -7,
+      "happiness": 4,
+      "flags": [
+        "side_hustle"
+      ],
+      "risk": {
+        "probability": 0.1,
+        "outcome": "windfall",
+        "description": "Somebody links to it. Then somebody with money links to it."
+      }
+    },
+    "rightEffects": {
+      "health": 5,
+      "happiness": 2
+    }
+  }
+]
