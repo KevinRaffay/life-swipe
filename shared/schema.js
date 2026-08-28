@@ -8,7 +8,7 @@
 
 import { checkCompliance, MODES } from './content.js';
 import { TIERS, normalizeNarrative, displayText, narrativeWarnings } from './scenario-format.js';
-import { checkNameDrift } from './names.js';
+import { checkNameDrift, checkReintroductions } from './names.js';
 
 const WEIGHTS = new Set([...TIERS, 'trivial']);
 const OUTCOMES = new Set(['death', 'injury', 'windfall']);
@@ -199,8 +199,16 @@ export function validateScenario(raw, index = 0) {
  * @param {number}  [opts.age]       character age, for the under-18 rule
  * @param {object|Array} [opts.relationships]  the live cast, for the name-drift
  *   check. Either the state map or the summary array.
+ * @param {Array|string} [opts.recent]  the recent-history window the model was
+ *   shown, for the off-screen reintroduction check. An array of past decisions
+ *   (with `scenario`/`chose`) or a pre-joined string; both are log-only advisory.
  */
-export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relationships = null } = {}) {
+export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relationships = null, recent = null } = {}) {
+  // A relationship "shown up in the recent window" if its name appears in the
+  // history the model was given. Joined once here; the check is a string scan.
+  const recentText = Array.isArray(recent)
+    ? recent.map((d) => (d ? [d.scenario, d.chose].filter(Boolean).join(' ') : '')).join(' \n ')
+    : (typeof recent === 'string' ? recent : '');
   if (typeof raw === 'string') {
     try {
       raw = JSON.parse(raw);
@@ -251,6 +259,14 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relati
     // hold rather than punishing a playable card for missing them.
     if (res.scenario.weight === 'major') {
       for (const w of narrativeWarnings(res.scenario)) warnings.push(`scenario[${i}]: ${w}`);
+    }
+    // Off-screen reintroduction, across ALL tiers: a named relationship that
+    // dropped out of the recent-history window and comes back on a bare name,
+    // with no role reminder to place them. Log-only, like the drift above.
+    if (relationships) {
+      for (const w of checkReintroductions(res.scenario, relationships, recentText)) {
+        warnings.push(`scenario[${i}]: ${w}`);
+      }
     }
     scenarios.push(res.scenario);
   });

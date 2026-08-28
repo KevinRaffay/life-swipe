@@ -146,6 +146,9 @@ app.post('/api/scenarios', async (req, res) => {
       // First of two passes at name drift; the client runs the same check
       // again against the live map before anything is buffered.
       relationships: summary.relationships,
+      // The same recent window the model was shown, so the reintroduction
+      // check knows which named people were off-screen when it wrote a card.
+      recent: recent.slice(-10),
     });
 
     // Advisory craft warnings ride on the call either way: a failed batch can

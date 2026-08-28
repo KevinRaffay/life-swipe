@@ -545,3 +545,73 @@ export function checkNameDrift(scenario, relationships) {
 
   return [...new Set(violations)].slice(0, 4);
 }
+
+/* --------------------------------------------------- reintroduction check */
+
+// Does the card give this off-screen person a role reminder, rather than a
+// bare name? Two cheap positive signals, deliberately generous: a soft check
+// should stay quiet when in doubt, so anything that plausibly reads as a
+// reminder suppresses the warning.
+//   1. the role word appears anywhere in the card ("...from your study group")
+//   2. an appositive or lead-in sits against the name ("Dmitri, the guy...",
+//      "your old roommate Dmitri")
+function hasRoleReminder(text, name, role) {
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // The role word itself, in any of its synonyms, anywhere in the card.
+  const group = roleGroup(role);
+  const words = (ROLE_GROUPS[group] || [role]).filter((w) => w && w.length >= 3);
+  for (const word of words) {
+    const w = word.replace(/[-]/g, '\\-').replace(/\s+/g, '\\s+');
+    if (new RegExp('(^|[^a-z])' + w + '([^a-z]|$)', 'i').test(text)) return true;
+  }
+  // "Dmitri, the guy from your study group" - a comma appositive by the name.
+  if (new RegExp('\\b' + esc + '\\b\\s*,\\s*(the|a|an|your|their|his|her|my|one of|from|who)\\b', 'i').test(text)) {
+    return true;
+  }
+  // "your old roommate Dmitri" - a possessive/article lead-in just before it.
+  if (new RegExp('\\b(?:your|their|his|her|my|the|a|an|old|former)\\b[^.?!]{0,24}?\\b' + esc + '\\b', 'i').test(text)) {
+    return true;
+  }
+  return false;
+}
+
+// Mom and Dad are the address form, not names, and never need reintroducing;
+// neither do the parent role-words a bare name could collide with.
+const SELF_EVIDENT = new Set(['mom', 'mum', 'mommy', 'dad', 'daddy', 'mother', 'father']);
+
+/**
+ * Best-effort: does a card bring back an existing relationship who has NOT
+ * appeared in the recent-history window the model was shown, and do it with a
+ * bare name and no role reminder? "Dmitri has been leaving space at lunch"
+ * lands on nobody if the player last saw Dmitri twenty cards ago; "Dmitri, the
+ * guy from your study group" does not.
+ *
+ * Advisory only, exactly like checkNameDrift: the prompt does the primary work
+ * (it marks which people are off-screen and asks for the reminder) and this
+ * measures how well that holds. String matching, so it never blocks a card.
+ *
+ * @param {object} scenario            a validated scenario
+ * @param {Array|object} relationships state map or summary array, carrying role
+ * @param {string} recentText          the recent-history window text
+ * @returns {string[]} human-readable warnings, empty when clean
+ */
+export function checkReintroductions(scenario, relationships, recentText = '') {
+  const people = relationshipList(relationships);
+  if (!people.length || !scenario) return [];
+  const text = cardText(scenario);
+  if (!text) return [];
+  const recent = String(recentText || '');
+
+  const warnings = [];
+  for (const person of people) {
+    const first = firstName(person.name);
+    if (!first || hasNameTag(person.name) || SELF_EVIDENT.has(first)) continue;
+    // firstName lower-cases; match case-insensitively against the raw name.
+    const nameRe = new RegExp('\\b' + first.replace(/[^a-z0-9]/gi, '') + '\\b', 'i');
+    if (!nameRe.test(text)) continue;   // this card does not name them
+    if (nameRe.test(recent)) continue;  // they were just on screen; no reminder needed
+    if (hasRoleReminder(text, person.name, person.role)) continue; // reintroduced properly
+    warnings.push(`"${person.name}" is named but was not in the recent window and gets no role reminder`);
+  }
+  return [...new Set(warnings)].slice(0, 4);
+}

@@ -125,6 +125,14 @@ is a bug, because the game keys a person's whole history off their name.
   invented. A spouse called Nadia is never Nads, never Natalia, never Sarah.
   A card that renames somebody is thrown away before the player sees it.
 
+  REINTRODUCE THE OFF-SCREEN. If someone already named has not appeared in the
+  recent decisions you are shown, their return is a reintroduction: on first
+  mention, place them with a brief role reminder - "Dmitri, the guy from your
+  study group", "your old roommate Priya" - not a bare name. The player last saw
+  them long ago and will not place a name alone. Use the role and flags listed
+  beside them; never invent a fresh backstory. This is never a rename: the
+  reminder sits beside the same exact name.
+
 The engine swaps every tag for a real name before the card is dealt, so write
 the sentence as if the name were already there and it will read correctly.
 
@@ -230,9 +238,28 @@ export const SYSTEM_PROMPT = buildSystemPrompt('safe');
 
 export function buildUserPrompt({ summary, recent, count = 5, librarySlot = null }) {
   const flagLine = summary.flags.length ? summary.flags.join(', ') : '(none yet)';
+  // Which named people actually appear in the recent window below. Anyone in
+  // the cast who does NOT is off-screen: a card that brings them back must
+  // reintroduce them by role, because the player has not seen the name lately.
+  const recentBlob = (recent || [])
+    .map((d) => (d ? [d.scenario, d.chose].filter(Boolean).join(' ') : ''))
+    .join(' \n ');
+  const seenRecently = (name) => {
+    const first = String(name || '').trim().split(/\s+/)[0].replace(/[^a-z0-9]/gi, '');
+    return first ? new RegExp('\\b' + first + '\\b', 'i').test(recentBlob) : false;
+  };
+  let anyOffScreen = false;
+  // Every relationship carries its role and flags here, on-screen or not, so a
+  // reintroduction has accurate material to draw the reminder from.
   const relLine = summary.relationships.length
     ? summary.relationships
-        .map((r) => `${r.name} (${r.role}, closeness ${r.quality}${r.flags.length ? ', flags: ' + r.flags.join('/') : ''})`)
+        .map((r) => {
+          const flags = r.flags && r.flags.length ? ', flags: ' + r.flags.join('/') : '';
+          const offScreen = !seenRecently(r.name);
+          if (offScreen) anyOffScreen = true;
+          const off = offScreen ? ' [OFF-SCREEN lately - reintroduce by role on first mention]' : '';
+          return `${r.name} (${r.role || 'unspecified role'}, closeness ${r.quality}${flags})${off}`;
+        })
         .join('; ')
     : '(nobody close)';
   // Tags this life has already spent. Without this the model reissues
@@ -282,7 +309,7 @@ STATE (owned by the engine, shown to you for context only):
 
 NAMES:
 Everyone under "people" above is already named. Use those spellings verbatim
-and never rename them.${assigned ? '\nTags already spent in this life: ' + assigned + ' - reuse the tag or the name, either resolves to the same person.' : ''}
+and never rename them.${anyOffScreen ? '\nPeople marked [OFF-SCREEN lately] have not appeared in the decisions below.\nIf you bring one back, reintroduce them on first mention with a short role\nreminder from the material beside their name - "Dmitri, the guy from your study\ngroup", not a bare "Dmitri" - so the player can place who they are.' : ''}${assigned ? '\nTags already spent in this life: ' + assigned + ' - reuse the tag or the name, either resolves to the same person.' : ''}
 Anyone else who appears in your cards is NEW and gets a "{{new:role}}" tag
 where their name would go, in the prose and in "relationship". Never invent a
 name yourself; the engine assigns it.
