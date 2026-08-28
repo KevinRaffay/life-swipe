@@ -278,11 +278,13 @@
       "safe",
       "mature"
     ],
-    "requires": [],
+    "requires": [
+      "college_degree"
+    ],
     "excludes": [
       "early_career_toxic_mentor"
     ],
-    "typical_effects": "Sets a branch point: player adopts the culture and gains fast advancement at the cost of integrity flags, or resists and faces slower but cleaner career growth. Creates pending_event for later ethical reckoning.",
+    "typical_effects": "Sets a branch point: player adopts the culture and gains fast advancement at the cost of integrity flags, or resists and faces slower but cleaner career growth. Set flag white_collar_experience either way - they are in the job now. Creates pending_event for later ethical reckoning.",
     "rarity": "uncommon",
     "note": "Fire early in a career arc; the senior figure need not reappear but their influence should echo forward."
   },
@@ -297,7 +299,9 @@
     "modes": [
       "safe"
     ],
-    "requires": [],
+    "requires": [
+      "college_degree"
+    ],
     "excludes": [
       "market_crash_job_loss"
     ],
@@ -568,7 +572,9 @@
     "modes": [
       "safe"
     ],
-    "requires": [],
+    "requires": [
+      "college_degree"
+    ],
     "excludes": [
       "market_crash_job_loss"
     ],
@@ -588,11 +594,13 @@
       "safe",
       "mature"
     ],
-    "requires": [],
+    "requires": [
+      "college_degree"
+    ],
     "excludes": [
       "early_career_toxic_mentorship"
     ],
-    "typical_effects": "Sets a values baseline skewed toward personal gain over integrity; creates a branch point between adopting or rejecting the culture, with long-term consequences for legal and reputational standing.",
+    "typical_effects": "Sets a values baseline skewed toward personal gain over integrity; creates a branch point between adopting or rejecting the culture, with long-term consequences for legal and reputational standing. Set flag white_collar_experience - they are in the industry now.",
     "rarity": "uncommon"
   },
   {

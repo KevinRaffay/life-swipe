@@ -163,6 +163,27 @@ retirement or a vice, use the exact name above so the simulation follows along.
 A card that sends someone to college and does not set "in_school" will quietly
 bankrupt them.
 
+CAREER BACKGROUND FLAGS - narrative memory, not engine-reactive, but read by
+the situation library and by you to judge what is plausible for this person.
+Set the moment it becomes true, never before:
+  "college_degree"           completed a bachelor's degree or higher.
+  "trade_cert"                completed a trade apprenticeship or vocational
+                              certification.
+  "white_collar_experience"   has actually held a white-collar or professional
+                              job, not merely wants one.
+None of these imply each other. Holding only "trade_cert" for an entire life is
+the default for someone doing skilled manual work, not a gap to fix on their
+behalf.
+
+CAREER PLAUSIBILITY:
+A career-tier scenario offering a white-collar or professional-track job,
+promotion, or investor interest must be earned by what "career background" in
+STATE actually shows. A person with none of those flags, currently doing
+manual or trade work, does not get an out-of-nowhere corporate offer - a
+bridging event (more schooling, a mentor, a deliberate career-change decision,
+an apprenticeship completed) has to happen first, and is a perfectly good card
+in its own right. Once a bridging event occurs, set the flag it earns them.
+
 DELAYED CONSEQUENCES - this is the most important craft instruction:
 You are given the player's full flag list and relationship flags. Roughly one card
 in four should be a CALLBACK: a seed planted years ago sprouting now. The spouse
@@ -303,6 +324,7 @@ STATE (owned by the engine, shown to you for context only):
   happiness ${summary.happiness}/100
   career: ${summary.career.title}${summary.career.salary ? ' (' + dollars(summary.career.salary) + '/yr)' : ''}
   education: ${summary.education}
+  career background: ${summary.careerBackground.qualifyingFlags.length ? summary.careerBackground.qualifyingFlags.join(', ') : 'none - no college degree, trade certification or white-collar experience on record'}
   income ${dollars(summary.annualIncome)}/yr vs expenses ${dollars(summary.annualExpenses)}/yr
   children: ${kidLine}
   people: ${relLine}

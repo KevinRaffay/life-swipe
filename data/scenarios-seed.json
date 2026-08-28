@@ -412,7 +412,8 @@
       "happiness": -4,
       "flags": [
         "technical",
-        "in_school"
+        "in_school",
+        "college_degree"
       ],
       "education": "B.S. Computer Science",
       "timeCostMonths": 24
@@ -421,7 +422,8 @@
       "happiness": 9,
       "flags": [
         "humanities",
-        "in_school"
+        "in_school",
+        "college_degree"
       ],
       "education": "B.A. Philosophy",
       "timeCostMonths": 24
