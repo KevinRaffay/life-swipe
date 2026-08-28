@@ -3,3 +3,6 @@ dist/
 .env
 *.log
 situation-library.draft.json
+dist-admin/
+situation-library.draft.rejected.json
+*.bak

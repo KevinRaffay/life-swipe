@@ -86,6 +86,10 @@ Breaking any of these is a bug regardless of what the tests say.
 | `server/anthropic.js` | Messages API client, no SDK. |
 | `client/src/prefs.js` | per-player cross-life memory. |
 | `client/src/components/CardStack.jsx` | the swipe gesture and tiered card rendering. |
+| `server/admin/` | the content admin API. Localhost only, no auth — read `index.js` before touching it. |
+| `server/admin/store.js` | the ONLY thing that writes content files: backup, atomic write, version check, key order. |
+| `server/extraction.js` | the extraction prompt and checks, shared by the CLI and the admin. |
+| `admin/` | the admin React app. Its own Vite root; never an input to the player build. |
 
 `shared/` runs in both the browser and Node — the simulator exercises the same
 engine that ships.
@@ -102,6 +106,9 @@ npm run coverage                       # seed coverage per bucket/mode
 npm run names                          # validate the name pool + measure its spread
 npm run build-region-weights -- <dir>  # regenerate region_frequency from SSA data
 npm run extract-patterns -- source.txt # draft library patterns (never auto-merges)
+npm run admin                          # build dist-admin/, serve, open :8787/admin
+npm run dev:admin                      # admin vite :5174 + api, for admin UI work
+npm run normalise-content              # rewrite content files in canonical key order
 ```
 
 ---
@@ -238,6 +245,11 @@ confirm it fails before trusting it.
 
 ## Gotchas
 
+- **A synchronous throw escapes `Promise.resolve(fn()).catch()`.** The admin's
+  error wrapper used that shape, so a version-conflict error — which the store
+  throws synchronously — bypassed it and the client got Express's HTML error
+  page instead of JSON. `async` + `try/await` catches both. Found by exercising
+  the conflict path, not by reading the code.
 - **Heredocs eat backslashes** when routed through a patch script's template
   literal. Anything containing regex must be written directly to its file, or
   spliced by line with `String.raw`. This has cost several cycles.
@@ -291,6 +303,47 @@ dev    ← integration branch, work lands here
 | Seen-window measured in lives | **on `dev`, awaiting user testing** | |
 | Engine-controlled name assignment | **on `dev`, awaiting user testing** | pool, both tag forms, drift check, preview path, randomized seed-deck cast |
 | Regional name weighting | **on `dev`, awaiting user testing** | offline geoip, settings override, SSA-derived weights. Adds `geoip-lite`, so `npm install` before running |
+| Content admin module | **on `admin-module`, awaiting user testing** | localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
+
+---
+
+## The admin module
+
+A separate interface for editing content — the library, the seed deck, the
+extraction draft queue — plus a cross-reference check, a live preview and a
+stats view. `npm run admin`, then <http://localhost:8787/admin>.
+
+**It has no authentication, and the server binds to `127.0.0.1` because of
+that.** The consequence is deliberate and worth knowing: the *game* is
+localhost-only too, so it can no longer be opened from a phone on the same wifi.
+Getting LAN play back means moving the admin to its own port and process, not
+loosening this binding.
+
+Two rules hold the safety story together:
+
+1. **The binding is the defence, not a middleware check.** Nothing off this
+   machine can open the socket, so no request-inspection logic has to be right.
+2. **`HOST` set to anything non-loopback removes the admin entirely** — the
+   router is never mounted and `/admin` returns 404 with the reason. Exposing
+   the game does not silently expose the admin. If you need that, add auth.
+
+Other things worth knowing before working on it:
+
+- `server/admin/store.js` is the only writer. Every save copies the old file to
+  `.bak`, writes to a temp file and renames (so an interrupted save cannot leave
+  a half-written library the game server then refuses to boot on), and checks a
+  content hash so a file edited underneath you is refused rather than clobbered.
+- **Extraction never merges.** It appends to `situation-library.draft.json` and
+  stops; entering the library is always an explicit human approval.
+- The cross-reference check answers only *"can any content file or the engine
+  ever set this flag?"*. It is **not** the same measurement as "8 of 13 patterns
+  are dead in simulation" below — that is about chains that cannot complete
+  inside one life. Today it reports 0 unreachable and 3 inert exclusions.
+- The thread-template editor is deliberately absent: `thread-templates.json`
+  does not exist. The cross-reference check and the stats view already branch on
+  that, so adding it later is a new file plus a nav entry.
+- `admin/` is a separate Vite root building to `dist-admin/`. `npm run build`
+  never sees it, which is why no admin code can reach the player bundle.
 
 ---
 

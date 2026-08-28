@@ -13,7 +13,11 @@
     "extract-patterns": "node scripts/extract-patterns.js",
     "coverage": "node scripts/coverage.js",
     "names": "node scripts/name-check.js",
-    "build-region-weights": "node scripts/build-region-weights.js"
+    "build-region-weights": "node scripts/build-region-weights.js",
+    "build:admin": "vite build --config vite.admin.config.js",
+    "admin": "npm run build:admin && node server/index.js",
+    "dev:admin": "concurrently -k -n admin,api -c cyan,magenta \"vite --config vite.admin.config.js\" \"node --watch server/index.js\"",
+    "normalise-content": "node scripts/normalise-content.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

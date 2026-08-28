@@ -18,11 +18,22 @@ import { checkCoverage, coverage } from '../scripts/coverage.js';
 import { validateBatch } from '../shared/schema.js';
 import { NAME_POOL, resolveBatchEphemeral } from '../shared/names.js';
 import { resolveRegion } from './geo.js';
+import { createAdminRouter } from './admin/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const DIST = path.join(ROOT, 'dist');
+const DIST_ADMIN = path.join(ROOT, 'dist-admin');
 const PORT = Number(process.env.PORT) || 8787;
+
+// Loopback, deliberately and by default. The admin module has NO authentication
+// in this pass, so the only thing standing between it and the network is this
+// bind address - which means the game is localhost-only too. That is the
+// accepted trade: see the admin mount below, which refuses to load at all if
+// this is ever pointed somewhere else.
+const HOST = process.env.HOST || '127.0.0.1';
+const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1']);
+const isLoopback = LOOPBACK.has(HOST);
 
 const app = express();
 // Behind a reverse proxy, req.ip is the proxy unless Express is told otherwise,
@@ -220,6 +231,45 @@ app.get('/api/coverage', (_req, res) => {
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, llmEnabled: hasKey(), model: MODEL }));
 
+/* ----------------------------------------------------------------- admin */
+
+// The content admin. Unauthenticated, so it is mounted ONLY when the server is
+// bound to loopback. Pointing HOST at an interface the network can reach does
+// not expose the admin - it removes the admin, loudly. The fix at that point is
+// authentication, not deleting this check.
+if (isLoopback) {
+  const adminRouter = createAdminRouter();
+  app.use('/admin', adminRouter);
+  if (fs.existsSync(DIST_ADMIN)) {
+    app.use('/admin', express.static(DIST_ADMIN));
+    app.get('/admin/*', (req, res, next) => {
+      if (req.path.startsWith('/admin/api/')) return next();
+      res.sendFile(path.join(DIST_ADMIN, 'index.html'));
+    });
+  } else {
+    app.get('/admin*', (req, res, next) => {
+      if (req.path.startsWith('/admin/api/')) return next();
+      res.status(503).type('text/plain').send(
+        'The admin UI has not been built.\n\nRun:  npm run admin   (builds dist-admin/, then serves)\n',
+      );
+    });
+  }
+} else {
+  console.warn(
+    `\n  [admin] NOT mounted: HOST is "${HOST}", which is not loopback.\n` +
+    '  The admin module has no authentication, so it is only ever served on\n' +
+    '  127.0.0.1. Add real auth before exposing it.\n',
+  );
+  // Answer /admin explicitly rather than letting the player SPA's catch-all
+  // serve the game there. Without this the route 200s with the player app,
+  // which reads like a broken admin instead of an absent one.
+  app.all('/admin*', (_req, res) => {
+    res.status(404).type('text/plain').send(
+      'The admin module is not available: this server is not bound to loopback.\n',
+    );
+  });
+}
+
 /* ------------------------------------------------------------ static site */
 
 if (fs.existsSync(DIST)) {
@@ -237,10 +287,15 @@ if (fs.existsSync(DIST)) {
   });
 }
 
-const server = app.listen(PORT, () => {
-  console.log(`\n  Life Swipe listening on http://localhost:${PORT}`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`\n  Life Swipe listening on http://localhost:${PORT}  (bound to ${HOST})`);
   console.log(`  storyteller: ${hasKey() ? MODEL : 'OFFLINE (no ANTHROPIC_API_KEY - seed content only)'}`);
-  console.log(`  client build: ${fs.existsSync(DIST) ? 'dist/' : 'MISSING (run npm start)'}\n`);
+  console.log(`  client build: ${fs.existsSync(DIST) ? 'dist/' : 'MISSING (run npm start)'}`);
+  if (isLoopback) {
+    console.log(`  admin:        http://localhost:${PORT}/admin  ` +
+      `(${fs.existsSync(DIST_ADMIN) ? 'built' : 'NOT BUILT - run npm run admin'}, no auth, loopback only)`);
+  }
+  console.log('');
 });
 
 // A busy port is an ordinary thing - usually a previous run still alive - and
