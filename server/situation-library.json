@@ -845,5 +845,524 @@
     ],
     "typical_effects": "Irreversible relationship rupture; should trigger custody loss as a pending_event and a health/addiction branch point as the character confronts the consequences of their behaviour.",
     "rarity": "uncommon"
+  },
+  {
+    "id": "addiction_relapse_triggered_by_acute",
+    "pattern": "A period of sobriety or reduced use ends abruptly when a significant personal loss or betrayal removes the emotional scaffolding sustaining the recovery.",
+    "category": "health",
+    "life_stage": [
+      25,
+      60
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "reform_attempt_triggered"
+    ],
+    "excludes": [],
+    "typical_effects": "Relapse worsens all concurrent crises; branch point between seeking structured help or spiralling further, with the latter accelerating legal and family consequences.",
+    "rarity": "common"
+  },
+  {
+    "id": "entry_level_mentor_excess_culture",
+    "pattern": "A young professional enters a high-earning industry and is immediately mentored into a culture where personal enrichment and excess are treated as the primary goals of the work.",
+    "category": "career",
+    "life_stage": [
+      18,
+      28
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "entry_level_mentor_excess_culture"
+    ],
+    "typical_effects": "Sets a flag for 'normalised_excess' and creates a branch point: embrace the culture for fast rewards or resist it at the cost of belonging.",
+    "rarity": "uncommon",
+    "note": "Should fire early in a career arc to shape subsequent decisions around money and ethics."
+  },
+  {
+    "id": "external_shock_forces_career_pivot",
+    "pattern": "A large-scale economic collapse destroys a promising early career, forcing the person to restart in a lower-status environment where they discover unexpected advantages.",
+    "category": "career",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "external_shock_forces_career_pivot"
+    ],
+    "typical_effects": "Short-term career setback followed by a branch point: adapt skills to the new environment for rapid advancement, or spend time searching for a return to the original path.",
+    "rarity": "uncommon",
+    "note": "The lower-status environment should carry hidden upside to reflect the structural irony of the pattern."
+  },
+  {
+    "id": "charisma_converts_social_circle_into",
+    "pattern": "An ambitious entrepreneur recruits close friends and neighbours rather than strangers, turning a personal social network into the founding team of a new venture.",
+    "category": "career",
+    "life_stage": [
+      22,
+      38
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "charisma_converts_social_circle_into_workforce"
+    ],
+    "typical_effects": "Creates flags for 'loyalty_based_team' and 'blurred_personal_professional_boundaries'; pending_event for future conflict when business stress strains friendships.",
+    "rarity": "common",
+    "note": "The mixed loyalty dynamic should surface in later events as both a strength and a liability."
+  },
+  {
+    "id": "notoriety_becomes_unexpected_recruitment",
+    "pattern": "A critical or scandalous public profile piece, intended to damage a person's reputation, instead attracts ambitious followers and accelerates the growth of their enterprise.",
+    "category": "career",
+    "life_stage": [
+      25,
+      45
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "notoriety_becomes_unexpected_recruitment_engine"
+    ],
+    "typical_effects": "Rapid organisational growth and a branch point: scale responsibly or let the influx of opportunists dilute standards and increase regulatory risk.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "wealth_enables_decadent_lifestyle_spiral",
+    "pattern": "Rapid accumulation of wealth unlocks a lifestyle of compounding indulgences that gradually become dependencies, eroding judgement and personal relationships.",
+    "category": "health",
+    "life_stage": [
+      25,
+      50
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "normalised_excess"
+    ],
+    "excludes": [
+      "decadent_spiral_active"
+    ],
+    "typical_effects": "Sets flag 'decadent_spiral_active'; creates pending_events for relationship breakdown, health crisis, and regulatory scrutiny arriving simultaneously.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "affair_ends_first_marriage_begins",
+    "pattern": "An extramarital affair is discovered, ending a first marriage and leading relatively quickly to a new marriage with the affair partner.",
+    "category": "romance",
+    "life_stage": [
+      24,
+      45
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "affair_ends_first_marriage"
+    ],
+    "typical_effects": "Sets flags 'divorced_once' and 'remarried'; the second marriage begins under romantic optimism but carries a pending_event for trust erosion when external pressures mount.",
+    "rarity": "common"
+  },
+  {
+    "id": "regulatory_investigation_ignored_too_lon",
+    "pattern": "A person aware that authorities are investigating their affairs continues operating normally rather than changing course, allowing evidence to accumulate until the situation becomes uncontrollable.",
+    "category": "career",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "regulatory_investigation_ignored_too_long"
+    ],
+    "typical_effects": "Creates a slow-burning pending_event that eventually forces a binary branch: cooperate with authorities or face maximum consequences.",
+    "rarity": "uncommon",
+    "note": "Should fire only when a 'regulatory_scrutiny' flag is already present."
+  },
+  {
+    "id": "father_figure_urges_retreat_son",
+    "pattern": "A parent or senior mentor urges a person to step back from a dangerous situation while they still can, but the person's emotional attachment to their role and identity causes them to refuse.",
+    "category": "family",
+    "life_stage": [
+      28,
+      50
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "retreat_advice_refused"
+    ],
+    "typical_effects": "Sets flag 'retreat_advice_refused'; the refusal feels triumphant in the moment but creates a pending_event for a much worse forced exit later.",
+    "rarity": "common"
+  },
+  {
+    "id": "crisis_interpreted_as_spiritual_sign",
+    "pattern": "A dramatic near-miss or unexpected loss during a period of excess is experienced as a meaningful signal, prompting a genuine attempt to address destructive habits.",
+    "category": "chaos",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "decadent_spiral_active"
+    ],
+    "excludes": [
+      "reform_attempt_triggered"
+    ],
+    "typical_effects": "Sets flag 'reform_attempt_triggered'; branch point between sustained recovery and relapse, with relapse more likely if underlying legal or financial pressures remain unresolved.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "cooperating_witness_betrays_inner_circle",
+    "pattern": "Facing overwhelming legal jeopardy, a person agrees to gather evidence against their closest associates in exchange for a reduced sentence, destroying the loyalties that defined their rise.",
+    "category": "career",
+    "life_stage": [
+      30,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "loyalty_based_team"
+    ],
+    "excludes": [
+      "cooperating_witness_role"
+    ],
+    "typical_effects": "Sets flag 'cooperating_witness_role'; triggers pending_events for the collapse of the enterprise, estrangement from former allies, and a relationship breakdown at home.",
+    "rarity": "rare"
+  },
+  {
+    "id": "spouse_exits_at_moment_of",
+    "pattern": "A long-term partner who has tolerated a chaotic lifestyle finally ends the relationship precisely when external collapse makes the person most vulnerable, compounding the crisis.",
+    "category": "romance",
+    "life_stage": [
+      30,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "decadent_spiral_active"
+    ],
+    "excludes": [
+      "partner_exit_at_collapse"
+    ],
+    "typical_effects": "Sets flag 'partner_exit_at_collapse'; acute emotional crisis creates a branch point between destructive reaction and acceptance; destructive path worsens legal standing.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "post_prison_reinvention_via_original",
+    "pattern": "After serving a custodial sentence, a person rebuilds their livelihood by monetising the same core skill that originally drove their rise, now in a legal and public-facing form.",
+    "category": "career",
+    "life_stage": [
+      32,
+      60
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "cooperating_witness_role"
+    ],
+    "excludes": [
+      "post_prison_reinvention"
+    ],
+    "typical_effects": "Sets flag 'post_prison_reinvention'; moderate financial recovery with persistent reputational complexity; branch point around whether to acknowledge or obscure the past.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "offshore_financial_structure_unravels_th",
+    "pattern": "A concealed financial arrangement held in the name of a trusted third party collapses when that person dies or is arrested, exposing the scheme to authorities.",
+    "category": "money",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "offshore_structure_unravelled"
+    ],
+    "typical_effects": "Sets flag 'offshore_structure_unravelled'; creates an urgent pending_event forcing a choice between flight, further concealment, or cooperation with investigators.",
+    "rarity": "rare",
+    "note": "Pattern describes the structural vulnerability, not the mechanism of concealment."
+  },
+  {
+    "id": "athletic_promise_unfulfilled",
+    "pattern": "A talented young athlete earns a place on a prestigious team through sheer determination rather than recruitment, but never secures meaningful playing time despite the effort invested.",
+    "category": "career",
+    "life_stage": [
+      17,
+      24
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "athletic_promise_unfulfilled"
+    ],
+    "typical_effects": "Creates mild status gain and social capital on campus, but leaves a residual hunger for recognition that becomes a driver of later risk-taking; branch point toward legitimate hustle or shortcuts.",
+    "rarity": "uncommon",
+    "note": "The gap between effort and reward is the engine here, not the sport itself."
+  },
+  {
+    "id": "performance_drug_use_competitive_sport",
+    "pattern": "A young competitor, desperate to close the gap between ambition and ability, turns to performance-enhancing substances obtained through informal or illicit channels.",
+    "category": "health",
+    "life_stage": [
+      16,
+      26
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "performance_drug_use_competitive_sport"
+    ],
+    "typical_effects": "Short-term performance boost and team acceptance; long-term health risk flag and normalisation of rule-breaking as a problem-solving strategy; creates a latent 'willing to cheat' trait that may fire in later career events.",
+    "rarity": "uncommon",
+    "note": "Do not depict sourcing method. Focus on the decision and the rationalisation."
+  },
+  {
+    "id": "campus_drug_connection_reputation",
+    "pattern": "A college athlete becomes informally valued by peers not only for their sporting contribution but for their access to substances that ease pain or enhance performance, building a social identity around being a fixer.",
+    "category": "career",
+    "life_stage": [
+      18,
+      24
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "performance_drug_use_competitive_sport"
+    ],
+    "excludes": [
+      "campus_drug_connection_reputation"
+    ],
+    "typical_effects": "Grants a 'well-connected fixer' social trait; increases peer loyalty but creates a dependency loop where the character's value is tied to rule-breaking; sets up later recruitment by criminal networks.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "recession_kills_legitimate_ambition",
+    "pattern": "A young adult's plan to enter a conventional profession is derailed by an economic downturn, forcing a pivot toward informal or illegal income streams.",
+    "category": "money",
+    "life_stage": [
+      22,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "recession_kills_legitimate_ambition"
+    ],
+    "typical_effects": "Branch point: character may pursue retraining, accept downward mobility, or turn to grey/black market alternatives; the pivot taken here should influence career trajectory flags for the next decade.",
+    "rarity": "common",
+    "note": "The economic shock is the trigger; the moral choice is the branch."
+  },
+  {
+    "id": "criminal_network_recruits_networker",
+    "pattern": "A person with exceptional social skills and a demonstrated willingness to operate outside the rules is recruited by an organised criminal enterprise that prizes people skills over violence.",
+    "category": "career",
+    "life_stage": [
+      24,
+      40
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "criminal_network_recruits_networker"
+    ],
+    "typical_effects": "Rapid income and status spike; creates a 'criminal obligation' flag that limits future branch options; introduces a powerful patron whose demands escalate over time.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "debt_trap_after_criminal_loss",
+    "pattern": "A criminal operation suffers a major financial loss through a partner's failure or betrayal, leaving the protagonist in crushing debt to a dangerous superior with no legal recourse.",
+    "category": "money",
+    "life_stage": [
+      25,
+      45
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "criminal_network_recruits_networker"
+    ],
+    "excludes": [
+      "debt_trap_after_criminal_loss"
+    ],
+    "typical_effects": "Creates a high-pressure pending_event requiring the character to work off the debt; sharply narrows exit options; stress and health penalties accumulate; branch point between cooperation, flight, or escalation.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "exit_opportunity_refused",
+    "pattern": "Having cleared a dangerous obligation, a person chooses to remain in a lucrative criminal enterprise rather than take the available exit, seduced by income that vastly exceeds any legal alternative.",
+    "category": "chaos",
+    "life_stage": [
+      25,
+      50
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "criminal_network_recruits_networker"
+    ],
+    "excludes": [
+      "exit_opportunity_refused"
+    ],
+    "typical_effects": "Locks in escalating criminal involvement; should trigger a slow-burn countdown to arrest or violent consequence; the refusal itself becomes a character-defining moment with no easy reversal.",
+    "rarity": "uncommon",
+    "note": "The tragedy is the choice made at the moment of freedom."
+  },
+  {
+    "id": "money_laundering_via_unlikely_intermedia",
+    "pattern": "A criminal with surplus illicit cash enlists a flamboyant, high-profile figure from a legal industry to move funds through legitimate channels, exploiting that person's existing reputation and access.",
+    "category": "money",
+    "life_stage": [
+      25,
+      50
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "criminal_network_recruits_networker"
+    ],
+    "excludes": [
+      "money_laundering_via_unlikely_intermediary"
+    ],
+    "typical_effects": "Creates a second character node with conflicting loyalties; introduces volatility because the intermediary is unpredictable; high chance of generating a betrayal or catastrophic loss pending_event.",
+    "rarity": "rare"
+  },
+  {
+    "id": "intermediary_turns_informant_after_threa",
+    "pattern": "A person coerced into a criminal scheme, after suffering intimidation or personal violation, flips to cooperate with law enforcement, becoming the key instrument of the protagonist's downfall.",
+    "category": "chaos",
+    "life_stage": [
+      25,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "money_laundering_via_unlikely_intermediary"
+    ],
+    "excludes": [
+      "intermediary_turns_informant_after_threat"
+    ],
+    "typical_effects": "Triggers an arrest pending_event within a short story window; the protagonist's intimidation tactics are the direct cause of their own exposure; creates irony branch for storyteller to highlight.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "intimidation_of_adversary_backfires",
+    "pattern": "Attempting to silence or terrorise someone who poses a threat causes that person to escalate their resistance rather than back down, accelerating the protagonist's legal jeopardy.",
+    "category": "chaos",
+    "life_stage": [
+      25,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "intimidation_of_adversary_backfires"
+    ],
+    "typical_effects": "Reverses any short-term advantage gained through intimidation; should increase law-enforcement heat flag by one tier; branch point where backing off is no longer available.",
+    "rarity": "common",
+    "note": "Works in criminal and non-criminal contexts — workplace bullying, custody disputes, business rivalries."
+  },
+  {
+    "id": "cooperation_with_authorities_yields_part",
+    "pattern": "Facing overwhelming legal pressure, a person agrees to cooperate with investigators hoping for leniency, only to find the cooperation costs more than it saves while still meaningfully reducing the eventual sentence.",
+    "category": "career",
+    "life_stage": [
+      28,
+      60
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "cooperation_with_authorities_yields_partial_relief"
+    ],
+    "typical_effects": "Sentence or consequence is reduced but not eliminated; creates a 'informant' social stigma flag affecting relationships; opens a post-release redemption branch if the character survives the consequence.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "hustler_identity_drives_escalating_risk",
+    "pattern": "A person who defines their self-worth through relentless ambition and deal-making repeatedly upgrades the scale of their schemes, treating each success as proof they can handle still greater risk.",
+    "category": "career",
+    "life_stage": [
+      20,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "hustler_identity_drives_escalating_risk"
+    ],
+    "typical_effects": "Generates a compounding risk curve across multiple events; each win should slightly raise the stakes of the next opportunity presented; eventual plateau or collapse is the structural endpoint.",
+    "rarity": "common",
+    "note": "Fires well in entrepreneurial, financial, and criminal contexts alike."
+  },
+  {
+    "id": "long_incarceration_followed_by_supervise",
+    "pattern": "A multi-year prison sentence ends not with simple freedom but with a structured, supervised reintegration period that constrains choices and marks the person as someone with a record.",
+    "category": "family",
+    "life_stage": [
+      30,
+      65
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "long_incarceration_followed_by_supervised_release"
+    ],
+    "typical_effects": "Creates a 'reintegration' life stage with restricted career and money options; relationship repair branch available but not guaranteed; identity reconstruction is the central challenge of this phase.",
+    "rarity": "uncommon",
+    "note": "The supervised release period is often narratively richer than the incarceration itself."
   }
 ]
