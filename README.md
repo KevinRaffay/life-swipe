@@ -400,3 +400,83 @@ of peer-pressure card — a cigarette offered behind the auditorium, a party wit
 something blue in the bathtub — and those are the game's most age-appropriate
 stakes, not its most adult. Hard drugs, crime, prison, gambling and sexual
 content are blocked for minors either way.
+
+---
+
+## The situation library
+
+A curated set of anonymised life-event **shapes** in
+[server/situation-library.json](server/situation-library.json) that periodically
+seed generation, so lives draw on authentic structures rather than pure model
+improvisation.
+
+A pattern never becomes a card by itself. It is a *brief* handed to the
+storyteller, which writes the actual scenario and proposes effects; the engine
+still validates, clamps, rolls and owns all state. The split is unchanged.
+
+### How a slot is filled
+
+Roughly every 4–6 scenarios (`LIBRARY_INTERVAL` in
+[shared/library.js](shared/library.js)) one slot in the next batch is a library
+event. Candidates are filtered by age window, content mode, `requires` (all
+present), `excludes` (none present), and whether the player has seen the pattern
+before; survivors are weighted `common 3 : uncommon 2 : rare 1`. **No survivors
+means the slot falls back to ordinary free generation** — the library never
+blocks a batch.
+
+Selection runs client-side, not on the server, because it needs two things the
+server does not have: the run's own RNG (so a seeded life replays identically)
+and the cross-life seen list. The server only injects the brief and echoes back
+which pattern it used.
+
+`seen_patterns` lives in `localStorage`, deliberately outside per-life state, so
+run #7 does not repeat run #2's library events. A card marks its pattern seen
+only when it is actually dealt, not when it is fetched.
+
+### Pending events
+
+Five of the thirteen patterns need a deferred consequence, so the referee gained
+one. `addPendingEvent` clamps everything: at most 4 unresolved, due between 6
+and 96 months out, no duplicates, labels truncated. Promises nobody keeps expire
+after five years. The storyteller proposes `pendingEvent`; the engine decides
+when it lands.
+
+### Checking it
+
+`npm run simulate` reports slots offered vs filled, which patterns fired, why
+the rest were filtered out, and asserts that **no pattern fires twice for one
+player** across three lives.
+
+### Two findings from running it
+
+**Eight of thirteen patterns are DEAD in simulation.** That is not a bug in the
+selection code — walking the chain deliberately, `unglamorous_niche_commissions`
+→ `windfall_draws_federal_eyes` → `relatives_drawn_into_scheme` →
+`associate_trades_information` each becomes eligible in turn, exactly as
+designed. It is a property of the content: downstream patterns need flags that
+only an upstream pattern sets, flags are per-life, and `seen_patterns` prevents
+the upstream one recurring in a later life. So a chain can only complete inside
+a single life, and a single life gets ~1.3 library events. The levers are
+`LIBRARY_INTERVAL`, more ungated patterns, or letting the storyteller set those
+flags from ordinary cards — which it will, in a real run.
+
+**82% of slots fall back to free generation.** Nine of thirteen patterns sit
+behind `requires`, so most of the time nothing is eligible. That is the
+specified behaviour rather than a failure, and it improves as the library grows.
+
+### Growing the library
+
+```bash
+npm run extract-patterns -- path/to/source.txt
+```
+
+Sends a memoir summary, obituary or profile to the model and asks for 8–15
+patterns, each generalised until it could describe thousands of lives, with
+identifying detail discarded. Writes `situation-library.draft.json` and
+**never** touches the live library — a person decides what gets merged. Output
+is schema-checked, scanned for id collisions, and swept for leaked proper nouns
+and years.
+
+Verified on a synthetic life story: 12 candidates, all schema-valid, with none
+of the source's distinguishing details ("mill", "launderette", "actuary",
+"coastal path") surviving into the patterns.

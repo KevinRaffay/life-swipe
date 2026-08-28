@@ -11,6 +11,7 @@ import {
   MODES, DEFAULT_MODE, effectiveTier, createDarkState, noteDarkScenario,
   isMatureScenario, darkArcAllowed,
 } from './content.js';
+import { createLibraryState, notePatternFired } from './library.js';
 
 export const STAGES = [
   { id: 'highschool', label: 'High School',         minAge: 16, maxAge: 18 },
@@ -55,6 +56,10 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
     flagMeta: {},
     contentMode: MODES.includes(contentMode) ? contentMode : DEFAULT_MODE,
     dark: null,
+    library: null,
+    // Consequences the storyteller has promised and the engine has agreed to
+    // remember. Owned here, clamped here, never trusted from the model.
+    pending: [],
     history: [],
     credits: 0,
     alive: true,
@@ -65,6 +70,7 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
   // Rolled once at birth from the run's own RNG and then spent - never
   // re-rolled, which is what keeps mature mode from becoming a crime spree.
   state.dark = createDarkState(() => nextRandom(state));
+  state.library = createLibraryState(() => nextRandom(state));
   return state;
 }
 
@@ -217,6 +223,8 @@ export function normalizeEffects(rawEffects, s) {
     out.relationship = rel;
   }
 
+  if (eff.pendingEvent && typeof eff.pendingEvent === 'object') out.pendingEvent = eff.pendingEvent;
+  if (typeof eff.resolves === 'string' && eff.resolves.trim()) out.resolves = eff.resolves.trim();
   if (eff.kid === true) out.kid = true;
   if (eff.retire === true) out.retire = true;
   if (Number.isFinite(eff.timeCostMonths)) out.timeCostMonths = eff.timeCostMonths;
@@ -289,6 +297,7 @@ export function applyChoice(state, rawScenario, side) {
   // 0. Account for mature content before anything else, so the arc budget is
   //    spent even if this card turns out to be the one that kills you.
   if (isMatureScenario(scenario)) noteDarkScenario(s);
+  if (scenario.libraryId) notePatternFired(s, scenario.libraryId);
 
   // 1. Immediate proposed effects (already clamped).
   s.money += eff.money;
@@ -328,6 +337,14 @@ export function applyChoice(state, rawScenario, side) {
       for (const f of eff.relationship.flags || []) if (!rel.flags.includes(f)) rel.flags.push(f);
       s.relationships[name] = rel;
     }
+  }
+
+  if (eff.pendingEvent) {
+    const created = addPendingEvent(s, eff.pendingEvent, scenario.libraryId ? 'library:' + scenario.libraryId : 'llm');
+    if (created) events.push({ type: 'pending', text: created.label });
+  }
+  if (eff.resolves && resolvePendingEvent(s, eff.resolves)) {
+    events.push({ type: 'resolved', text: 'That thing you were waiting on has arrived.' });
   }
 
   if (eff.kid) {
@@ -398,6 +415,8 @@ export function applyChoice(state, rawScenario, side) {
   if (!hasFlag(s, 'retired') && s.career.salary > 0) {
     s.career.salary = Math.round(s.career.salary * Math.pow(1 + E.raiseRate, dt));
   }
+
+  expireStalePending(s);
 
   const decay = D.healthBase + Math.max(0, age - D.healthAgeOnset) * D.healthAgeRate;
   s.health = clamp(s.health - decay * dt, 0, 100);
@@ -502,6 +521,12 @@ export function stateSummary(s) {
     tier: contentTier(s),
     darkArcAllowed: canDealDarkCard(s),
     darkArcs: s.dark ? { used: s.dark.arcsUsed, budget: s.dark.budget } : null,
+    pending: pendingEvents(s).map((p) => ({
+      id: p.id,
+      label: p.label,
+      dueInYears: Math.max(0, Math.round((p.dueAtAge - ageOf(s)) * 10) / 10),
+      overdue: p.dueAtAge <= ageOf(s),
+    })),
   };
 }
 
@@ -531,3 +556,73 @@ export function finalStats(s) {
     relationships: Object.entries(s.relationships).map(([n, r]) => n + ' (' + r.role + ')'),
   };
 }
+
+/* --------------------------------------------------------- pending events */
+
+// How much the storyteller is allowed to promise, and how far ahead.
+export const PENDING = {
+  max: 4,
+  minMonths: 6,
+  maxMonths: 96,
+  expireAfterYears: 5,
+  labelChars: 120,
+};
+
+/**
+ * Record a consequence to come. The model proposes the shape; every number
+ * here is clamped, and the engine decides when it is actually due.
+ */
+export function addPendingEvent(s, raw, source = 'llm') {
+  if (!raw || typeof raw !== 'object') return null;
+  const id = normalizeFlag(raw.id || raw.kind || 'consequence');
+  if (!id) return null;
+  if (s.pending.some((p) => p.id === id && !p.resolved)) return null;
+  if (s.pending.filter((p) => !p.resolved).length >= PENDING.max) return null;
+
+  const months = clamp(
+    Number.isFinite(raw.dueInMonths) ? raw.dueInMonths : 24,
+    PENDING.minMonths, PENDING.maxMonths,
+  );
+  const event = {
+    id,
+    label: String(raw.label || raw.description || 'Something is coming.').slice(0, PENDING.labelChars),
+    kind: normalizeFlag(raw.kind || 'consequence') || 'consequence',
+    createdAtAge: round2(ageOf(s)),
+    dueAtAge: round2(ageOf(s) + months / 12),
+    source,
+    mode: s.contentMode,
+    resolved: false,
+  };
+  s.pending.push(event);
+  return event;
+}
+
+export const pendingEvents = (s) => (s.pending || []).filter((p) => !p.resolved);
+
+export function duePendingEvents(s) {
+  const age = ageOf(s);
+  return pendingEvents(s).filter((p) => p.dueAtAge <= age);
+}
+
+export function resolvePendingEvent(s, id) {
+  const flag = normalizeFlag(id);
+  const found = (s.pending || []).find((p) => p.id === flag && !p.resolved);
+  if (found) {
+    found.resolved = true;
+    found.resolvedAtAge = round2(ageOf(s));
+  }
+  return Boolean(found);
+}
+
+// Promises nobody kept eventually stop being promises.
+function expireStalePending(s) {
+  const age = ageOf(s);
+  for (const p of s.pending || []) {
+    if (!p.resolved && age - p.dueAtAge > PENDING.expireAfterYears) {
+      p.resolved = true;
+      p.expired = true;
+    }
+  }
+}
+
+export { expireStalePending, notePatternFired };

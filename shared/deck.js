@@ -43,9 +43,11 @@ export class Deck {
    * @param {number}   [opts.lookahead]    refill when buffer drops below this
    *   (a live batch takes ~20s, so keep this well above one swipe of runway)
    */
-  constructor({ seedScenarios = [], fetchBatch = null, lookahead = 6 } = {}) {
+  constructor({ seedScenarios = [], fetchBatch = null, lookahead = 6, onLibrarySlot = null } = {}) {
     this.seeds = validateBatch(seedScenarios).scenarios.map((s) => ({ ...s, source: 'seed' }));
     this.fetchBatch = fetchBatch;
+    // Returns a pattern to brief the storyteller with, or null for free generation.
+    this.onLibrarySlot = onLibrarySlot;
     this.lookahead = lookahead;
     this.buffer = [];
     this.recentIds = [];
@@ -175,7 +177,7 @@ export class Deck {
 
     this.stats.fetches++;
     this.inFlight = Promise.resolve()
-      .then(() => this.fetchBatch(state))
+      .then(() => this.fetchBatch(state, this.onLibrarySlot ? this.onLibrarySlot(state) : null))
       .then((raw) => {
         const { scenarios } = validateBatch(raw || [], {
           tier: contentTier(state),

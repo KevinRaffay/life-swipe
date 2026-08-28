@@ -27,6 +27,9 @@ app.use(express.json({ limit: '512kb' }));
 const seedScenarios = JSON.parse(
   fs.readFileSync(path.join(ROOT, 'data', 'scenarios-seed.json'), 'utf8'),
 );
+const situationLibrary = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'situation-library.json'), 'utf8'),
+);
 
 /* -------------------------------------------------------------- endpoints */
 
@@ -38,7 +41,7 @@ app.get('/api/config', (_req, res) => {
 // Always 200 with { scenarios, source }. A failure here is not a game-over;
 // it just means the client keeps playing from seeds.
 app.post('/api/scenarios', async (req, res) => {
-  const { summary, recent = [], count = 5 } = req.body || {};
+  const { summary, recent = [], count = 5, librarySlot = null } = req.body || {};
 
   if (!summary || typeof summary !== 'object' || !summary.stage) {
     return res.status(400).json({ error: 'summary with a stage is required', scenarios: [] });
@@ -52,7 +55,14 @@ app.post('/api/scenarios', async (req, res) => {
   // content, because this line does not consult the request's own answer.
   const tier = effectiveTier({ age: summary.age, contentMode: summary.contentMode });
   const system = buildSystemPrompt(tier);
-  const user = buildUserPrompt({ summary: { ...summary, tier }, recent: recent.slice(-10), count });
+  // The client selects the pattern (it owns the RNG and the cross-life seen
+  // list); the server only injects the brief and echoes back which one it used.
+  const user = buildUserPrompt({
+    summary: { ...summary, tier },
+    recent: recent.slice(-10),
+    count,
+    librarySlot,
+  });
   const attempts = [];
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -80,6 +90,7 @@ app.post('/api/scenarios', async (req, res) => {
           source: 'llm',
           model: MODEL,
           tier,
+          librarySlot: librarySlot ? librarySlot.id : null,
           attempt: attempt + 1,
           dropped: errors.length,
           rejectedForMode,
@@ -131,6 +142,8 @@ app.post('/api/obituary', async (req, res) => {
 });
 
 app.get('/api/seed-scenarios', (_req, res) => res.json(seedScenarios));
+
+app.get('/api/situation-library', (_req, res) => res.json(situationLibrary));
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, llmEnabled: hasKey(), model: MODEL }));
 

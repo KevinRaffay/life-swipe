@@ -1,0 +1,265 @@
+[
+  {
+    "id": "mentor_normalizes_excess",
+    "pattern": "A promising early career under a charismatic senior figure who treats excess and ethical shortcuts as the normal price of belonging.",
+    "category": "career",
+    "life_stage": [
+      20,
+      26
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "excludes": [
+      "ethics_erosion"
+    ],
+    "typical_effects": "Income rises meaningfully. Set flags ethics_erosion and hard_partying. No pending event; this is a foundation card whose consequences are paid much later. The choice should be joining the culture versus keeping a distance that costs advancement.",
+    "rarity": "uncommon",
+    "note": "The mentor should be warm and genuinely useful, not a villain. The cost is invisible at the time."
+  },
+  {
+    "id": "crash_forces_step_down",
+    "pattern": "A market collapse destroys a new job through no fault of the person, forcing a step down to a shabbier employer with looser standards.",
+    "category": "career",
+    "life_stage": [
+      22,
+      35
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "excludes": [
+      "shady_employer"
+    ],
+    "typical_effects": "Income falls sharply. Set flag shady_employer. The choice is between taking the diminished job now or holding out for something reputable while savings drain.",
+    "rarity": "uncommon",
+    "note": "If the character's age places them near a plausible historical downturn, use that as unnamed backdrop - the mood of the year, not a date or an event name."
+  },
+  {
+    "id": "unglamorous_niche_commissions",
+    "pattern": "A person discovers an unfashionable corner of their industry where their particular talent for persuasion produces income far beyond what the work appears to deserve.",
+    "category": "career",
+    "life_stage": [
+      22,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "excludes": [
+      "gray_area_income"
+    ],
+    "typical_effects": "Large income increase. Set flag gray_area_income. The choice is leaning into the niche versus returning to respectable work at a fraction of the money.",
+    "rarity": "uncommon",
+    "note": "The niche should be legal but faintly embarrassing, and the money should be genuinely tempting."
+  },
+  {
+    "id": "cofounder_growth_outruns_them",
+    "pattern": "Two friends leave stable jobs to build something of their own, and it grows faster than either of them knows how to manage responsibly.",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "excludes": [
+      "cofounder_bond"
+    ],
+    "typical_effects": "Set flag cofounder_bond and create a pending_event for the venture's trajectory, due in roughly two to four years, which may later resolve as either a windfall or a collapse. Money should move modestly now; the real swing is deferred.",
+    "rarity": "uncommon",
+    "note": "Name the friend and make the friendship specific. The pending event is the point of this card."
+  },
+  {
+    "id": "bad_press_becomes_publicity",
+    "pattern": "A hostile piece of coverage about a person's business is read by the wrong audience in the right way, and the attention it brings is worth more than the damage it does.",
+    "category": "career",
+    "life_stage": [
+      28,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "cofounder_bond"
+    ],
+    "excludes": [
+      "public_profile"
+    ],
+    "typical_effects": "Wealth rises substantially. Set flags public_profile and regulator_attention. The choice is amplifying the attention versus deliberately going quiet.",
+    "rarity": "rare",
+    "note": "regulator_attention is a seed for later trouble and should feel like a footnote at the time."
+  },
+  {
+    "id": "wealth_pulls_into_excess",
+    "pattern": "Money arriving faster than judgment accelerates a person's drinking and drug use, and an affair ends the first marriage when it surfaces.",
+    "category": "romance",
+    "life_stage": [
+      26,
+      45
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "married"
+    ],
+    "excludes": [
+      "divorce_1"
+    ],
+    "typical_effects": "Happiness swings high then low; money falls through settlement. Set flags divorce_1 and addiction_arc. The choice should be a genuine fork about concealment versus confession, not a foregone conclusion.",
+    "rarity": "uncommon",
+    "note": "Requires a wealth condition too - only fire when the player's money or salary is clearly high. Write the spouse as a person, not a plot device."
+  },
+  {
+    "id": "windfall_draws_federal_eyes",
+    "pattern": "A person's income depends on a practice they privately know is indefensible, and a deal large enough to be a triumph is also large enough to be noticed.",
+    "category": "money",
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "gray_area_income"
+    ],
+    "excludes": [
+      "federal_attention"
+    ],
+    "typical_effects": "Money rises sharply now. Set flag federal_attention and create a pending_event for an investigation, due in roughly one to three years. The choice is pressing the advantage versus quietly winding the practice down.",
+    "rarity": "rare",
+    "note": "Depict the decision and its cost only. No method, no mechanics of the scheme."
+  },
+  {
+    "id": "relatives_drawn_into_scheme",
+    "pattern": "Hiding money requires names that are not their own, so a person asks relatives and old friends for signatures, putting people they love inside their legal exposure.",
+    "category": "money",
+    "life_stage": [
+      30,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "federal_attention"
+    ],
+    "excludes": [
+      "family_implicated"
+    ],
+    "typical_effects": "Set flag family_implicated and create a pending_event for the arrangement unravelling, due in roughly one to three years. The choice is asking a specific loved one versus accepting exposure alone.",
+    "rarity": "rare",
+    "note": "The weight is the asking, not the paperwork. Name the relative and make refusing plausible."
+  },
+  {
+    "id": "associate_trades_information",
+    "pattern": "Someone trusted is picked up for something entirely separate and finds that what they know about their friend is the most valuable thing they own.",
+    "category": "chaos",
+    "life_stage": [
+      30,
+      60
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "federal_attention"
+    ],
+    "excludes": [
+      "betrayed"
+    ],
+    "typical_effects": "Accelerates or resolves any pending investigation. Set flag betrayed. Money falls through legal costs. The choice is confronting them versus preparing quietly.",
+    "rarity": "rare",
+    "note": "A consequence amplifier only. It must never fire for a player with clean hands - the requires flags are the guard."
+  },
+  {
+    "id": "parent_offers_exit_ramp",
+    "pattern": "At the height of the trouble, a parent says the thing nobody else will say, and offers a version of the future where the person simply stops.",
+    "category": "family",
+    "life_stage": [
+      30,
+      55
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "federal_attention"
+    ],
+    "typical_effects": "A branch point, not a nudge: one side is a real exit with real losses (money down, flag exit_ramp), the other is doubling down (flag escalation, money up now, worse later). Both must be defensible in the moment.",
+    "rarity": "uncommon",
+    "note": "Only fires while trouble is actually pending. The parent should be specific and tired, not wise."
+  },
+  {
+    "id": "near_death_prompts_sobriety",
+    "pattern": "An accident far from home comes close enough to kill that the habit a person has been defending for years briefly stops being defensible.",
+    "category": "health",
+    "life_stage": [
+      30,
+      60
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "addiction_arc"
+    ],
+    "excludes": [
+      "recovery_attempt"
+    ],
+    "typical_effects": "Health falls from the accident. Set flag recovery_attempt. Happiness rises later only if the attempt is sustained, so the effect now should be small and the choice should be about who they tell.",
+    "rarity": "uncommon",
+    "note": "The resolve is real but fragile. Do not write it as a cure."
+  },
+  {
+    "id": "loyalty_versus_cooperation",
+    "pattern": "Cornered by people with subpoenas, a person is asked to choose between the friends who were there for all of it and a materially shorter sentence.",
+    "category": "chaos",
+    "life_stage": [
+      35,
+      60
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "federal_attention"
+    ],
+    "typical_effects": "A branch point. Cooperating sets flags informed and served_time with a shorter sentence; staying silent sets loyal and served_time with a longer one. Both paths lead to a prison arc - create a pending_event for release and its aftermath. Money falls heavily either way.",
+    "rarity": "rare",
+    "note": "Neither branch is the moral one. Write the friends as people who would each answer this differently."
+  },
+  {
+    "id": "teaching_what_went_wrong",
+    "pattern": "After the sentence is served, a person builds a smaller, legitimate living out of the one thing they were always genuinely good at, teaching it to people who have not yet made the same mistakes.",
+    "category": "career",
+    "life_stage": [
+      40,
+      70
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "served_time"
+    ],
+    "excludes": [
+      "redemption"
+    ],
+    "typical_effects": "Modest income, meaningful happiness increase. Set flag redemption. The choice is being honest about the past in the work versus building the new thing on a quiet omission.",
+    "rarity": "uncommon",
+    "note": "Modest is the point. This is not a second fortune."
+  }
+]

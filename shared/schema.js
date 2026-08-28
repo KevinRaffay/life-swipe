@@ -102,6 +102,16 @@ function validateEffects(eff, path, errors) {
     out.relationship = rel;
   }
 
+  if (eff.pendingEvent && typeof eff.pendingEvent === 'object' && (eff.pendingEvent.id || eff.pendingEvent.kind)) {
+    out.pendingEvent = {
+      id: String(eff.pendingEvent.id || eff.pendingEvent.kind).slice(0, 40),
+      kind: eff.pendingEvent.kind ? String(eff.pendingEvent.kind).slice(0, 40) : undefined,
+      label: eff.pendingEvent.label ? String(eff.pendingEvent.label).slice(0, 160) : undefined,
+      dueInMonths: Number.isFinite(eff.pendingEvent.dueInMonths) ? eff.pendingEvent.dueInMonths : undefined,
+    };
+  }
+  if (isStr(eff.resolves)) out.resolves = eff.resolves.slice(0, 40);
+
   if (eff.kid === true || eff.childBorn === true) out.kid = true;
   if (eff.retire === true) out.retire = true;
   if (isNum(eff.timeCostMonths)) out.timeCostMonths = eff.timeCostMonths;
@@ -140,6 +150,7 @@ export function validateScenario(raw, index = 0) {
       leftLabel: raw.leftLabel.trim().slice(0, 40),
       rightLabel: raw.rightLabel.trim().slice(0, 40),
       weight,
+      libraryId: isStr(raw.library_id) ? raw.library_id.slice(0, 60) : undefined,
       modes: Array.isArray(raw.modes) && raw.modes.some((m) => MODES.includes(m))
         ? raw.modes.filter((m) => MODES.includes(m))
         : ['safe', 'mature'],

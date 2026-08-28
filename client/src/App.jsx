@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import seedScenarios from '@data/scenarios-seed.json';
+import situationLibrary from '@library';
 import { Deck } from '@shared/deck.js';
 import {
   createState, applyChoice, stageOf, finalStats, stateSummary, recentDecisions, contentTier,
 } from '@shared/engine.js';
+import { nextRandom } from '@shared/rng.js';
 
 import { fetchScenarios, getConfig } from './api.js';
+import { getSeenPatterns, markPatternSeen } from './prefs.js';
+import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import CardStack from './components/CardStack.jsx';
 import Hud from './components/Hud.jsx';
 import EventToast from './components/EventToast.jsx';
@@ -38,10 +42,19 @@ export default function App() {
   const makeDeck = useCallback(() => new Deck({
     seedScenarios,
     lookahead: 6,
-    fetchBatch: (gameState) => fetchScenarios({
+    // Selection happens here, not on the server: it needs the run's RNG (so a
+    // seeded life replays identically) and the cross-life seen list.
+    onLibrarySlot: (gameState) => {
+      if (!librarySlotDue(gameState)) return null;
+      const pattern = selectPattern(gameState, situationLibrary, getSeenPatterns());
+      scheduleNextSlot(gameState, () => nextRandom(gameState));
+      return pattern;
+    },
+    fetchBatch: (gameState, librarySlot) => fetchScenarios({
       summary: stateSummary(gameState),
       recent: recentDecisions(gameState, 10),
       count: 5,
+      librarySlot,
     }),
   }), []);
 
@@ -66,6 +79,7 @@ export default function App() {
     const card = cards[0];
     if (!card) return;
 
+    if (card.libraryId) markPatternSeen(card.libraryId);
     const result = applyChoice(state, card, side);
     setEvents(result.events.filter((e) => e.text));
 

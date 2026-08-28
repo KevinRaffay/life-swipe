@@ -148,7 +148,7 @@ export function buildSystemPrompt(tier = 'safe') {
 // Kept so existing callers and tests still resolve to something sensible.
 export const SYSTEM_PROMPT = buildSystemPrompt('safe');
 
-export function buildUserPrompt({ summary, recent, count = 5 }) {
+export function buildUserPrompt({ summary, recent, count = 5, librarySlot = null }) {
   const flagLine = summary.flags.length ? summary.flags.join(', ') : '(none yet)';
   const relLine = summary.relationships.length
     ? summary.relationships
@@ -195,7 +195,43 @@ LAST ${recent.length} DECISIONS:
 ${recentLine}
 
 Write ${count} new scenarios as a JSON array. At least one should be a callback to
-a flag or a person listed above. Do not repeat any scenario in the recent list.`;
+a flag or a person listed above. Do not repeat any scenario in the recent list.${librarySlotBlock(librarySlot)}`;
+}
+
+/**
+ * A library pattern is a BRIEF, not a script. The model writes the card; the
+ * engine still validates, clamps and rolls whatever it proposes.
+ */
+function librarySlotBlock(slot) {
+  if (!slot || !slot.pattern) return '';
+  const lines = [
+    '',
+    '',
+    'LIBRARY SLOT - REQUIRED',
+    'One scenario in this batch must be based on the following life-event pattern,',
+    "fully adapted to the state, era, named relationships and history of THIS",
+    "player. Do NOT reuse the pattern wording; write it as a concrete situation",
+    "in their life, with their people and their numbers.",
+    '',
+    `  pattern:   ${slot.pattern}`,
+    `  effects:   ${slot.typical_effects || '(no specific guidance)'}`,
+  ];
+  if (slot.note) lines.push(`  note:      ${slot.note}`);
+  lines.push('');
+  lines.push(`Tag ONLY that scenario with "library_id": "${slot.id}". The other ${'four'} cards`);
+  lines.push('are ordinary free generation and must not carry a library_id.');
+  if (/pending_event/i.test(slot.typical_effects || '')) {
+    lines.push('');
+    lines.push('This pattern requires a deferred consequence: the card MUST include');
+    lines.push('"pendingEvent": { "id": "...", "label": "...", "dueInMonths": N } on the side');
+    lines.push('that triggers it. The engine decides when it actually lands.');
+  }
+  if (/branch/i.test(slot.typical_effects || '')) {
+    lines.push('');
+    lines.push('This pattern is a BRANCH POINT: the two sides must lead to genuinely');
+    lines.push('different futures, and both must be defensible in the moment.');
+  }
+  return lines.join(String.fromCharCode(10));
 }
 
 export const OBITUARY_SYSTEM = `You write obituaries for "Life Swipe", a darkly comic life simulator.

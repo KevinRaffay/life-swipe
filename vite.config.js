@@ -11,6 +11,7 @@ export default defineConfig({
     alias: {
       '@shared': r('./shared'),
       '@data': r('./data'),
+      '@library': r('./server/situation-library.json'),
     },
   },
   server: {

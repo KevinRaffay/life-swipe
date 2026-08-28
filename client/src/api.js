@@ -29,8 +29,8 @@ export async function getConfig() {
   }
 }
 
-export async function fetchScenarios({ summary, recent, count = 5 }) {
-  const data = await jsonPost('/api/scenarios', { summary, recent, count });
+export async function fetchScenarios({ summary, recent, count = 5, librarySlot = null }) {
+  const data = await jsonPost('/api/scenarios', { summary, recent, count, librarySlot });
   return data.scenarios || [];
 }
 

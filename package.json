@@ -9,7 +9,8 @@
     "build": "vite build",
     "dev": "concurrently -k -n vite,api -c cyan,magenta \"vite\" \"node --watch server/index.js\"",
     "serve": "node server/index.js",
-    "simulate": "node scripts/simulate.js"
+    "simulate": "node scripts/simulate.js",
+    "extract-patterns": "node scripts/extract-patterns.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",

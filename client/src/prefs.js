@@ -27,3 +27,33 @@ export function hasConfirmedAge() {
 export function confirmAge() {
   write(AGE_KEY, 'yes');
 }
+
+/* -------------------------------------------------- cross-life memory ---- */
+
+// Library patterns this player has already been shown, in ANY life. Kept out
+// of game state on purpose: run #7 should not repeat run #2's library events.
+const SEEN_KEY = 'lifeswipe.seenPatterns';
+const SEEN_CAP = 200;
+
+export function getSeenPatterns() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SEEN_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markPatternSeen(id) {
+  if (!id) return;
+  const seen = getSeenPatterns();
+  if (seen.includes(id)) return;
+  seen.push(id);
+  try {
+    window.localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-SEEN_CAP)));
+  } catch { /* private mode - the life still plays, it just forgets */ }
+}
+
+export function resetSeenPatterns() {
+  try { window.localStorage.removeItem(SEEN_KEY); } catch { /* ignore */ }
+}

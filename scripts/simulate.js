@@ -18,6 +18,9 @@ import { Deck } from '../shared/deck.js';
 import { createState, applyChoice, ageOf, stageOf, finalStats } from '../shared/engine.js';
 import { nextRandom, seedFrom } from '../shared/rng.js';
 import { isMatureScenario, ADULT_AGE } from '../shared/content.js';
+import {
+  librarySlotDue, scheduleNextSlot, selectPattern, filterPatterns, patternWantsPending,
+} from '../shared/library.js';
 
 const args = process.argv.slice(2);
 const flags = args.filter((a) => a.startsWith('--'));
@@ -36,16 +39,80 @@ const MODES_TO_RUN = modeFlag === 'both' ? ['safe', 'mature'] : [modeFlag];
 const seedScenarios = JSON.parse(
   fs.readFileSync(fileURLToPath(new URL('../data/scenarios-seed.json', import.meta.url)), 'utf8'),
 );
+const situationLibrary = JSON.parse(
+  fs.readFileSync(fileURLToPath(new URL('../server/situation-library.json', import.meta.url)), 'utf8'),
+);
 
-function playOne(seed, contentMode) {
+// How many lives one simulated player lives. seen_patterns persists across
+// them, which is the whole point of storing it outside per-life state.
+const LIVES_PER_PLAYER = 3;
+
+// SIMULATION ONLY. With no model in the loop there is no real card for a
+// library slot, so we synthesise a stand-in that carries the pattern's id and
+// the snake_case flags its guidance names. That is enough to exercise
+// selection, the requires/excludes chains and seen-tracking; it is not a
+// substitute for reading what the storyteller actually writes.
+const FLAG_TOKEN = /[a-z]+(?:_[a-z]+)+/g;
+const NOT_A_FLAG = new Set(['pending_event', 'typical_effects', 'life_stage', 'library_id', 'branch_point']);
+
+function synthesiseLibraryCard(pattern) {
+  const flags = [...new Set((pattern.typical_effects.match(FLAG_TOKEN) || []))]
+    .filter((f) => !NOT_A_FLAG.has(f))
+    .slice(0, 3);
+  // Both sides carry the pattern flags: the EVENT happened either way, and the
+  // random chooser must not decide whether the pattern took effect at all. That
+  // artefact made four-deep chains survive only 6% of the time and eight of the
+  // thirteen patterns look permanently dead.
+  const effects = { happiness: 2, flags };
+  if (patternWantsPending(pattern)) {
+    effects.pendingEvent = { id: pattern.id + '_outcome', label: 'Consequence pending.', dueInMonths: 30 };
+  }
+  return {
+    id: 'lib_' + pattern.id,
+    libraryId: pattern.id,
+    scenario: '[library stand-in] ' + pattern.pattern,
+    leftLabel: 'Lean in',
+    rightLabel: 'Step back',
+    weight: 'major',
+    modes: pattern.modes,
+    leftEffects: effects,
+    rightEffects: { ...effects, happiness: -2 },
+    source: 'library',
+  };
+}
+
+function playOne(seed, contentMode, seenPatterns = []) {
   const deck = new Deck({ seedScenarios });
   let state = createState({ seed, contentMode });
+  const libraryFired = [];
+  let slotsOffered = 0;
+  let slotsUnfilled = 0;
+  const rejectionReasons = new Map();
   const chooser = { rngState: seedFrom('choices:' + seed) };
   const violations = [];
   let darkScenarios = 0;
 
   while (!state.ended && state.turn < MAX_TURNS) {
-    const card = deck.draw(state);
+    let card;
+    if (librarySlotDue(state)) {
+      slotsOffered += 1;
+      const { eligible, rejected } = filterPatterns(state, situationLibrary, seenPatterns);
+      for (const r of rejected) {
+        for (const reason of r.reasons) {
+          const key = r.id + ':' + reason;
+          rejectionReasons.set(key, (rejectionReasons.get(key) || 0) + 1);
+        }
+      }
+      const pattern = eligible.length ? selectPattern(state, situationLibrary, seenPatterns) : null;
+      scheduleNextSlot(state, () => nextRandom(state));
+      if (pattern) {
+        card = synthesiseLibraryCard(pattern);
+        libraryFired.push(pattern.id);
+      } else {
+        slotsUnfilled += 1;      // no candidate - fall back to free generation
+      }
+    }
+    if (!card) card = deck.draw(state);
     const ageAtDeal = ageOf(state);
 
     // Every card that reaches a player is audited, not just the ones we expect
@@ -73,6 +140,11 @@ function playOne(seed, contentMode) {
     darkArcs: state.dark ? state.dark.arcsUsed : 0,
     darkBudget: state.dark ? state.dark.budget : 0,
     violations,
+    libraryFired,
+    slotsOffered,
+    slotsUnfilled,
+    rejectionReasons,
+    pendingCreated: (state.pending || []).length,
   };
 }
 
@@ -153,6 +225,42 @@ function report(runs, mode) {
     console.log(`  dark scenarios dealt: ${darkCards.reduce((a, b) => a + b, 0)} (must be 0)`);
   }
 
+  /* ----------------------------------------------------- situation library */
+
+  const fired = runs.flatMap((r) => r.libraryFired);
+  const offered = runs.reduce((a, r) => a + r.slotsOffered, 0);
+  const unfilled = runs.reduce((a, r) => a + r.slotsUnfilled, 0);
+  const perLife = runs.map((r) => r.libraryFired.length);
+  console.log('\nSITUATION LIBRARY');
+  console.log(`  slots offered ${offered}   filled ${offered - unfilled}   fell back to free generation ${unfilled}`);
+  console.log(`  library events per life  mean ${mean(perLife).toFixed(2)}   median ${pct(perLife, 50)}   max ${Math.max(...perLife, 0)}`);
+  console.log(`  pending events created   mean ${mean(runs.map((r) => r.pendingCreated)).toFixed(2)}`);
+
+  const firedCounts = new Map();
+  for (const id of fired) firedCounts.set(id, (firedCounts.get(id) || 0) + 1);
+  const maxFired = Math.max(1, ...firedCounts.values());
+  console.log('\n  patterns fired');
+  for (const p of situationLibrary) {
+    const n = firedCounts.get(p.id) || 0;
+    const tag = n === 0 ? 'DEAD' : '    ';
+    console.log(`    ${tag} ${String(n).padStart(4)} ${bar(n, maxFired, 16).padEnd(16)} ${p.id} (${p.rarity})`);
+  }
+
+  // Why the rest never got a look in. This is how a dead pattern shows itself.
+  const reasons = new Map();
+  for (const r of runs) {
+    for (const [key, n] of r.rejectionReasons) {
+      const reason = key.split(':')[1];
+      reasons.set(reason, (reasons.get(reason) || 0) + n);
+    }
+  }
+  const totalRejections = [...reasons.values()].reduce((a, b) => a + b, 0) || 1;
+  console.log('\n  filtered out by');
+  for (const [reason, n] of [...reasons.entries()].sort((a, b) => b[1] - a[1])) {
+    console.log(`      ${reason.padEnd(16)} ${String(n).padStart(6)}  ${((n / totalRejections) * 100).toFixed(0)}%`);
+  }
+
+
   console.log('\nCAUSES OF DEATH');
   const sorted = [...causes.entries()].sort((a, b) => b[1] - a[1]);
   const maxCause = sorted[0] ? sorted[0][1] : 1;
@@ -172,12 +280,42 @@ function report(runs, mode) {
 /* ----------------------------------------------------------------- main */
 
 const allViolations = [];
+const repeatOffences = [];
 for (const mode of MODES_TO_RUN) {
   const runs = [];
-  for (let i = 0; i < LIVES; i++) runs.push(playOne(`${BASE_SEED}:${mode}:${i}`, mode));
+  const players = Math.ceil(LIVES / LIVES_PER_PLAYER);
+  let lifeNo = 0;
+  for (let p = 0; p < players && lifeNo < LIVES; p++) {
+    // One player, several lives, one shared memory of what they have been shown.
+    const seen = [];
+    const firedByLife = [];
+    for (let l = 0; l < LIVES_PER_PLAYER && lifeNo < LIVES; l++, lifeNo++) {
+      const run = playOne(`${BASE_SEED}:${mode}:${lifeNo}`, mode, seen);
+      run.player = p;
+      runs.push(run);
+      firedByLife.push(run.libraryFired);
+      for (const id of run.libraryFired) if (!seen.includes(id)) seen.push(id);
+    }
+    // Did any pattern reach this player more than once, across all their lives?
+    const counts = new Map();
+    for (const list of firedByLife) for (const id of list) counts.set(id, (counts.get(id) || 0) + 1);
+    for (const [id, n] of counts) if (n > 1) repeatOffences.push({ mode, player: p, id, times: n });
+  }
   report(runs, mode);
   for (const r of runs) allViolations.push(...r.violations);
 }
+
+console.log('\n=== LIBRARY ASSERTION ===');
+if (repeatOffences.length === 0) {
+  console.log(`  PASS  no pattern fired twice for the same player (${LIVES_PER_PLAYER} lives each)`);
+} else {
+  console.log(`  FAIL  ${repeatOffences.length} pattern(s) repeated for a player:`);
+  for (const r of repeatOffences.slice(0, 5)) {
+    console.log(`          ${r.mode} player #${r.player}: ${r.id} fired ${r.times}x`);
+  }
+  process.exitCode = 1;
+}
+
 
 console.log('\n=== CONTENT ASSERTIONS ===');
 if (allViolations.length === 0) {
