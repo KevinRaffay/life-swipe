@@ -7,8 +7,9 @@
 // job (engine.js -> normalizeEffects), because that depends on live game state.
 
 import { checkCompliance, MODES } from './content.js';
+import { TIERS, normalizeNarrative, displayText } from './scenario-format.js';
 
-const WEIGHTS = new Set(['minor', 'standard', 'major', 'trivial']);
+const WEIGHTS = new Set([...TIERS, 'trivial']);
 const OUTCOMES = new Set(['death', 'injury', 'windfall']);
 
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -127,7 +128,10 @@ export function validateScenario(raw, index = 0) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return { ok: false, errors: [`${path}: not an object`] };
   }
-  if (!isStr(raw.scenario)) errors.push(`${path}.scenario: required non-empty string`);
+  // Either shape is accepted: the tiered fields, or the older single block.
+  if (!isStr(raw.prompt) && !isStr(raw.scenario)) {
+    errors.push(`${path}: requires a prompt (or a legacy scenario string)`);
+  }
   if (!isStr(raw.leftLabel)) errors.push(`${path}.leftLabel: required non-empty string`);
   if (!isStr(raw.rightLabel)) errors.push(`${path}.rightLabel: required non-empty string`);
   if (isStr(raw.leftLabel) && isStr(raw.rightLabel) &&
@@ -140,13 +144,20 @@ export function validateScenario(raw, index = 0) {
   if (errors.length) return { ok: false, errors };
 
   const weight = WEIGHTS.has(raw.weight) ? raw.weight : 'standard';
+  const narrative = normalizeNarrative(raw, weight === 'trivial' ? 'minor' : weight);
+  if (!narrative.prompt) {
+    return { ok: false, errors: [`${path}: prompt is empty after cleaning`] };
+  }
 
   return {
     ok: true,
     errors: [],
     scenario: {
-      id: isStr(raw.id) ? raw.id.slice(0, 60) : `gen_${index}_${Math.abs(hash(raw.scenario))}`,
-      scenario: raw.scenario.trim().slice(0, 400),
+      id: isStr(raw.id) ? raw.id.slice(0, 60) : `gen_${index}_${Math.abs(hash(narrative.prompt))}`,
+      ...narrative,
+      // Derived, never authored: one flat string for history, obituaries and
+      // the content backstop, so nothing downstream needs to know about tiers.
+      scenario: displayText(narrative).slice(0, 700),
       leftLabel: raw.leftLabel.trim().slice(0, 40),
       rightLabel: raw.rightLabel.trim().slice(0, 40),
       weight,

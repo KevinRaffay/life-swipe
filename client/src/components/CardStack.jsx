@@ -9,6 +9,24 @@ const EXIT_MS = 260;
  * finger, mouse and pen. `touch-action: none` on the card stops the browser
  * from claiming the horizontal drag for scrolling.
  */
+
+/**
+ * A card is written in tiers: minor is a bare prompt, standard adds a setting,
+ * major adds a beat and one line of dialogue. Every field is optional except
+ * the prompt, so a minor card renders as a single line with no empty scaffolding.
+ */
+function ScenarioBody({ card }) {
+  if (!card) return null;
+  return (
+    <div className="scene">
+      {card.setting && <p className="scene__setting">{card.setting}</p>}
+      {card.beat && <p className="scene__beat">{card.beat}</p>}
+      {card.dialogue && <p className="scene__dialogue">{card.dialogue}</p>}
+      <p className="scene__prompt card__text">{card.prompt || card.scenario}</p>
+    </div>
+  );
+}
+
 export default function CardStack({ card, peek, onDecide, disabled }) {
   const [drag, setDrag] = useState(0);
   const [exiting, setExiting] = useState(null); // 'left' | 'right'
@@ -117,7 +135,7 @@ export default function CardStack({ card, peek, onDecide, disabled }) {
     <div className="card-stack">
       {peek && (
         <article className="card card--peek" aria-hidden="true">
-          <p className="card__text">{peek.scenario}</p>
+          <ScenarioBody card={peek} />
         </article>
       )}
 
@@ -139,7 +157,7 @@ export default function CardStack({ card, peek, onDecide, disabled }) {
           {card.rightLabel}
         </div>
 
-        <p className="card__text">{card.scenario}</p>
+        <ScenarioBody card={card} />
         <div className="card__hint" style={{ opacity: 1 - intensity }}>
           <span>&larr; {card.leftLabel}</span>
           <span>{card.rightLabel} &rarr;</span>

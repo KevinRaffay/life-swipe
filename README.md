@@ -553,3 +553,60 @@ If you want the old pacing back, the lever is `BAL.TIME.minor` in
 [balance.js](shared/balance.js) or re-tagging some of the new one-line cards as
 `standard`. I have left it alone rather than quietly retuning balance that was
 not part of this fix.
+
+---
+
+## Scenario format: weight tiers
+
+A card is written in fields rather than one blob. The shape lives in
+[shared/scenario-format.js](shared/scenario-format.js) and is the single place
+the tier rules are defined.
+
+| field | minor | standard | major |
+| --- | --- | --- | --- |
+| `setting` — place and time | — | yes | yes |
+| `beat` — one line of action | — | — | yes |
+| `dialogue` — one exchange, max | — | — | yes |
+| `prompt` — the decision | **always** | **always** | **always** |
+
+`minor` is prompt-only and is most cards, because that is what keeps the swipe
+rhythm. `major` gets a 60–90 word budget across all four fields.
+
+This reconciles with, rather than replaces, the `weight` field added earlier:
+the vocabulary (`minor` / `standard` / `major`) and its time costs are unchanged.
+
+### Rendering
+
+`ScenarioBody` in [CardStack.jsx](client/src/components/CardStack.jsx) renders
+each field with its own treatment — setting as a light tracked overline, beat as
+muted body text, dialogue italic behind a coloured rule, prompt at full weight —
+and every field except `prompt` is optional, so a minor card is a single line
+with no empty scaffolding.
+
+### Backwards compatibility
+
+`scenario` is now **derived, never authored**: the validator joins the tiered
+fields into one string. Fifteen call sites read it (history, obituaries, the
+content backstop, the simulator) and none needed changing. A card written in the
+old single-field shape still validates — its `scenario` becomes the `prompt`.
+
+That derivation matters for safety, not just convenience: mature content in a
+`dialogue` line is still caught by the content backstop, because the string it
+scans is built from every field. Verified directly.
+
+### What the validator enforces
+
+Fields outside a tier's set are dropped rather than rejected — a card with one
+field too many is still playable. It also strips screenplay habits the house
+style does not use: `INT.`/`EXT.` sluglines, `CUT TO`, camera directions, and
+`NAME:` in capitals. Dialogue is truncated to one exchange.
+
+`narrativeWarnings()` reports word-budget drift for content tooling. All 57
+seeds currently pass with zero warnings; majors run 60–88 words, mean 69.
+
+### A pacing bug this surfaced
+
+`fallback.js` templates never received the `weight` migration from the previous
+change, so their `minor` still meant the 9-month tier while everything else had
+moved on. Migrating them fixed the regression flagged there: swipes per life in
+safe mode drop from ~69 back to **56.8 (p90 79)**, inside the 40–80 target.

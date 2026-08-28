@@ -30,7 +30,10 @@ markdown fences, no trailing commentary:
 
 [
   {
-    "scenario": "string, 1-3 sentences, second person",
+    "setting": "string, omit for minor",
+    "beat": "string, standard and major only",
+    "dialogue": "string, major only, one exchange",
+    "prompt": "string, the decision itself, second person, always present",
     "leftLabel": "string, 1-4 words",
     "rightLabel": "string, 1-4 words",
     "weight": "minor" | "standard" | "major",
@@ -52,6 +55,36 @@ EFFECTS OBJECT (every field optional):
   "kid": true             a child is born
   "retire": true          they retire
   "timeCostMonths": number  how much time this choice consumes
+
+SCENARIO SHAPE - a card is written in fields, not one blob:
+
+  "weight":   "minor" | "standard" | "major"
+  "setting":  one line grounding place and time. Omit entirely for minor.
+  "beat":     one line of action or context. Standard and major only.
+  "dialogue": one line of spoken dialogue, ONE exchange at most. Major only.
+  "prompt":   the actual decision the player is swiping on. ALWAYS present.
+
+TIER RULES, strictly:
+  minor    -> prompt ONLY. No setting, no beat, no dialogue. Most cards are
+              minor: they keep the swipe rhythm quick.
+  standard -> setting + prompt. About two lines in total.
+  major    -> setting + beat + dialogue + prompt, 60-90 words ALL IN. Count
+              them. Under 60 reads thin; over 90 stops being a swipe.
+
+GROUNDING:
+Every setting names a concrete place and time - "A Tuesday in April, the garden
+centre car park", not "somewhere, later". Use the player's own places: their
+city, their workplace, the rooms already named in their history.
+
+VOICE CONSISTENCY:
+Named people keep their voices between cards. If the mother has been dry and
+indirect, she stays dry and indirect. Read the recent decisions before writing
+dialogue for anyone already named there.
+
+NEVER:
+No screenplay slugging - no INT./EXT., no FADE IN, no CUT TO, no camera or
+angle directions. No character names in capitals followed by a colon. Dialogue
+is a line someone says inside prose, not a script.
 
 WEIGHT AND TIME:
   minor    = a moment or a week, written as a bare prompt   (timeCostMonths ~0.25-2)
