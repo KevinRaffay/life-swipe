@@ -3,8 +3,10 @@ dist/
 .env
 *.log
 situation-library.draft.json
+scenarios-seed.draft.json
 dist-admin/
 situation-library.draft.rejected.json
+scenarios-seed.draft.rejected.json
 *.bak
 server/logs/
 *.vsidx

@@ -6,10 +6,10 @@
   --bg: #14151a;
   --surface: #1c1e26;
   --surface-2: #23262f;
-  --stroke: #2f3340;
-  --text: #e7e9ee;
-  --muted: #9aa1b1;
-  --dim: #6f778a;
+  --stroke: #383d4d;
+  --text: #f1f2f6;
+  --muted: #b7bccb;
+  --dim: #838ba0;
   --accent: #6ea8ff;
   --ok: #3ecf8e;
   --warn: #e8b23a;
@@ -26,9 +26,9 @@ body {
   font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-.admin { max-width: 1400px; margin: 0 auto; padding: 20px 24px 64px; }
+.admin { max-width: 1400px; margin: 0 auto; padding: 24px 28px 72px; }
 
-.admin__head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.admin__head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
 .admin__head h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
 
 .badge {
@@ -51,37 +51,45 @@ body {
   background: var(--accent); color: #0d1017; font-size: 11px; font-weight: 700;
 }
 
-.pane { display: flex; flex-direction: column; gap: 16px; }
+.pane { display: flex; flex-direction: column; gap: 20px; }
 
 .card {
   background: var(--surface); border: 1px solid var(--stroke);
-  border-radius: 14px; padding: 16px;
+  border-radius: 14px; padding: 22px 24px;
+  display: flex; flex-direction: column; gap: 16px;
 }
-.card h2 { margin: 0 0 12px; font-size: 15px; }
-.card h3 { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.card h2 { margin: 0; font-size: 16px; }
+.card h3 { margin: 0; font-size: 13px; color: var(--muted); }
+/* Only direct children: a <p> nested inside .draft/.result/.warnings etc.
+   still wants its own default rhythm, but a <p> sitting right in a .card's
+   flex flow would otherwise get its own margin on top of the card's gap. */
+.card > p { margin: 0; }
 
 .muted { color: var(--muted); }
-.small { font-size: 12px; }
+.small { font-size: 12.5px; }
 .spacer { flex: 1; }
 .error { color: var(--danger); }
 code, .mono, .raw { font-family: var(--mono); font-size: 12px; }
 
 /* -------------------------------------------------------------- toolbar */
 
-.toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+/* No margin of its own: every .toolbar today sits inside a .card, which
+   already spaces its children via flex gap - a margin here would stack on
+   top of that gap instead of replacing it. */
+.toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .search { flex: 1; min-width: 220px; }
 
 input, select, textarea {
   background: var(--surface-2); color: var(--text);
   border: 1px solid var(--stroke); border-radius: 9px;
-  padding: 7px 10px; font: inherit;
+  padding: 8px 11px; font: inherit;
 }
 input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
 input[readonly] { color: var(--dim); }
 textarea { width: 100%; resize: vertical; line-height: 1.5; }
 
 .btn {
-  padding: 7px 13px; border-radius: 9px; border: 1px solid var(--stroke);
+  padding: 8px 14px; border-radius: 9px; border: 1px solid var(--stroke);
   background: var(--surface-2); color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
 }
 .btn:hover { border-color: var(--dim); }
@@ -109,17 +117,30 @@ textarea { width: 100%; resize: vertical; line-height: 1.5; }
 
 /* ----------------------------------------------------------------- form */
 
-.form { display: flex; flex-direction: column; gap: 12px; }
-.form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); flex: 1; }
-.form label input, .form label select, .form label textarea { font-weight: 400; color: var(--text); }
-.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+.form { display: flex; flex-direction: column; gap: 14px; }
+/* Global, not scoped to .form: SeedGeneration.jsx and Preview.jsx use bare
+   <label> field wrappers inside a plain .row, with no .form ancestor. Scoping
+   this to .form left those with no rule at all - they fell back to normal
+   inline flow, where a <span> hint immediately followed by an <input> on the
+   next source line gets NO gap at all (JSX drops the whitespace between
+   elements when it spans a line break), so the label's trailing content and
+   the input's left edge sit flush against each other. */
+label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 600; color: var(--muted); flex: 1; }
+label input, label select, label textarea { font-weight: 400; color: var(--text); }
+.row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
 .row > * { flex: 1; min-width: 150px; }
 
-fieldset.modes { border: 1px solid var(--stroke); border-radius: 9px; padding: 8px 12px; }
+fieldset.modes { border: 1px solid var(--stroke); border-radius: 9px; padding: 10px 14px; }
 fieldset.modes legend { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.check { flex-direction: row !important; align-items: center; gap: 6px; display: inline-flex; margin-right: 14px; font-weight: 500; }
+.check { flex-direction: row !important; align-items: center; gap: 7px; display: inline-flex; margin-right: 16px; font-weight: 500; }
 
-.actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* A checkbox paired with a longer explanation below it: the checkbox line
+   stays a single short row (no inline text to wrap awkwardly against the
+   box), and the explanation reads as its own paragraph underneath. */
+.check-group { display: flex; flex-direction: column; gap: 6px; }
+.check-group > .check { margin-right: 0; }
+
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .problems { margin: 0; padding-left: 18px; color: var(--danger); font-size: 12px; }
 .craft-warnings { margin: 0; padding-left: 18px; color: var(--warn); font-size: 12px; }
 .pill--craft { color: var(--warn); border-color: rgba(232, 178, 58, 0.4); margin-left: 6px; }
@@ -129,12 +150,12 @@ fieldset.modes legend { font-size: 11px; color: var(--muted); text-transform: up
 .warnings {
   background: var(--surface); border: 1px solid var(--stroke);
   border-left: 3px solid var(--warn); border-radius: 12px;
-  padding: 12px 14px; margin-bottom: 16px;
+  padding: 14px 16px; margin-bottom: 20px;
 }
-.warnings--collapsed { border-left-color: var(--stroke); padding: 8px 14px; }
-.warnings__head { display: flex; gap: 10px; align-items: baseline; margin-bottom: 8px; flex-wrap: wrap; }
-.warnings__list { margin: 0 0 8px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
-.warn { font-size: 12.5px; }
+.warnings--collapsed { border-left-color: var(--stroke); padding: 10px 16px; }
+.warnings__head { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; flex-wrap: wrap; }
+.warnings__list { margin: 0 0 12px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.warn { font-size: 13px; }
 .warn__tag {
   display: inline-block; min-width: 92px; font-size: 10px; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.05em;
@@ -145,9 +166,10 @@ fieldset.modes legend { font-size: 11px; color: var(--muted); text-transform: up
 
 /* --------------------------------------------------------------- drafts */
 
-.draft { border-top: 1px solid var(--stroke); padding: 14px 0; }
-.draft:first-of-type { border-top: none; }
-.draft__head { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.draft-list { display: flex; flex-direction: column; }
+.draft { border-top: 1px solid var(--stroke); padding: 18px 0; }
+.draft:first-of-type { border-top: none; padding-top: 4px; }
+.draft__head { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
 .pill {
   font-size: 11px; padding: 2px 8px; border-radius: 99px;
   background: var(--surface-2); border: 1px solid var(--stroke); color: var(--muted);
@@ -163,10 +185,10 @@ fieldset.modes legend { font-size: 11px; color: var(--muted); text-transform: up
 .result--bad .pill { color: var(--danger); border-color: rgba(242, 99, 126, 0.4); }
 .raw {
   background: #101219; border: 1px solid var(--stroke); border-radius: 9px;
-  padding: 10px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
-  max-height: 420px; overflow-y: auto; color: var(--muted);
+  padding: 12px 14px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  max-height: 420px; overflow-y: auto; color: var(--muted); line-height: 1.6;
 }
-details summary { cursor: pointer; color: var(--accent); font-size: 12px; margin-top: 8px; }
+details summary { cursor: pointer; color: var(--accent); font-size: 12.5px; }
 
 /* ---------------------------------------------------------------- stats */
 
@@ -197,7 +219,7 @@ details summary { cursor: pointer; color: var(--accent); font-size: 12px; margin
 }
 .modal {
   position: relative; background: var(--surface); border: 1px solid var(--stroke);
-  border-radius: 14px; padding: 20px 20px 16px; width: 100%; max-width: 640px;
+  border-radius: 14px; padding: 24px 24px 20px; width: 100%; max-width: 640px;
   max-height: 100%; overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
@@ -211,9 +233,14 @@ details summary { cursor: pointer; color: var(--accent); font-size: 12px; margin
 /* ---------------------------------------------------------------- toast */
 
 .toast {
-  padding: 10px 14px; border-radius: 10px; margin-bottom: 14px;
-  cursor: pointer; font-size: 13px; border: 1px solid var(--stroke);
+  padding: 11px 15px; border-radius: 10px;
+  cursor: pointer; font-size: 13.5px; line-height: 1.5;
+  color: var(--text); border: 1px solid var(--stroke);
 }
+/* The App.jsx header toast is a standalone element above .pane, not a .card
+   child, so it still needs its own bottom margin; toasts rendered inside a
+   card (SeedGeneration's run summaries) get theirs from the card's gap. */
+.admin__toast-standalone { margin-bottom: 20px; }
 .toast--ok { background: rgba(62, 207, 142, 0.12); border-color: rgba(62, 207, 142, 0.35); }
 .toast--warn { background: rgba(232, 178, 58, 0.12); border-color: rgba(232, 178, 58, 0.35); }
 .toast--error { background: rgba(242, 99, 126, 0.12); border-color: rgba(242, 99, 126, 0.35); }

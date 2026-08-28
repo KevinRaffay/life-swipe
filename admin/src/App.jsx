@@ -6,6 +6,7 @@ import Modal from './components/Modal.jsx';
 import PatternForm from './components/PatternForm.jsx';
 import SeedForm from './components/SeedForm.jsx';
 import Extraction from './components/Extraction.jsx';
+import SeedGeneration from './components/SeedGeneration.jsx';
 import Preview from './components/Preview.jsx';
 import Stats from './components/Stats.jsx';
 import Logs from './components/Logs.jsx';
@@ -14,6 +15,7 @@ const TABS = [
   ['library', 'Library'],
   ['seeds', 'Seed deck'],
   ['extraction', 'Extract & drafts'],
+  ['seed-gen', 'Generate seeds'],
   ['preview', 'Preview'],
   ['stats', 'Stats'],
   ['logs', 'Logs'],
@@ -165,12 +167,13 @@ export default function App() {
             >
               {label}
               {key === 'extraction' && boot.drafts.length > 0 && <span className="count">{boot.drafts.length}</span>}
+              {key === 'seed-gen' && boot.seedDrafts.length > 0 && <span className="count">{boot.seedDrafts.length}</span>}
             </button>
           ))}
         </nav>
       </header>
 
-      {toast && <div className={`toast toast--${toast.kind}`} onClick={() => setToast(null)}>{toast.text}</div>}
+      {toast && <div className={`toast toast--${toast.kind} admin__toast-standalone`} onClick={() => setToast(null)}>{toast.text}</div>}
 
       {(tab === 'library' || tab === 'seeds') && <Warnings result={validation} onRefresh={revalidate} />}
 
@@ -247,6 +250,14 @@ export default function App() {
           drafts={boot.drafts}
           library={boot.library}
           vocab={boot.vocab}
+          llmEnabled={boot.llmEnabled}
+          onChanged={(next) => { patch(next); revalidate(); }}
+        />
+      )}
+
+      {tab === 'seed-gen' && (
+        <SeedGeneration
+          seedDrafts={boot.seedDrafts}
           llmEnabled={boot.llmEnabled}
           onChanged={(next) => { patch(next); revalidate(); }}
         />

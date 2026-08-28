@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as api from '../api.js';
 import PatternForm from './PatternForm.jsx';
-import Modal from './Modal.jsx';
+import DraftQueue from './DraftQueue.jsx';
 
 /**
  * Paste source text, extract candidates, review them one at a time.
@@ -15,9 +15,6 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [editing, setEditing] = useState(null);
-  const [rejecting, setRejecting] = useState(null);
-  const [reason, setReason] = useState('');
 
   const run = async () => {
     setBusy(true); setError(null); setResult(null);
@@ -35,22 +32,22 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
   const approve = async (draft, record) => {
     setBusy(true); setError(null);
     try {
-      const res = await api.approveDraft(draft.id, record, null, true);
+      const res = await api.approveDraft('drafts', draft.id, record, null, true);
       onChanged({ library: res.library, libraryVersion: res.libraryVersion, drafts: res.drafts, draftsVersion: res.draftsVersion });
-      setEditing(null);
+      return true;
     } catch (err) {
       setError(err.problems ? `${err.message}: ${err.problems.join('; ')}` : err.message);
+      return false;
     } finally {
       setBusy(false);
     }
   };
 
-  const reject = async (draft) => {
+  const reject = async (draft, reason) => {
     setBusy(true);
     try {
-      const res = await api.rejectDraft(draft.id, reason);
+      const res = await api.rejectDraft('drafts', draft.id, reason);
       onChanged({ drafts: res.drafts, draftsVersion: res.draftsVersion });
-      setRejecting(null); setReason('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -65,7 +62,7 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
     <div className="pane">
       <section className="card">
         <h2>Extract patterns from source text</h2>
-        <p className="muted small">
+        <p className="muted">
           Paste a memoir summary, an obituary, a long profile. The extractor
           anonymises and generalises it into 8–15 candidate shapes and appends
           them to the draft queue below. It never writes to the live library.
@@ -95,62 +92,39 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
         )}
       </section>
 
-      <section className="card">
-        <h2>Draft queue <span className="muted">({drafts.length})</span></h2>
-        {drafts.length === 0 && <p className="muted">No drafts awaiting review.</p>}
-
-        {drafts.map((d) => {
+      <DraftQueue
+        title="Draft queue"
+        drafts={drafts}
+        busy={busy}
+        FormComponent={PatternForm}
+        formProps={{ vocab, siblings: library }}
+        onApprove={approve}
+        onReject={reject}
+        renderSummary={(d) => (
+          <>
+            <div className="draft__head">
+              <code>{d.id}</code>
+              <span className="pill">{d.category}</span>
+              <span className="pill">{d.rarity}</span>
+              <span className="pill">{(d.modes || []).join('/')}</span>
+              <span className="pill">{(d.life_stage || []).join('–')}</span>
+            </div>
+            <p>{d.pattern}</p>
+            <p className="muted small">{d.typical_effects}</p>
+          </>
+        )}
+        renderExtra={(d) => {
           const warnings = warningsFor(d.id);
           const duplicate = duplicateFor(d.id);
+          if (!warnings.length && !duplicate) return null;
           return (
-            <div key={d.id} className="draft">
-              <div className="draft__head">
-                <code>{d.id}</code>
-                <span className="pill">{d.category}</span>
-                <span className="pill">{d.rarity}</span>
-                <span className="pill">{(d.modes || []).join('/')}</span>
-                <span className="pill">{(d.life_stage || []).join('–')}</span>
-              </div>
-              <p>{d.pattern}</p>
-              <p className="muted small">{d.typical_effects}</p>
-              {(warnings.length > 0 || duplicate) && (
-                <ul className="problems">
-                  {duplicate && <li>possible duplicate of <code>{duplicate.duplicateOf}</code> ({Math.round(duplicate.score * 100)}% word overlap)</li>}
-                  {warnings.map((w, i) => <li key={i}>anonymity: {w}</li>)}
-                </ul>
-              )}
-              {rejecting === d.id ? (
-                <div className="actions">
-                  <input placeholder="why? (optional, logged)" value={reason} onChange={(e) => setReason(e.target.value)} />
-                  <button className="btn btn--danger" onClick={() => reject(d)} disabled={busy}>Confirm reject</button>
-                  <button className="btn" onClick={() => { setRejecting(null); setReason(''); }}>Cancel</button>
-                </div>
-              ) : (
-                <div className="actions">
-                  <button className="btn btn--primary" onClick={() => approve(d, d)} disabled={busy}>Approve</button>
-                  <button className="btn" onClick={() => setEditing(d.id)}>Edit &amp; approve</button>
-                  <button className="btn btn--danger" onClick={() => setRejecting(d.id)}>Reject</button>
-                </div>
-              )}
-
-              {editing === d.id && (
-                <Modal title={`Review ${d.id}`} onClose={() => setEditing(null)}>
-                  <PatternForm
-                    value={d}
-                    vocab={vocab}
-                    siblings={library}
-                    busy={busy}
-                    onSave={(record) => approve(d, record)}
-                    onCancel={() => setEditing(null)}
-                    onDelete={() => { setEditing(null); setRejecting(d.id); }}
-                  />
-                  <p className="muted small">Saving here approves the draft and merges it into the library.</p>
-                </Modal>
-              )}
-            </div>
+            <ul className="problems">
+              {duplicate && <li>possible duplicate of <code>{duplicate.duplicateOf}</code> ({Math.round(duplicate.score * 100)}% word overlap)</li>}
+              {warnings.map((w, i) => <li key={i}>anonymity: {w}</li>)}
+            </ul>
           );
-        })}
-      </section>
+        }}
+      />
     </div>
   );
 }

@@ -2126,5 +2126,3405 @@
       ]
     },
     "timeCostMonths": 6
+  },
+  {
+    "id": "highschool_the_show_runs_until",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Friday after school, the parking lot behind the auditorium. {{new:friend}} is leaning on a rusted Civic, holding a flyer for a weekend band that needs a merch t",
+    "prompt": "The show runs until midnight, which means asking Dad, your father, for a late curfew he will almost certainly negotiate down to eleven.",
+    "leftLabel": "Go, argue curfew",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "happiness": 10,
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_sociology_textbook_is",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your sociology textbook is $187 new. The campus library has one copy with a three-week wait list.",
+    "leftLabel": "Buy it new",
+    "rightLabel": "Join the wait list",
+    "leftEffects": {
+      "money": -187,
+      "happiness": 5,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -8,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_you_have_been_offered",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at the coffee shop, a Wednesday in February. Your manager has taped a new shift schedule to the fridge.",
+    "prompt": "You have been offered a third shift each week, which would bring in roughly $180 more per month but would land on the same morning as your stats lecture.",
+    "leftLabel": "Take the shift",
+    "rightLabel": "Keep the lecture",
+    "leftEffects": {
+      "money": 180,
+      "health": -3,
+      "happiness": -6,
+      "flags": [
+        "skipping_stats_lecture"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "early_your_landlord_is_raising",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your landlord is raising rent by $180 a month starting next month. Do you negotiate or start looking?",
+    "leftLabel": "Negotiate in person",
+    "rightLabel": "Start apartment hunting",
+    "leftEffects": {
+      "happiness": 5,
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "money": -2400,
+      "happiness": -5,
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_hr_is_nudging_everyone",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at your office, a Thursday in February. Someone has left a flyer for a 401(k) enrollment meeting on the counter.",
+    "prompt": "HR is nudging everyone under 25 to enroll in the company 401(k). The match is three percent. You have other places you could use that money right now.",
+    "leftLabel": "Enroll, take the match",
+    "rightLabel": "Skip it for now",
+    "leftEffects": {
+      "money": -1260,
+      "happiness": 3,
+      "flags": [
+        "has_401k"
+      ]
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -2
+    }
+  },
+  {
+    "id": "family_your_spouse_left_the",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse left the thermostat at 62 degrees again. You have been quietly turning it back up for three years. Do you say something tonight or let it go?",
+    "leftLabel": "Say something",
+    "rightLabel": "Let it go",
+    "leftEffects": {
+      "happiness": 5,
+      "relationship": {
+        "name": "{{new:spouse}}",
+        "role": "spouse",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "family_mom_your_mother_mentions",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Sunday in March, your mother's kitchen. She has a stack of unopened mail beside the toaster.",
+    "prompt": "Mom, your mother, mentions casually that she has not looked at her bank statements since Dad started handling the finances. Dad, your father, had a minor health scare last fall. Do you offer to set her up with online banking, or leave well enough alone?",
+    "leftLabel": "Set her up",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "mom_financially_independent"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "flags": [
+        "mom_financially_dependent_on_dad"
+      ],
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "late_your_union_newsletter_arrives",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your union newsletter arrives with an article on early retirement at 62. You are already 63. Do you read it anyway or recycle it unread?",
+    "leftLabel": "Read it",
+    "rightLabel": "Recycle it",
+    "leftEffects": {
+      "happiness": 3,
+      "flags": [
+        "researching_retirement"
+      ],
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "late_your_department_head_mentions",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at work, a Thursday in March. Someone has left a half-eaten birthday cake for a colleague who turned 40.",
+    "prompt": "Your department head mentions, offhandedly, that a voluntary severance package is being offered to analysts over 60. The number is fourteen months of salary. Do you ask for the paperwork or say you are not interested?",
+    "leftLabel": "Ask for paperwork",
+    "rightLabel": "Not interested",
+    "leftEffects": {
+      "money": 95333,
+      "happiness": 8,
+      "flags": [
+        "took_severance"
+      ],
+      "career": {
+        "title": "Unemployed",
+        "salary": 0
+      },
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "retirement_a_letter_arrives_from",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A letter arrives from your bank offering a 'senior-friendly' investment product with guaranteed 18% annual returns. Do you request the information package?",
+    "leftLabel": "Request it",
+    "rightLabel": "Bin it",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "responded_to_scam_mail"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 2
+    }
+  },
+  {
+    "id": "retirement_a_community_centre_two",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Your kitchen, a Thursday in March. The calendar on the wall has very few things written on it.",
+    "prompt": "A community centre two miles away runs a Tuesday-Thursday woodworking class for retirees. It costs $40 a month and requires you to be somewhere twice a week.",
+    "leftLabel": "Sign up",
+    "rightLabel": "Pass on it",
+    "leftEffects": {
+      "money": -480,
+      "health": 5,
+      "happiness": 14,
+      "flags": [
+        "woodworking_class"
+      ],
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "highschool_your_phone_s_alarm",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your phone's alarm has been going off at 6 a.m. for a week. You keep hitting snooze. Do you sign up for the early-morning tutoring session or sleep in?",
+    "leftLabel": "Sign up",
+    "rightLabel": "Sleep in",
+    "leftEffects": {
+      "health": 2,
+      "happiness": -3,
+      "flags": [
+        "early_riser_habit"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "health": -2,
+      "happiness": 4,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_you_can_actually_carry",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The school cafeteria, a Thursday in November. A hand-lettered sign on the drama department table says SPRING MUSICAL - AUDITIONS JAN 9.",
+    "prompt": "You can actually carry a tune. Do you sign up for auditions, or decide your schedule is already stretched?",
+    "leftLabel": "Audition",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "joined_drama"
+      ],
+      "timeCostMonths": 4
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_your_study_group_wants",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your study group wants to split a $200 graphing calculator between four of you. Do you chip in or buy your own?",
+    "leftLabel": "Split it",
+    "rightLabel": "Buy my own",
+    "leftEffects": {
+      "money": -50,
+      "happiness": 5,
+      "flags": [
+        "shared_calculator"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -200,
+      "happiness": 3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_you_have_been_sitting",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Sunday afternoon, the common room of your dorm. Your mother has called for the third time this week.",
+    "prompt": "You have been sitting on this. Do you call her back and talk it through honestly, or file the undecided paperwork and deal with the question later?",
+    "leftLabel": "Call her back",
+    "rightLabel": "File undecided",
+    "leftEffects": {
+      "happiness": 8,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "flags": [
+        "undeclared_major"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "early_your_college_email_still",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your college email still forwards. A professor has sent a department newsletter you never asked to leave. Do you finally unsubscribe?",
+    "leftLabel": "Unsubscribe",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": 2,
+      "flags": [
+        "clean_break_from_college"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 1,
+      "flags": [
+        "still_attached_to_college"
+      ]
+    }
+  },
+  {
+    "id": "early_your_manager_new_manager",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Friday happy hour, three weeks into the job. The marketing team is at the bar around the corner from the office.",
+    "prompt": "Your manager, {{new:manager}}, mentions a weekend workshop on digital analytics - unpaid, but attendance gets noticed. You have plans you would have to cancel.",
+    "leftLabel": "Go to workshop",
+    "rightLabel": "Keep your plans",
+    "leftEffects": {
+      "money": -80,
+      "happiness": -5,
+      "flags": [
+        "seen_as_ambitious"
+      ],
+      "relationship": {
+        "name": "{{new:manager}}",
+        "role": "manager",
+        "qualityDelta": 12
+      }
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "relationship": {
+        "name": "{{new:manager}}",
+        "role": "manager",
+        "qualityDelta": -5
+      }
+    }
+  },
+  {
+    "id": "family_your_spouse_left_a",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse left a real estate listing on the kitchen counter. No note, just the listing.",
+    "leftLabel": "Look into it",
+    "rightLabel": "Ignore it",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "house_hunting"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "family_she_mentions_very_casually",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Thursday evening video call. Mom, your mother, is propped against the headboard of what appears to be a guest room that used to be yours.",
+    "prompt": "She mentions, very casually, that she has been having trouble with her left knee and has not yet seen anyone about it.",
+    "leftLabel": "Book her appointment",
+    "rightLabel": "Leave it to her",
+    "leftEffects": {
+      "money": -200,
+      "happiness": 8,
+      "flags": [
+        "moms_health_managed"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "flags": [
+        "moms_knee_ignored"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_your_phone_buzzes_at",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your phone buzzes at 11 p.m. on a school night. Do you answer?",
+    "leftLabel": "Answer it",
+    "rightLabel": "Let it ring",
+    "leftEffects": {
+      "happiness": 5,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_you_had_plans_with",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "A Saturday afternoon in your driveway, late September. Dad, your father, has the hood of his car up and a socket set spread across a towel.",
+    "beat": "He says he will teach you to change the oil and rotate the tires yourself, saving roughly $120 a year once you have a car.",
+    "dialogue": "Dad says this is the kind of thing nobody teaches you and then charges you for your whole life.",
+    "prompt": "You had plans with people from school. Do you stay and learn the basics from your father, or call it a dad-thing and head out?",
+    "leftLabel": "Stay and learn",
+    "rightLabel": "Head out",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "knows_basic_car_maintenance"
+      ],
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 6,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -6
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_your_phone_dies_at",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your phone dies at 11 p.m. and you can either borrow Mom's charger from her room or just go to sleep early for once.",
+    "leftLabel": "Borrow charger",
+    "rightLabel": "Sleep early",
+    "leftEffects": {
+      "health": -2,
+      "happiness": 3,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "health": 5,
+      "happiness": -1,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_a_collection_is_going",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A collection is going around homeroom for a teacher's retirement gift. You have $505. Do you chip in $20 or quietly pass the envelope along?",
+    "leftLabel": "Chip in $20",
+    "rightLabel": "Pass it along",
+    "leftEffects": {
+      "money": -20,
+      "happiness": 4,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_the_varsity_coach_is",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The school gym, a Wednesday in November. Tryout sheets have been taped to the door since Monday.",
+    "prompt": "The varsity coach is still accepting late sign-ups for the travel team, which means Saturday practices through March and an entry fee of $85. You have the money. Do you commit?",
+    "leftLabel": "Sign up",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "money": -85,
+      "health": 8,
+      "happiness": 6,
+      "flags": [
+        "joined_travel_team"
+      ],
+      "timeCostMonths": 5
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "highschool_your_study_hall_period",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your study hall period is forty minutes of nothing. Do you use it to get ahead on the calculus chapter, or spend it talking?",
+    "leftLabel": "Hit the textbook",
+    "rightLabel": "Talk instead",
+    "leftEffects": {
+      "happiness": -3,
+      "flags": [
+        "studious_habit"
+      ],
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_your_shift_supervisor_offers",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at whatever part-time job sixteen-year-olds get. A Thursday in November, the fluorescent light doing its flicker thing.",
+    "prompt": "Your shift supervisor offers you an extra four hours Saturday morning at time-and-a-half. It cuts into the weekend, but it is eighty dollars.",
+    "leftLabel": "Take the shift",
+    "rightLabel": "Keep Saturday",
+    "leftEffects": {
+      "money": 80,
+      "happiness": -5,
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": 6,
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "highschool_new_classmate_wants_to",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:classmate}} wants to copy your homework. It would take ten seconds to slide it across the desk.",
+    "leftLabel": "Let them copy",
+    "rightLabel": "Decline quietly",
+    "leftEffects": {
+      "happiness": 3,
+      "flags": [
+        "bends_rules_for_friends"
+      ],
+      "relationship": {
+        "name": "{{new:classmate}}",
+        "role": "classmate",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "relationship": {
+        "name": "{{new:classmate}}",
+        "role": "classmate",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_dad_your_father_asks",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Dad, your father, asks if you want to come along to help him repaint the garage this weekend. It is not mandatory, but he is asking.",
+    "leftLabel": "Go help him",
+    "rightLabel": "Pass on it",
+    "leftEffects": {
+      "happiness": 6,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -6
+      },
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "highschool_your_locker_neighbour_asks",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your locker neighbour asks if you want to split the cost of a bus pass for the month. It's $28 each.",
+    "leftLabel": "Split it",
+    "rightLabel": "Walk instead",
+    "leftEffects": {
+      "money": -28,
+      "happiness": 5,
+      "relationship": {
+        "name": "{{new:locker_neighbour}}",
+        "role": "acquaintance",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": 0,
+      "health": 3,
+      "happiness": -3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_auditions_are_next_week",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The school cafeteria, a Thursday in February. The drama club sign-up sheet has been taped to the pillar by the vending machines.",
+    "prompt": "Auditions are next week. You have zero experience but {{new:drama_friend}} says that's the point of auditioning.",
+    "leftLabel": "Sign up",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "happiness": 8,
+      "relationship": {
+        "name": "{{new:drama_friend}}",
+        "role": "friend",
+        "qualityDelta": 15
+      },
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_mom_texts_asking_if",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Mom texts asking if you'll be home for dinner. You already told {{new:friend}} you'd hang out.",
+    "leftLabel": "Go home",
+    "rightLabel": "Skip dinner",
+    "leftEffects": {
+      "happiness": 3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_there_s_a_slot",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Your bedroom, a Sunday evening. The course selection form for junior year is due by noon tomorrow.",
+    "prompt": "There's a slot for AP Chemistry, which looks good on a transcript, or an elective in woodshop, which actually sounds interesting.",
+    "leftLabel": "Take AP Chem",
+    "rightLabel": "Take woodshop",
+    "leftEffects": {
+      "health": -3,
+      "happiness": -6,
+      "flags": [
+        "took_ap_class"
+      ],
+      "timeCostMonths": 9
+    },
+    "rightEffects": {
+      "health": 2,
+      "happiness": 9,
+      "flags": [
+        "woodshop_skills"
+      ],
+      "timeCostMonths": 9
+    }
+  },
+  {
+    "id": "highschool_your_mom_packed_your",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mom packed your lunch again. Do you take it or buy from the cafeteria?",
+    "leftLabel": "Take the lunch",
+    "rightLabel": "Buy cafeteria",
+    "leftEffects": {
+      "money": 5,
+      "happiness": 3,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": -5,
+      "happiness": 5,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_he_offers_to_teach",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Saturday morning. Your dad is in the driveway with a socket set and a 1999 Corolla that belongs to a neighbor.",
+    "prompt": "He offers to teach you basic car maintenance if you spend the morning helping. You had plans, vague ones, but plans.",
+    "leftLabel": "Help Dad",
+    "rightLabel": "Keep my plans",
+    "leftEffects": {
+      "happiness": 7,
+      "flags": [
+        "knows_basic_car_repair"
+      ],
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "college_your_intro_economics_professor",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your intro economics professor mentions that the campus tutoring center pays $14 an hour. Your barista shifts already fill three evenings. Do you apply anyway?",
+    "leftLabel": "Apply for tutoring",
+    "rightLabel": "Keep the shifts",
+    "leftEffects": {
+      "money": 200,
+      "happiness": 5,
+      "flags": [
+        "white_collar_experience"
+      ],
+      "career": {
+        "title": "Part-Time Tutor",
+        "salary": 11000
+      },
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": 3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_you_had_assumed_you",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "The registrar's office, a Wednesday in late August, fluorescent lights and a queue that hasn't moved in twenty minutes.",
+    "beat": "Declaring a major by the end of week two saves $200 in administrative fees and locks in your advising track.",
+    "dialogue": "The advisor says undeclared students get the last pick of spring sections, every single semester.",
+    "prompt": "You had assumed you'd figure this out by Christmas. Committing to business administration now saves money and structure, but it closes off the semester you'd planned to use for looking around.",
+    "leftLabel": "Declare business",
+    "rightLabel": "Stay undeclared",
+    "leftEffects": {
+      "money": 200,
+      "happiness": -5,
+      "flags": [
+        "declared_major_business"
+      ],
+      "education": "Business Administration (in progress)",
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -200,
+      "happiness": 8,
+      "flags": [
+        "major_undecided"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_moving_off_campus_saves",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Group chat, 11 p.m. on a Thursday. Three people you met at orientation want to split a four-bedroom off-campus apartment starting January.",
+    "prompt": "Moving off campus saves money monthly but empties nearly half your savings before spring semester starts. Do you commit to the apartment?",
+    "leftLabel": "Sign the lease",
+    "rightLabel": "Stay in the dorm",
+    "leftEffects": {
+      "money": -1200,
+      "happiness": 12,
+      "flags": [
+        "lives_off_campus"
+      ],
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 6
+    },
+    "rightEffects": {
+      "money": 480,
+      "happiness": -3,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "college_mom_texts_asking_if",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Mom texts asking if you want her to mail the noise-canceling headphones sitting in your old room. They would take up space but they would also help. Do you say yes?",
+    "leftLabel": "Ask her to send them",
+    "rightLabel": "Leave them there",
+    "leftEffects": {
+      "happiness": 6,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_sociology_professor_mention",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your sociology professor mentions that a research assistant position pays $12 an hour. It is Monday. Applications close Friday. Do you apply?",
+    "leftLabel": "Apply",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "applied_ra_position"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_a_co_worker_is",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at the coffee shop, a Thursday evening in late September. A typed flyer is taped to the fridge next to a reminder about labelling food.",
+    "prompt": "A co-worker is quietly organizing a petition asking management for a shift-scheduling policy that gives at least a week's notice. Signing takes thirty seconds and puts your name on a list management will see.",
+    "leftLabel": "Sign it",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "signed_labor_petition"
+      ],
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_mother_calls_to",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother calls to check in. She mentions she heard the coffee shop is hiring a shift supervisor. You have not told her you already know and are not sure you want it.",
+    "leftLabel": "Tell her the truth",
+    "rightLabel": "Change the subject",
+    "leftEffects": {
+      "happiness": 6,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_8_a_m",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your 8 a.m. lecture conflicts with your best shift at the café. Do you drop the lecture or lose the shift?",
+    "leftLabel": "Drop the lecture",
+    "rightLabel": "Lose the shift",
+    "leftEffects": {
+      "money": 90,
+      "happiness": 5,
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "money": -90,
+      "happiness": -5,
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "college_your_study_group_has",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your study group has a group chat. {{new:classmate}} keeps tagging you in memes at 2 a.m. Do you mute the thread or stay in?",
+    "leftLabel": "Mute it",
+    "rightLabel": "Stay in",
+    "leftEffects": {
+      "happiness": 3,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "health": -2,
+      "happiness": -4,
+      "relationship": {
+        "name": "{{new:classmate}}",
+        "role": "classmate",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_aid_package_for",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The campus financial aid office, a Wednesday in February. A poster on the wall explains the difference between subsidized and unsubsidized loans, using a diagra",
+    "prompt": "Your aid package for next year has a $4,200 gap. You can take an additional unsubsidized loan or pick up a second part-time shift and probably sleep less.",
+    "leftLabel": "Take the loan",
+    "rightLabel": "Extra shifts",
+    "leftEffects": {
+      "money": 4200,
+      "happiness": 5,
+      "flags": [
+        "student_debt"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": 2800,
+      "health": -6,
+      "happiness": -8,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "college_new_coworker_who_has",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The back parking lot of the coffee shop where you work, a slow Sunday afternoon in March.",
+    "prompt": "{{new:coworker}}, who has been here three years longer than you, offers to walk you through a side arrangement: reselling concert tickets bought through the shop's employee presale access. Forty dollars a ticket, clean. Your manager would call it a firing offense.",
+    "leftLabel": "Take the deal",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": 320,
+      "happiness": 8,
+      "flags": [
+        "ticket_hustle",
+        "hustler_identity_drives_escalating_risk"
+      ],
+      "risk": {
+        "probability": 0.08,
+        "outcome": "injury",
+        "description": "Your manager pulls the presale logs, connects the sales back to your login, and terminates you on the spot, with a note in your file."
+      },
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": 15
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_your_mother_calls_you",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother calls — you haven't spoken in a few weeks — and she mentions Dad has been quieter than usual. She doesn't say worried. She says quieter. Do you call him back today?",
+    "leftLabel": "Call Dad now",
+    "rightLabel": "Leave it for now",
+    "leftEffects": {
+      "happiness": 7,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_trade_cert_sits",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your trade cert sits in a drawer. College is fine, but the guy who graduated your program two years ago is already pulling $28/hr on a union crew. Do you quietly start attending the college's contractor networking nights?",
+    "leftLabel": "Show up, see what's there",
+    "rightLabel": "Stay your current course",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "networking_contractor_circuit"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_mom_texts_out_of",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Mom texts out of nowhere — your mother, who has a gift for turning a check-in into a needs-assessment — asking if you are eating properly. Answering honestly would open a longer conversation.",
+    "leftLabel": "Tell her the truth",
+    "rightLabel": "Say you're great",
+    "leftEffects": {
+      "happiness": 6,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -4
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_your_trade_cert_got",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your trade cert got you the barista job, but the guy on the espresso machine next to you is pulling a philosophy degree and making the same $9 an hour. Do you sign up for a full course load this semester, or keep the hours and the cash?",
+    "leftLabel": "Enroll full-time",
+    "rightLabel": "Stay part-time",
+    "leftEffects": {
+      "money": -1200,
+      "happiness": 8,
+      "flags": [
+        "in_school"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_your_landlord_is_raising_2",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your landlord is raising rent by $180 a month starting next quarter. Do you negotiate or start looking?",
+    "leftLabel": "Negotiate",
+    "rightLabel": "Start looking",
+    "leftEffects": {
+      "money": 0,
+      "happiness": 3,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -2200,
+      "happiness": -5,
+      "flags": [
+        "apartment_hunting"
+      ],
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "early_your_marketing_coordinator_title",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at work, a Thursday in March. Someone has taped a flyer to the coffee machine about a weekend digital marketing certification bootcamp — two days",
+    "prompt": "Your marketing coordinator title is already a stretch on your trade background. Does paying $650 to add a certificate line to your résumé feel like investing in yourself, or like paying for permission you already earned?",
+    "leftLabel": "Book the bootcamp",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "money": -650,
+      "health": 0,
+      "happiness": 7,
+      "flags": [
+        "marketing_cert"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_new_coworker_suggests_splitting",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Friday lunch — the kind that started as a team thing and ended as you and one other person from the office.",
+    "prompt": "{{new:coworker}} suggests splitting a two-bedroom across town and cutting both your rents by around $400 each. You have never lived with a stranger from work before.",
+    "leftLabel": "Move in together",
+    "rightLabel": "Keep your place",
+    "leftEffects": {
+      "money": 4800,
+      "happiness": 4,
+      "flags": [
+        "shared_apartment"
+      ],
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "roommate",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "money": -800,
+      "happiness": 3,
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_your_landlord_is_raising_3",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your landlord is raising rent by $180 a month starting next month. Do you absorb it or start looking for somewhere cheaper?",
+    "leftLabel": "Absorb the increase",
+    "rightLabel": "Start apartment hunting",
+    "leftEffects": {
+      "money": -2160,
+      "happiness": -5,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -400,
+      "happiness": -8,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "early_your_trade_cert_is",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your trade cert is gathering dust behind the marketing degree. A former instructor texts asking if you want weekend shifts installing HVAC units at $38/hr. Do you take the weekend work or protect your off time?",
+    "leftLabel": "Take the shifts",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": 1200,
+      "health": -5,
+      "happiness": -5,
+      "flags": [
+        "moonlighting_trade"
+      ],
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_your_mother_texts_asking",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother texts asking if you want her old car. It is a 2009 Corolla with 140,000 miles and what she describes as 'a personality.' Free, but yours to insure and maintain. Do you take it or keep using the bus?",
+    "leftLabel": "Take the car",
+    "rightLabel": "Keep bussing",
+    "leftEffects": {
+      "money": -900,
+      "happiness": 8,
+      "flags": [
+        "has_car"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_your_apartment_building_has",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your apartment building has a rooftop with a better view than anything you paid for. The door is propped open with a brick. Do you go up?",
+    "leftLabel": "Go up",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "knows_rooftop"
+      ],
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "early_your_42_000_salary",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your $42,000 salary just cleared its first full month. Do you automate $200 into savings or keep it liquid because something will come up?",
+    "leftLabel": "Automate savings",
+    "rightLabel": "Keep it liquid",
+    "leftEffects": {
+      "money": -200,
+      "happiness": 3,
+      "flags": [
+        "disciplined_saver"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_open_enrollment_closes_friday",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Thursday evening, the break room at your office. Someone has taped a printout of the benefits enrollment portal to the fridge.",
+    "prompt": "Open enrollment closes Friday. The premium health plan costs $87 more a month than the basic one. You are 23 and have been to a doctor twice since high school.",
+    "leftLabel": "Premium plan",
+    "rightLabel": "Basic plan",
+    "leftEffects": {
+      "money": -1044,
+      "health": 5,
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "money": 0,
+      "health": -3,
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "early_mom_wants_you_to",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A group chat from your mother, Mom, that begins with three paragraphs about a cousin's wedding before arriving at the actual question.",
+    "prompt": "Mom wants you to come home for a long weekend, which means six hours of driving, a pull-out couch, and being asked about your five-year plan by your father. You have no five-year plan.",
+    "leftLabel": "Make the trip",
+    "rightLabel": "Send regrets",
+    "leftEffects": {
+      "money": -120,
+      "happiness": 6,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 7
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "early_the_apartment_below_yours",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The apartment below yours has a vacancy at $150 less per month than your current place, but your new neighbor's band practices on weeknights. Do you move or stay?",
+    "leftLabel": "Take the cheaper unit",
+    "rightLabel": "Stay put",
+    "leftEffects": {
+      "money": 1800,
+      "happiness": -5,
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "early_your_landlord_is_raising_4",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your landlord is raising rent by $210 a month starting in sixty days. Do you try to negotiate, or start looking for a new place?",
+    "leftLabel": "Negotiate in place",
+    "rightLabel": "Start apartment search",
+    "leftEffects": {
+      "happiness": 5,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -400,
+      "happiness": -5,
+      "flags": [
+        "apartment_hunting"
+      ],
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_mom_your_mother_keeps",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Mom, your mother, keeps forwarding real estate listings in your hometown. A two-bed starter place has dropped to $187,000. Do you agree to a viewing, or tell her you are not ready to be that close to home?",
+    "leftLabel": "Agree to a viewing",
+    "rightLabel": "Not yet",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "considered_hometown_property"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0
+    }
+  },
+  {
+    "id": "early_your_marketing_coordinator_title_2",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your marketing coordinator title puts you near the bottom of every org chart. A free online certification in Google Analytics lands in your inbox. Do you spend the next three weekends on it?",
+    "leftLabel": "Do the cert",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "analytics_certified"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "family_your_spouse_suggests_skipping",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse suggests skipping date night again to save the $80. You've cancelled three times this month already.",
+    "leftLabel": "Stay in, save it",
+    "rightLabel": "Go anyway",
+    "leftEffects": {
+      "money": 80,
+      "happiness": -6,
+      "flags": [
+        "marriage_becoming_logistics"
+      ]
+    },
+    "rightEffects": {
+      "money": -80,
+      "happiness": 8
+    }
+  },
+  {
+    "id": "family_a_two_bedroom_condo",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Saturday morning in March, the kitchen table covered in printouts from Zillow and a yellow legal pad with numbers that do not quite add up.",
+    "prompt": "A two-bedroom condo three blocks from work just listed at $312,000. Your pre-approval goes to $340,000, and you have $8,615 in savings. Do you make an offer and stretch, or wait for something you can afford more comfortably?",
+    "leftLabel": "Make the offer",
+    "rightLabel": "Keep waiting",
+    "leftEffects": {
+      "money": -8000,
+      "health": -3,
+      "happiness": 12,
+      "flags": [
+        "homeowner",
+        "house_stretched_budget"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "flags": [
+        "waiting_on_housing"
+      ]
+    }
+  },
+  {
+    "id": "family_your_mother_calls_your",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother calls — your mom, who you haven't spoken to properly in months — and mentions her knee has been swelling since July. She says she didn't want to bother anyone.",
+    "leftLabel": "Book her a doctor",
+    "rightLabel": "Send info, let her decide",
+    "leftEffects": {
+      "money": -200,
+      "happiness": 6,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 10
+      }
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -5
+      }
+    }
+  },
+  {
+    "id": "family_your_phone_needs_replacing",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your phone needs replacing. You could get a refurbished model for $180 or put the new one on the company card and call it a business expense.",
+    "leftLabel": "Refurbished, $180",
+    "rightLabel": "Company card",
+    "leftEffects": {
+      "money": -180,
+      "happiness": -5,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "expensed_personal_items"
+      ],
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "family_your_mother_mentions_with",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Saturday morning in March. Your mother's kitchen, which smells exactly the same as it did when you were twelve.",
+    "prompt": "Your mother mentions, with studied casualness, that your father's knees are worse and the guttering needs replacing. She is not asking you directly. Do you offer to come back next weekend with your tools, or let the comment land and move on?",
+    "leftLabel": "Come back, fix it",
+    "rightLabel": "Let it pass",
+    "leftEffects": {
+      "money": -150,
+      "happiness": 8,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "family_a_colleague_mentions_a",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A colleague mentions a weekend project management course. $850, nine Saturdays. You already know most of it, but the certificate has the right logo on it.",
+    "leftLabel": "Register",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "money": -850,
+      "happiness": 5,
+      "flags": [
+        "cert_project_mgmt"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "family_your_spouse_left_a_2",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse left a half-finished grocery list on the counter. You notice it is in someone else's handwriting.",
+    "leftLabel": "Say nothing yet",
+    "rightLabel": "Ask directly",
+    "leftEffects": {
+      "happiness": -8,
+      "flags": [
+        "noticed_something"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "confronted_early"
+      ]
+    }
+  },
+  {
+    "id": "family_your_spouse_wants_to",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse wants to try for a baby. You have been saying 'soon' for two years. Soon is now.",
+    "leftLabel": "Not yet",
+    "rightLabel": "Let's do it",
+    "leftEffects": {
+      "happiness": -8,
+      "flags": [
+        "deferred_kids"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 12,
+      "flags": [
+        "trying_for_baby"
+      ],
+      "kid": true,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "family_your_mother_who_raised",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Your mother's kitchen on a Sunday, the same floral placemats from your childhood. She has lost weight since you last visited.",
+    "prompt": "Your mother, who raised you in this house and has not asked you for a single thing in a decade, mentions she cannot afford the co-pays on her new blood pressure medication. Do you offer to cover it without making it a whole conversation, or ask her to walk you through her finances first?",
+    "leftLabel": "Just cover it",
+    "rightLabel": "Look at the numbers",
+    "leftEffects": {
+      "money": -1800,
+      "happiness": 9,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -400,
+      "happiness": 3,
+      "flags": [
+        "moms_finances_reviewed"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 4
+      },
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "family_a_gym_membership_you",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A gym membership you have been paying $47 a month for since January sits at zero visits. Cancel it or keep paying on the theory that guilt is a valid fitness strategy.",
+    "leftLabel": "Cancel it",
+    "rightLabel": "Keep the guilt",
+    "leftEffects": {
+      "money": 564,
+      "happiness": 2,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": -564,
+      "happiness": -4,
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "family_your_spouse_has_started",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse has started leaving the bedroom light on until you come to bed. You have been sleeping on the couch for three weeks and neither of you has mentioned it.",
+    "leftLabel": "Go upstairs",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": 8,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "flags": [
+        "marriage_distance"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "family_your_mother_mentions_carefully",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Saturday in March, the kitchen of your parents' house. The cabinet doors still hang slightly wrong, the way they always have.",
+    "prompt": "Your mother mentions, carefully, that your father has missed two doctor's appointments and she cannot get him to reschedule. She is asking you to be the one who talks to him.",
+    "leftLabel": "Have the talk",
+    "rightLabel": "Stay out of it",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "managing_dads_health"
+      ],
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "family_the_benefits_renewal_form",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The benefits renewal form has a line for voluntary life insurance. Doubling your coverage adds $38 a month.",
+    "leftLabel": "Double it",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "money": -456,
+      "flags": [
+        "increased_life_insurance"
+      ],
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "family_your_manager_s_parking",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your manager's parking spot sits empty every Friday afternoon. You have been covering his work for three months without a title or a dollar to show for it. Do you put the ask in writing, or keep your head down?",
+    "leftLabel": "Send the email",
+    "rightLabel": "Stay quiet",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "pushed_for_promotion"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_the_annual_review_cycle",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The annual review cycle starts next week. Do you push for a promotion conversation now, or let it ride another year?",
+    "leftLabel": "Request the meeting",
+    "rightLabel": "Wait it out",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "pursued_promotion_51"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_do_you_book_a",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Saturday morning in March. You are at an urgent care clinic two miles from home, waiting behind a man describing his elbow at length to the receptionist.",
+    "prompt": "Do you book a follow-up with a GP and start taking this seriously, or tell yourself it was just the drive over and let it lapse?",
+    "leftLabel": "Book the follow-up",
+    "rightLabel": "Blame the traffic",
+    "leftEffects": {
+      "money": -400,
+      "health": 8,
+      "happiness": -5,
+      "flags": [
+        "managing_blood_pressure"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "health": -10,
+      "happiness": 3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_do_you_answer_carefully",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A conference call in January. Three people you have never met from Corporate Restructuring are asking about your team's headcount and what, exactly, a Senior An",
+    "prompt": "Do you answer carefully and make your function sound indispensable, or be candid about the redundancies and hope transparency reads as trustworthy?",
+    "leftLabel": "Sell the role",
+    "rightLabel": "Be candid",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "restructuring_on_radar"
+      ],
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "flags": [
+        "restructuring_on_radar",
+        "told_truth_to_corporate"
+      ],
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "late_your_mother_calls_just",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother calls, just to talk. You have not spoken in a while. Do you pick up or call back tomorrow?",
+    "leftLabel": "Pick up now",
+    "rightLabel": "Call back tomorrow",
+    "leftEffects": {
+      "happiness": 10,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "late_your_union_rep_emails",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your union rep emails to say the company is offering voluntary early retirement packages to anyone over 60. Do you request the paperwork?",
+    "leftLabel": "Request it",
+    "rightLabel": "Ignore it",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "considering_early_retirement"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_your_knee_has_been",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your knee has been swelling after the commute. The GP says imaging would settle it. Do you book the MRI?",
+    "leftLabel": "Book it",
+    "rightLabel": "Wait and see",
+    "leftEffects": {
+      "money": -420,
+      "health": 5,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "health": -4,
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "late_your_spouse_wants_to",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse wants to book a two-week anniversary trip to Portugal. It would cost roughly $6,400 all in. Do you go?",
+    "leftLabel": "Book it",
+    "rightLabel": "Stay home",
+    "leftEffects": {
+      "money": -6400,
+      "happiness": 15,
+      "relationship": {
+        "name": "{{new:spouse}}",
+        "role": "spouse",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "relationship": {
+        "name": "{{new:spouse}}",
+        "role": "spouse",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_the_office_gym_membership",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The office gym membership renews automatically at $67 a month. You have not been in eleven months. Cancel or keep pretending?",
+    "leftLabel": "Cancel it",
+    "rightLabel": "Keep it",
+    "leftEffects": {
+      "money": 804,
+      "happiness": 2,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -804,
+      "happiness": -4,
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "late_corporate_is_consolidating_two",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Thursday afternoon in the break room. The company-wide email landed twenty minutes ago and people are re-reading it on their phones rather than each other's f",
+    "prompt": "Corporate is consolidating two analytics teams. Your position is safe but your team of four is being cut to two. Do you advocate loudly for your people, or stay quiet and protect your own standing?",
+    "leftLabel": "Advocate loudly",
+    "rightLabel": "Stay quiet",
+    "leftEffects": {
+      "money": 0,
+      "health": 2,
+      "happiness": 8,
+      "flags": [
+        "advocates_for_team"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": -12,
+      "flags": [
+        "stayed_quiet_layoffs"
+      ],
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "late_mom_s_voicemail_is",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Saturday morning in your kitchen. Your mother — who you haven't spoken to in a few months — has sent a voicemail that lasts four minutes and mentions your fat",
+    "prompt": "Mom's voicemail is hard to decipher but the word 'memory' comes up repeatedly. Do you call her back today, or wait until you can brace yourself properly?",
+    "leftLabel": "Call her back",
+    "rightLabel": "Wait a few days",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "aware_of_dads_condition"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_the_retirement_calculator_on",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The retirement calculator on your screen says you need $1.4 million. You have $20,764. Do you close the tab or start a budget?",
+    "leftLabel": "Close the tab",
+    "rightLabel": "Build the budget",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "retirement_avoidant"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "retirement_planning"
+      ]
+    }
+  },
+  {
+    "id": "late_mom_your_mother_calls",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Mom, your mother, calls to say your father's driving has become a problem. He disagrees. She wants you involved. Do you drive out this weekend or suggest they sort it themselves?",
+    "leftLabel": "Drive out",
+    "rightLabel": "Stay out of it",
+    "leftEffects": {
+      "money": -180,
+      "happiness": -4,
+      "flags": [
+        "involved_in_parents_driving_issue"
+      ],
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -5
+      }
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -8
+      }
+    }
+  },
+  {
+    "id": "late_your_spouse_keeps_leaving",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your spouse keeps leaving the retirement calculator open on the shared laptop. Do you sit down and actually run the numbers together, or close the tab and make dinner?",
+    "leftLabel": "Run the numbers",
+    "rightLabel": "Close the tab",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "retirement_planning_started"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "retirement_avoidance"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "late_the_doctor_s_office",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The doctor's office sends a letter about scheduling a routine colonoscopy. You are 61 and two years overdue. Do you call back this week, or let the letter migrate to the recycling bin?",
+    "leftLabel": "Schedule it",
+    "rightLabel": "Ignore for now",
+    "leftEffects": {
+      "money": -320,
+      "health": 10,
+      "flags": [
+        "colonoscopy_done"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "health": -6,
+      "flags": [
+        "overdue_screening"
+      ],
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "retirement_the_library_is_running",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The library is running a free tablet class for seniors on Thursday mornings. Do you sign up, or decide you have managed this long without one?",
+    "leftLabel": "Sign up",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "tech_literate_senior"
+      ],
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "retirement_the_doctor_recommends_a",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Tuesday in March. The cardiologist's waiting room has a small fish tank and magazines from 2019.",
+    "prompt": "The doctor recommends a cardiac stress test - routine at your age, she says, though the word routine is doing some work. Your co-pay will be $340. Do you schedule it now, or ask to revisit at your next annual?",
+    "leftLabel": "Schedule it",
+    "rightLabel": "Wait a year",
+    "leftEffects": {
+      "money": -340,
+      "health": 10,
+      "happiness": -4,
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "health": -5,
+      "happiness": 3,
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "retirement_a_neighbor_mentions_that",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A neighbor mentions that the HOA is looking for someone to chair the social committee. It is unpaid and reportedly exhausting. Do you volunteer?",
+    "leftLabel": "Volunteer",
+    "rightLabel": "Decline politely",
+    "leftEffects": {
+      "health": -4,
+      "happiness": 10,
+      "flags": [
+        "hoa_committee"
+      ],
+      "timeCostMonths": 6
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "retirement_she_sounds_sharp_today",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Sunday afternoon phone call. Your mother, Mom, who you have not spoken to in some months, picks up on the second ring.",
+    "prompt": "She sounds sharp today, sharper than last time, but she mentions twice that she has been eating mostly toast. You could offer to drive up and stay a few days, or send a grocery delivery and call it handled. What kind of child do you want to have been?",
+    "leftLabel": "Drive up",
+    "rightLabel": "Send groceries",
+    "leftEffects": {
+      "money": -180,
+      "health": -3,
+      "happiness": 12,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 15
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -90,
+      "happiness": 3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 3
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "retirement_your_tuesday_morning_is",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your Tuesday morning is now structurally identical to your Saturday morning. Do you sign up for a community woodworking class to give the week some shape?",
+    "leftLabel": "Join the class",
+    "rightLabel": "Stay home",
+    "leftEffects": {
+      "money": -320,
+      "happiness": 12,
+      "flags": [
+        "woodworking_hobby"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "retirement_a_trade_magazine_arrives",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A trade magazine arrives — the old one from your working years — and it still lists your former union's annual dinner. Do you go?",
+    "leftLabel": "Go to the dinner",
+    "rightLabel": "Recycle it",
+    "leftEffects": {
+      "money": -85,
+      "happiness": 14,
+      "flags": [
+        "reconnected_with_trade"
+      ],
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "retirement_a_letter_from_a",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A letter from a Medicare supplemental plan arrives, offering slightly better dental coverage for $47 more per month. Do you switch or leave things as they are?",
+    "leftLabel": "Switch plans",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "money": -564,
+      "happiness": 3
+    },
+    "rightEffects": {
+      "happiness": -1
+    }
+  },
+  {
+    "id": "retirement_a_letter_arrives_from_2",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A letter arrives from a company offering to manage your Medicare supplements for a flat monthly fee. The brochure has a lot of eagles on it.",
+    "leftLabel": "Sign up",
+    "rightLabel": "Throw it out",
+    "leftEffects": {
+      "money": -1800,
+      "happiness": -8,
+      "flags": [
+        "fell_for_senior_scam"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 3
+    }
+  },
+  {
+    "id": "retirement_you_are_already_spending",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Tuesday morning in the cardiologist's waiting room, the kind with a fish tank and magazines from eighteen months ago.",
+    "prompt": "You are already spending more than you earn each year. Do you fill the new prescription immediately, or wait and appeal to insurance first?",
+    "leftLabel": "Fill it now",
+    "rightLabel": "Fight insurance",
+    "leftEffects": {
+      "money": -4080,
+      "health": 8,
+      "happiness": -5
+    },
+    "rightEffects": {
+      "money": -200,
+      "health": -4,
+      "happiness": -10,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "retirement_a_neighbor_two_doors",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A neighbor two doors down has started leaving their trash bins in front of your driveway every collection day. It has been six weeks.",
+    "leftLabel": "Leave a note",
+    "rightLabel": "Call the city",
+    "leftEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "{{new:neighbor}}",
+        "role": "neighbor",
+        "qualityDelta": -5
+      }
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "relationship": {
+        "name": "{{new:neighbor}}",
+        "role": "neighbor",
+        "qualityDelta": -20,
+        "flags": [
+          "bin_dispute_escalated"
+        ]
+      }
+    }
+  },
+  {
+    "id": "retirement_it_is_a_small",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A community centre in late January. Folding chairs, bad coffee, and a sign on the door that says Adult Enrichment.",
+    "prompt": "It is a small expense you cannot entirely justify. Do you sign up and find out whether you are actually someone who paints, or save the money for something useful?",
+    "leftLabel": "Sign up",
+    "rightLabel": "Save it",
+    "leftEffects": {
+      "money": -180,
+      "happiness": 14,
+      "flags": [
+        "takes_art_class"
+      ]
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -4
+    }
+  },
+  {
+    "id": "retirement_a_letter_from_medicare",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A letter from Medicare arrives with a correction notice and a $340 bill you do not recognize. Do you call the number on the letter or ignore it?",
+    "leftLabel": "Call the number",
+    "rightLabel": "Ignore it",
+    "leftEffects": {
+      "money": -340,
+      "happiness": -5,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -890,
+      "happiness": -10,
+      "flags": [
+        "billing_dispute_ignored"
+      ],
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "retirement_your_mother_calls_her",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother calls — her voice thinner than you remember — asking if you might visit this month. Do you book the trip or promise next month instead?",
+    "leftLabel": "Book the trip",
+    "rightLabel": "Promise next month",
+    "leftEffects": {
+      "money": -620,
+      "happiness": 15,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 15
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "retirement_a_letter_arrives_offering",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A letter arrives offering a free cruise for two in exchange for attending a ninety-minute resort presentation. Do you send back the reply card?",
+    "leftLabel": "Send it back",
+    "rightLabel": "Bin it",
+    "leftEffects": {
+      "money": -2400,
+      "happiness": -8,
+      "flags": [
+        "attended_timeshare_pitch"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "timeCostMonths": 0.25
+    }
   }
 ]

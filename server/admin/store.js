@@ -31,6 +31,11 @@ export const FILES = {
   seeds: { file: path.join(ROOT, 'data', 'scenarios-seed.json'), kind: 'seed' },
   drafts: { file: path.join(ROOT, 'situation-library.draft.json'), kind: 'pattern' },
   rejected: { file: path.join(ROOT, 'situation-library.draft.rejected.json'), kind: 'rejection' },
+  // Bulk-generated seed candidates (server/seed-generation.js). Same draft/
+  // approve/reject shape as `drafts`/`library` above, targeting the seed deck
+  // instead of the situation library.
+  seedDrafts: { file: path.join(ROOT, 'scenarios-seed.draft.json'), kind: 'seed' },
+  seedRejected: { file: path.join(ROOT, 'scenarios-seed.draft.rejected.json'), kind: 'rejection' },
   // Not present in the repo yet. Everything here copes with that; the thread
   // editor is the one feature deliberately left for later.
   threads: { file: path.join(ROOT, 'server', 'thread-templates.json'), kind: 'thread' },
@@ -54,7 +59,9 @@ const KEY_ORDER = {
     'requiresFlags', 'forbidsFlags',
     'setting', 'beat', 'dialogue', 'prompt', 'leftLabel', 'rightLabel',
     'leftEffects', 'rightEffects', 'timeCostMonths'],
-  rejection: ['id', 'rejectedAt', 'reason', 'pattern'],
+  // `pattern` for a rejected library draft, `scenario` for a rejected seed
+  // draft - the rejector writes whichever key its content type uses.
+  rejection: ['id', 'rejectedAt', 'reason', 'pattern', 'scenario'],
   thread: ['id', 'beats'],
 };
 

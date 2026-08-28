@@ -115,6 +115,7 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `server/prompt.js` | builds the system + user storyteller prompts and the obituary prompt. (The spec calls this `llm.js`.) |
 | `server/log-store.js` | the LLM log file: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
+| `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
 | `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender and per-region frequency. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
@@ -154,6 +155,7 @@ npm run coverage                       # seed coverage per bucket/mode
 npm run names                          # validate the name pool + measure its spread
 npm run build-region-weights -- <dir>  # regenerate region_frequency from SSA data
 npm run extract-patterns -- source.txt # draft library patterns (never auto-merges)
+npm run generate-seeds -- --mode=both --target=15  # draft seed scenarios for thin buckets (never auto-merges)
 npm run admin                          # build dist-admin/, serve, open :8787/admin
 npm run dev:admin                      # admin vite :5174 + api, for admin UI work
 npm run normalise-content              # rewrite content files in canonical key order
@@ -197,6 +199,16 @@ seen list.
 
 **Seed deck** — 57 hand-authored scenarios plus 27 procedural fallback
 templates. Coverage targets: 8 for the opening bracket, 4 elsewhere, per mode.
+`server/seed-generation.js` (CLI: `npm run generate-seeds`; admin: the
+"Generate seeds" tab) bulk-drafts candidates for whichever bucket/mode pairs
+`npm run coverage` flags as short, down the real prompt/validator path against
+a generic per-bucket sample state — never a real player's. Draft-only, same as
+extraction: it writes `scenarios-seed.draft.json` and stops. Every bucket
+meeting its target is the common case, in which a plain run has nothing to
+do; `--force` (CLI) / the "generate even for buckets that already meet their
+coverage target" checkbox (admin) generates for every bucket/mode pair
+regardless, since the bare target is a floor, not a ceiling on how much
+variety a bucket is worth having.
 
 **Names** — 187 names across 49 cultural origins in `server/name-pool.json`,
 each carrying the era it was in use and any gender it reads as. The engine
@@ -372,6 +384,7 @@ dev    ← integration branch, work lands here
 | EventToast timing fix + consequence modal | shipped | on `dev` — toast duration fixed at ~3.8s (was a flat 4.2s regardless of read time), paused while a pointer is down anywhere on screen, tap-to-dismiss-early. `client/src/severity.js` classifies each turn's events/new-flags/stat-delta as `major` or `standard`; `major` (a resolved pending event, a significant new flag, or a ±15+ health/happiness swing - all tunable in that one file) routes through `ConsequenceModal` (explicit tap to close) instead of the toast. Presentation-only: no engine/effect changes. |
 | Career/education continuity | shipped | on `dev` — same class of bug as off-screen relationship reintroduction, different mechanism: `stateSummary()` in `shared/engine.js` now derives a `careerBackground` object (current occupation, current education, and any of `CAREER_BACKGROUND_FLAGS` = `college_degree`/`trade_cert`/`white_collar_experience` the life has earned), computed fresh every call so it can never scroll out of the trimmed recent-history window. Surfaced in every generation prompt as its own STATE line, plus a new CAREER BACKGROUND FLAGS / CAREER PLAUSIBILITY block in the system prompt instructing the model that a white-collar offer needs a bridging event without a qualifying flag already on record. Four career-category situation-library patterns that previously fired with `requires: []` despite presupposing white-collar standing (`early_career_toxic_mentor`, `early_career_toxic_mentorship`, `market_crash_job_loss`, `market_crash_job_loss_2`) now require `college_degree`; the seed deck's `col_major` (declaring a CS/philosophy major) sets it. No engine/effect-resolution changes - purely context completeness and library gating |
 | Off-screen relationship reintroduction | shipped | on `dev` — a named relationship absent from the recent-history window is marked `[OFF-SCREEN lately]` in the prompt's people line (which already carries role/flags), and the storyteller is asked to reintroduce it by role on first mention ("Dmitri, the guy from your study group") rather than a bare name. Log-only backstop `checkReintroductions` (`shared/names.js`) fires through `validateBatch` → `validationWarnings` → Logs tab across all tiers, best-effort string match. No tier budgets, structure or effect/engine changes; no question-mark/either-or rule added |
+| Bulk seed-scenario generation | shipped | on `bulk-seed-generation` — `server/seed-generation.js` drafts candidates for whichever bucket/mode pairs `npm run coverage` flags short, down the real `server/prompt.js` templates and `shared/schema.js`/`shared/content.js` validators against a generic per-bucket sample state (built from the real engine's `createState`, trimmed to Mom/Dad only so no card can hardcode one throwaway life's assigned names). Weight-tier mix biased toward minor (`tierQuotas`); roughly 1-in-4-5 candidates ground in an eligible situation-library pattern via `shared/library.js`'s own `filterPatterns`. `npm run generate-seeds -- --mode=both --target=15` (CLI) and the admin's "Generate seeds" tab (`POST /api/generate-seeds`) share this core. Draft-only: writes `scenarios-seed.draft.json`, never `data/scenarios-seed.json`. Draft review generalises the existing pattern-draft approve/reject/edit routes (`server/admin/index.js`'s `draftRoutes`) and UI (`admin/src/components/DraftQueue.jsx`, extracted from `Extraction.jsx`) to a second draft/target pair rather than duplicating them. `force` (CLI `--force`, admin checkbox) generates for every bucket/mode pair regardless of current coverage, not only short ones - the common case once the deck is healthy is that a plain run has nothing to do. No live generation path, engine or validator changes |
 
 ---
 
@@ -418,6 +431,16 @@ Other things worth knowing before working on it:
 - The thread-template editor is deliberately absent: `thread-templates.json`
   does not exist. The cross-reference check and the stats view already branch on
   that, so adding it later is a new file plus a nav entry.
+- **Seed generation never merges either.** The "Generate seeds" tab
+  (`admin/src/components/SeedGeneration.jsx`) and `npm run generate-seeds`
+  both call `server/seed-generation.js`, which only appends to
+  `scenarios-seed.draft.json`. Draft review — edit inline, approve & merge
+  into `data/scenarios-seed.json`, or reject — reuses the same
+  `admin/src/components/DraftQueue.jsx` component and the same
+  `PUT|POST /api/<draftKey>/:id[/approve|/reject]` route shape
+  (`server/admin/index.js`'s `draftRoutes`) that pattern-draft review uses,
+  parametrised by draft file, target file and validator rather than
+  duplicated.
 - `admin/` is a separate Vite root building to `dist-admin/`. `npm run build`
   never sees it, which is why no admin code can reach the player bundle.
 
