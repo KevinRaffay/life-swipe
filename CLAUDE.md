@@ -98,6 +98,50 @@ engine that ships.
 
 ---
 
+## Current file structure
+
+The concrete `server/` and `client/` files, with what each one owns. **Keep
+this current**: when a file is added, renamed, merged or deleted, update this
+section in the same commit — a stale map is worse than none. (`shared/`,
+`scripts/` and `data/` are covered by the Architecture map above.)
+
+**`server/`** — the API process (Node, ESM).
+
+| file | owns |
+| --- | --- |
+| `server/index.js` | the HTTP server: serves `dist/`, the `/api/*` endpoints (`scenarios`, `obituary`, `region`, `coverage`, seed/library/name-pool reads), resolves the content tier, and mounts the admin when bound to loopback. |
+| `server/anthropic.js` | the Messages API client, hand-rolled (no SDK). Holds the API key check, `MODEL`, `complete`, `extractJson`. |
+| `server/llm.js` | wraps the `anthropic.js` call for `/api/scenarios` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. |
+| `server/prompt.js` | builds the system + user storyteller prompts and the obituary prompt. (The spec calls this `llm.js`.) |
+| `server/log-store.js` | the LLM log file: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
+| `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
+| `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
+| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender and per-region frequency. |
+| `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
+| `server/admin/index.js` | the admin API router; mounted at `/admin`, loopback-only, no auth. Every route can rewrite content files. |
+| `server/admin/store.js` | the ONLY writer of content files: `.bak` backup, temp-file atomic write, content-hash version check. |
+| `server/admin/preview.js` | live preview: runs the real generation path against fresh in-memory sample state and returns raw + validated output, including the cards `/api/scenarios` would have dropped. |
+| `server/admin/cross-reference.js` | best-effort reachability check: which library `requires` flags nothing in the game ever sets. Advisory, never a save blocker. |
+| `server/admin/content-schema.js` | field-level validation for the two editable content types, reusing the extraction checks and the game's own `validateScenario`. |
+
+**`client/`** — the player app (React, built by Vite to `dist/`).
+
+| file | owns |
+| --- | --- |
+| `client/index.html` | the Vite HTML entry. |
+| `client/src/main.jsx` | mounts the React root. |
+| `client/src/App.jsx` | the root component: the game loop, the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`) and which screen is showing. |
+| `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently. |
+| `client/src/prefs.js` | per-player cross-life memory in `localStorage` (content mode, age gate, region choice, `seen_patterns`/`seen_seed_ids`), every access wrapped. |
+| `client/src/styles.css` | all styles. |
+| `client/src/components/CardStack.jsx` | the swipe gesture (pointer events) and tiered card rendering. |
+| `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. |
+| `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice. |
+| `client/src/components/EventToast.jsx` | the transient toast of what the engine did to the player after the last swipe. |
+| `client/src/components/Obituary.jsx` | the end-of-life screen; fetches the obituary and falls back to a locally written one. |
+
+---
+
 ## Commands
 
 ```bash
