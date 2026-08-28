@@ -5,7 +5,8 @@
 //
 // The LLM call itself has no idea whether its output will be accepted; that is
 // decided by the caller after validating the response. So `callLLM` returns a
-// `finalizeLog(validationResult, validationErrors)` function instead of writing
+// `finalizeLog(validationResult, validationErrors, validationWarnings)`
+// function instead of writing
 // immediately - the caller invokes it once, after validation, and that write is
 // what actually appends the line. It is fire-and-forget (see log-store.js), so
 // it never adds latency to the response already on its way to the player.
@@ -73,12 +74,14 @@ export async function callLLM({
     stopReason: result ? result.stopReason : null,
     error: apiError,
     // Call exactly once, after inspecting the response, to write the one log
-    // line for this call.
-    finalizeLog(validationResult, validationErrors = null) {
+    // line for this call. Warnings are advisory craft observations and can
+    // accompany any result, including 'passed'.
+    finalizeLog(validationResult, validationErrors = null, validationWarnings = null) {
       appendLog({
         ...record,
         validationResult: validationResult ?? null,
         validationErrors: validationErrors && validationErrors.length ? validationErrors : null,
+        validationWarnings: validationWarnings && validationWarnings.length ? validationWarnings : null,
       });
     },
   };

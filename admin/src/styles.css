@@ -121,6 +121,8 @@ fieldset.modes legend { font-size: 11px; color: var(--muted); text-transform: up
 
 .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .problems { margin: 0; padding-left: 18px; color: var(--danger); font-size: 12px; }
+.craft-warnings { margin: 0; padding-left: 18px; color: var(--warn); font-size: 12px; }
+.pill--craft { color: var(--warn); border-color: rgba(232, 178, 58, 0.4); margin-left: 6px; }
 
 /* ------------------------------------------------------------- warnings */
 

@@ -126,6 +126,11 @@ export default function Logs() {
                     <span className={`pill pill--${r.validationResult || 'unknown'}`}>
                       {OUTCOME_LABEL[r.validationResult] || r.validationResult || 'unknown'}
                     </span>
+                    {r.validationWarnings && r.validationWarnings.length > 0 && (
+                      <span className="pill pill--craft" title="craft warnings — logged, not rejected">
+                        {r.validationWarnings.length} ⚠
+                      </span>
+                    )}
                   </td>
                   <td>{r.age ?? '—'}</td>
                   <td>{r.contentMode || '—'}</td>
@@ -164,6 +169,12 @@ export default function Logs() {
               {detail.apiError && <p className="error">API error: {detail.apiError}</p>}
               {detail.validationErrors && detail.validationErrors.length > 0 && (
                 <ul className="problems">{detail.validationErrors.map((e, i) => <li key={i}>{e}</li>)}</ul>
+              )}
+              {detail.validationWarnings && detail.validationWarnings.length > 0 && (
+                <>
+                  <p className="muted small">craft warnings — logged, not rejected:</p>
+                  <ul className="craft-warnings">{detail.validationWarnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
+                </>
               )}
               <details open>
                 <summary>assembled prompt</summary>

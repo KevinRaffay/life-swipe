@@ -402,10 +402,10 @@
     ],
     "weight": "major",
     "priority": 2,
-    "setting": "Registration deadline, Thursday, the form open on a library computer.",
-    "beat": "Two boxes, one submit button, a queue building behind you, and a decision that will follow you into rooms you cannot picture yet.",
-    "dialogue": "\"You can change it later,\" says the girl waiting. Nobody changes it later.",
-    "prompt": "Declare a major. Computer science, which pays, or philosophy, which explains why that matters and then does not help.",
+    "setting": "The library computer bank on a Thursday, the registration deadline at noon, a queue forming behind you.",
+    "beat": "The starting salaries are $74,000 for computer science and $41,000 for philosophy, according to the pamphlet nobody reads.",
+    "dialogue": "The girl waiting behind you says you can change it later. Nobody changes it later.",
+    "prompt": "Declare the major that pays for the life, or the one that explains it, and decide which person you can stand being at forty.",
     "leftLabel": "Computer science",
     "rightLabel": "Philosophy",
     "leftEffects": {
@@ -550,10 +550,10 @@
       "mature"
     ],
     "weight": "major",
-    "setting": "A borrowed office above a barber's, three chairs and a whiteboard.",
-    "beat": "They have already put your name on the deck, under a title you did not agree to.",
-    "dialogue": "\"We can't do it without you,\" one of them says, meaning it entirely.",
-    "prompt": "Two friends want you to drop out for a company that makes an app for splitting restaurant bills. They have a deck. The deck has a hockey stick on it.",
+    "setting": "A borrowed office above a barber's on a Tuesday night, three chairs, a whiteboard, somebody's dinner going cold.",
+    "beat": "They are offering ten percent of the company and $24,000 a year, with eight months of runway raised.",
+    "dialogue": "One of them says they cannot do it without you, and means it entirely.",
+    "prompt": "Three semesters from a degree, or a bill-splitting app with your name already on the deck. Decide which story you want to tell about yourself.",
     "leftLabel": "Drop out, join them",
     "rightLabel": "Finish the degree",
     "leftEffects": {
@@ -740,10 +740,10 @@
       "mature"
     ],
     "weight": "major",
-    "setting": "September, a city you have visited once, for a weekend, in the rain.",
-    "beat": "The lease needs signing by Thursday, your mother has stopped asking about it, and the box room here has started to feel like a decision you already made.",
-    "dialogue": "\"It's four hours,\" she says. \"That's nothing.\" It is not nothing.",
-    "prompt": "A job in a city where you know one person. Rent doubles. So does everything else, including, allegedly, you.",
+    "setting": "September, a city you have visited exactly once, for a rained-out weekend you keep editing into a good one.",
+    "beat": "The job pays $118,000; the rent is $2,400 against the $1,100 you pay now, and the lease needs signing Thursday.",
+    "dialogue": "Mom says four hours is nothing, in the voice she uses for things that are not nothing.",
+    "prompt": "Do you become someone who left and built a life from scratch, or someone who stayed close and never had to find out?",
     "leftLabel": "Move",
     "rightLabel": "Stay near home",
     "leftEffects": {
@@ -918,10 +918,10 @@
     "requiresFlags": [
       "married"
     ],
-    "setting": "A Tuesday, the good restaurant, between the salad and the check.",
-    "beat": "The conversation you have both been circling for two years arrives uninvited, between the salad and the check, in a restaurant chosen for being loud.",
-    "dialogue": "\"We keep saying next year,\" they say. \"I've stopped believing us.\"",
-    "prompt": "The conversation you have both been circling for two years arrives at the table on a Tuesday, uninvited, between the salad and the check.",
+    "setting": "A Tuesday at the good restaurant, chosen for being loud, somewhere between the salad and the check.",
+    "beat": "You have been circling this for two years; the first year alone costs about $12,000, and you both know it.",
+    "dialogue": "They say the two of you keep saying next year, and they have stopped believing it.",
+    "prompt": "Do you become somebody's parent starting now, at this table, or stay the couple whose plans are always scheduled for next year?",
     "leftLabel": "Have a kid",
     "rightLabel": "Keep the apartment quiet",
     "leftEffects": {
@@ -1908,10 +1908,10 @@
       "mature"
     ],
     "weight": "major",
-    "setting": "A town hall on Teams, the package explained in eleven slides.",
-    "beat": "Anyone over fifty-five may volunteer, which is how they avoid choosing.",
-    "dialogue": "\"Purely voluntary,\" says the slide, and then again, out loud.",
-    "prompt": "They are offering a package to anyone over fifty-five who volunteers, which is how they avoid choosing. The number is eleven months of salary and the alternative is finding out whether they would have chosen you.",
+    "setting": "A town hall held on Teams, the severance package explained in eleven slides, cameras optional and mostly off.",
+    "beat": "Eleven months of salary, about $62,000, for anyone over fifty-five who volunteers, which is how they avoid choosing.",
+    "dialogue": "The presenter says the word voluntary twice, once on the slide and once out loud.",
+    "prompt": "Do you jump while jumping is paid for, or stay and find out whether they would ever have chosen you?",
     "leftLabel": "Volunteer",
     "rightLabel": "Make them decide",
     "leftEffects": {

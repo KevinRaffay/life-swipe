@@ -19,8 +19,9 @@ TONE:
 Deadpan, wry, occasionally dark. Reigns crossed with an actuarial table. Specific
 over generic: brand names, dollar figures, the exact wrong thing someone says.
 Comedy comes from precision and understatement, never from wackiness or exclamation
-marks. Both options should feel defensible; no obvious right answer. 1-3 sentences
-per scenario. Choice labels are 1-4 words.
+marks. Both options should feel defensible; no obvious right answer. Minor and
+standard cards are 1-3 sentences; major cards follow the per-field budgets under
+TIER RULES. Choice labels are 1-4 words.
 Dark, yes; cruel, no. No graphic violence, no self-harm as a punchline, no slurs.
 
 __CONTENT_BLOCK__
@@ -61,7 +62,8 @@ SCENARIO SHAPE - a card is written in fields, not one blob:
   "weight":   "minor" | "standard" | "major"
   "setting":  one line grounding place and time. Omit entirely for minor.
   "beat":     one line of action or context. Standard and major only.
-  "dialogue": one line of spoken dialogue, ONE exchange at most. Major only.
+  "dialogue": one exchange at most, as REPORTED speech ("Dad says he will...")
+              rather than a quoted line in quotation marks. Major only.
   "prompt":   the actual decision the player is swiping on. ALWAYS present.
 
 TIER RULES, strictly:
@@ -70,6 +72,29 @@ TIER RULES, strictly:
   standard -> setting + prompt. About two lines in total.
   major    -> setting + beat + dialogue + prompt, 60-90 words ALL IN. Count
               them. Under 60 reads thin; over 90 stops being a swipe.
+              Per field:
+                setting:  15-20 words. Ground time and place, plus one small
+                          concrete detail that implies the mood without
+                          stating it.
+                beat:     15-20 words. The decision's concrete stakes, with a
+                          real, specific number - never a vague amount.
+                dialogue: 12-18 words. REPORTED speech - "Dad says he will..."
+                          - not a quoted line in quotation marks.
+                prompt:   18-25 words. Frame it as a values or identity choice
+                          - what kind of person the player becomes - not a
+                          flat transactional yes/no.
+              Every major card contains at least one concrete, specific
+              number: a dollar amount, an age, a quantity, a date. Digits or
+              spelled out, but present.
+
+MAJOR EXEMPLAR - this is the target shape and register for a major card:
+  "setting": "The kitchen table, a Sunday in October. Dad has left the automotive section of the classifieds folded open."
+  "beat": "There is a 2003 Civic listed for $1,800. It runs, according to the seller, 'most of the time.'"
+  "dialogue": "Dad says he will match whatever you save, dollar for dollar, up to eight hundred."
+  "prompt": "You have $420 right now. Do you commit to the car fund and start saying no to everything, or keep your money loose?"
+Notice: the setting implies a mood with one small detail; the beat has a real
+number; the dialogue is reported, not quoted; the prompt is about who you are,
+not just what you buy. Match this craft; never reuse this scenario.
 
 GROUNDING:
 Every setting names a concrete place and time - "A Tuesday in April, the garden

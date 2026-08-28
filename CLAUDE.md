@@ -126,6 +126,15 @@ that must stay in sync: authoring detail *and* time cost.
 | `standard` | setting + prompt | ~9 months |
 | `major` | setting + beat + dialogue + prompt, 60–90 words | ~30 months |
 
+A major card also carries per-field budgets, anchored by a worked exemplar in
+the system prompt: setting 15–20 words, beat 15–20 (with a real specific
+number), dialogue 12–18 as *reported* speech ("Dad says he will…", not a
+quoted line), prompt 18–25 framed as a values/identity choice. Every major
+card needs at least one concrete number — a dollar amount, an age, a
+quantity, a date. Drift outside ±30% of a field budget, or a missing number,
+is *logged* (`narrativeWarnings` → `validationWarnings` on the call record),
+never rejected.
+
 `trivial` is a legacy alias for `minor`. Most cards should be `minor` — that is
 what keeps the swipe rhythm.
 
@@ -282,15 +291,15 @@ confirm it fails before trusting it.
 
 New work goes on a branch off `dev`. Always create that branch before starting
 a new feature — never commit a new feature straight to `dev`. Name it short
-and `snake_case`, describing the feature (`request_response_logging`, not
-`fix` or `feature/thing` or `request-response-logging`). **The user merges to
+and `kebab-case`, describing the feature (`request-response-logging`, not
+`fix` or `feature/thing` or `request_response_logging`). **The user merges to
 `main` themselves** after testing; do not merge to `main` unless explicitly
 asked.
 
 ```
 main   ← user merges, after testing dev
 dev    ← integration branch, work lands here
-<feature branches off dev, short snake_case name>
+<feature branches off dev, short kebab-case name>
 ```
 
 ---
@@ -313,6 +322,7 @@ dev    ← integration branch, work lands here
 | LLM request/response logging + log viewer | shipped | on `main` — wraps the `/api/scenarios` generation call only (not obituary, extraction or preview); JSON Lines, gzip rotation, `/admin` Logs tab |
 | Admin edit forms open in a modal dialog | shipped | on `dev` — library, seed and draft-review forms open in a centered dialog (`admin/src/components/Modal.jsx`) instead of inline below the grid; Esc/backdrop-click/Cancel discard and unmount. The cross-reference warnings panel stays above the grid, not in the dialog. Draft review gained a row-level quick "Approve" alongside "Edit & approve". No data logic, validation or API changes |
 | Extraction content dedup check | shipped | on `dev` — `duplicateWarnings` flags likely repeat patterns by word overlap; see the admin module section below |
+| Major-tier exemplar prompt + craft warnings | shipped | on `dev` — worked exemplar and per-field word budgets in the system prompt; log-only `validationWarnings` through `validateBatch` → `finalizeLog` → Logs tab; 5 weakest major seeds rewritten (`col_major`, `col_dropout`, `ec_move`, `ec_kid`, `lt_severance_or_stay`) |
 
 ---
 
@@ -378,8 +388,16 @@ extraction. The log schema is shaped around gameplay (`triggeredBy` is only
 don't have that context. Preview and extraction already show their own raw
 output in the admin UI, so nothing about them is opaque today.
 
+Major-tier craft drift — a field outside ±30% of its word budget, or a card
+with no concrete number — is measured by `narrativeWarnings` during
+`validateBatch` and logged as `validationWarnings` on the call record, never
+rejected. Passing calls carry warnings too (the third `finalizeLog` argument),
+and the Logs tab shows them as an amber list in the call detail plus a count
+pill on the row — so the signal is read, not just written.
+
 A request is logged once, after validation has run, not at call time —
-`callLLM` returns a `finalizeLog(validationResult, validationErrors)` closure
+`callLLM` returns a `finalizeLog(validationResult, validationErrors,
+validationWarnings)` closure
 because the call itself has no way to know whether its output will be
 accepted. On a two-attempt request, the winning attempt (if any) logs
 `"passed"`, an earlier attempt that got retried logs `"failed"`, and whichever

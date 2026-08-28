@@ -7,7 +7,7 @@
 // job (engine.js -> normalizeEffects), because that depends on live game state.
 
 import { checkCompliance, MODES } from './content.js';
-import { TIERS, normalizeNarrative, displayText } from './scenario-format.js';
+import { TIERS, normalizeNarrative, displayText, narrativeWarnings } from './scenario-format.js';
 import { checkNameDrift } from './names.js';
 
 const WEIGHTS = new Set([...TIERS, 'trivial']);
@@ -205,15 +205,16 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relati
     try {
       raw = JSON.parse(raw);
     } catch {
-      return { ok: false, scenarios: [], errors: ['batch: not valid JSON'] };
+      return { ok: false, scenarios: [], errors: ['batch: not valid JSON'], warnings: [] };
     }
   }
   // Tolerate { scenarios: [...] } as well as a bare array.
   if (raw && !Array.isArray(raw) && Array.isArray(raw.scenarios)) raw = raw.scenarios;
-  if (!Array.isArray(raw)) return { ok: false, scenarios: [], errors: ['batch: expected a JSON array'] };
+  if (!Array.isArray(raw)) return { ok: false, scenarios: [], errors: ['batch: expected a JSON array'], warnings: [] };
 
   const scenarios = [];
   const errors = [];
+  const warnings = []; // advisory craft observations; never affect ok/errors
   let rejectedForMode = 0;
   let rejectedForNameDrift = 0;
   raw.forEach((item, i) => {
@@ -245,10 +246,16 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relati
         return;
       }
     }
+    // Craft drift on a surviving major card is logged, never rejected: the
+    // per-field budgets live in the prompt, and this measures how well they
+    // hold rather than punishing a playable card for missing them.
+    if (res.scenario.weight === 'major') {
+      for (const w of narrativeWarnings(res.scenario)) warnings.push(`scenario[${i}]: ${w}`);
+    }
     scenarios.push(res.scenario);
   });
 
-  return { ok: scenarios.length >= minValid, scenarios, errors, rejectedForMode, rejectedForNameDrift };
+  return { ok: scenarios.length >= minValid, scenarios, errors, warnings, rejectedForMode, rejectedForNameDrift };
 }
 
 function hash(str) {

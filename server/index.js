@@ -139,7 +139,7 @@ app.post('/api/scenarios', async (req, res) => {
     }
 
     const parsed = extractJson(call.text);
-    const { ok, scenarios, errors, rejectedForMode, rejectedForNameDrift } = validateBatch(parsed, {
+    const { ok, scenarios, errors, warnings, rejectedForMode, rejectedForNameDrift } = validateBatch(parsed, {
       minValid: 3,
       tier,
       age: summary.age,
@@ -148,8 +148,11 @@ app.post('/api/scenarios', async (req, res) => {
       relationships: summary.relationships,
     });
 
+    // Advisory craft warnings ride on the call either way: a failed batch can
+    // still contain passing major cards worth measuring.
+    call.validationWarnings = warnings;
     if (ok) {
-      won = { call, scenarios, errors, rejectedForMode, rejectedForNameDrift };
+      won = { call, scenarios, errors, warnings, rejectedForMode, rejectedForNameDrift };
       break;
     }
     call.validationErrors = errors;
@@ -161,9 +164,9 @@ app.post('/api/scenarios', async (req, res) => {
   // call was the LAST one made is what the player actually falls back away
   // from if nothing won.
   calls.forEach((call, i) => {
-    if (won && call === won.call) call.finalizeLog('passed');
-    else if (!won && i === calls.length - 1) call.finalizeLog('fell_back_to_seed', call.validationErrors);
-    else call.finalizeLog('failed', call.validationErrors);
+    if (won && call === won.call) call.finalizeLog('passed', null, call.validationWarnings);
+    else if (!won && i === calls.length - 1) call.finalizeLog('fell_back_to_seed', call.validationErrors, call.validationWarnings);
+    else call.finalizeLog('failed', call.validationErrors, call.validationWarnings);
   });
 
   if (won) {
@@ -182,6 +185,7 @@ app.post('/api/scenarios', async (req, res) => {
       librarySlot: librarySlot ? librarySlot.id : null,
       attempt: calls.indexOf(won.call) + 1,
       dropped: won.errors.length,
+      warnings: won.warnings.length,
       rejectedForMode: won.rejectedForMode,
       rejectedForNameDrift: won.rejectedForNameDrift,
       ...(preview ? { preview: true, assignedNames } : {}),

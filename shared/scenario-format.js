@@ -20,6 +20,26 @@ export const FIELD_LIMITS = { setting: 160, beat: 200, dialogue: 200, prompt: 40
 // here so drift is visible rather than assumed.
 export const MAJOR_WORDS = [60, 90];
 
+// Per-field word targets for a major card, same contract as MAJOR_WORDS:
+// the prompt asks for them, narrativeWarnings measures them, nothing rejects
+// on them. Warnings fire only outside the targets widened by WORD_TOLERANCE.
+export const MAJOR_FIELD_WORDS = {
+  setting: [15, 20],
+  beat: [15, 20],
+  dialogue: [12, 18],
+  prompt: [18, 25],
+};
+export const WORD_TOLERANCE = 0.3;
+
+// "Has a concrete number" means digits anywhere, or a spelled-out quantity
+// word. "one" and ordinals are deliberately absent - "the one", "no one" and
+// "first date" would make the missing-number warning near-impossible to fire.
+const NUMBER_WORD = /\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|dozen|half)\b/i;
+
+export function hasConcreteNumber(text) {
+  return /\d/.test(text) || NUMBER_WORD.test(text);
+}
+
 const SLUGLINE = /^\s*(INT\.|EXT\.|INT\/EXT|FADE (IN|OUT)|CUT TO|ANGLE ON|CLOSE ON)[\s.:-]*/i;
 const CAPS_NAME = /\b[A-Z]{2,}(?:\s+[A-Z]{2,})*\s*:\s*/;
 
@@ -82,6 +102,18 @@ export function narrativeWarnings(s) {
     const n = wordCount(s);
     if (n < MAJOR_WORDS[0]) warnings.push('major is ' + n + ' words, under ' + MAJOR_WORDS[0]);
     if (n > MAJOR_WORDS[1]) warnings.push('major is ' + n + ' words, over ' + MAJOR_WORDS[1]);
+    for (const [field, [lo, hi]] of Object.entries(MAJOR_FIELD_WORDS)) {
+      if (!isStr(s[field])) continue; // absence is already reported above
+      const words = s[field].split(/\s+/).filter(Boolean).length;
+      const min = Math.floor(lo * (1 - WORD_TOLERANCE));
+      const max = Math.ceil(hi * (1 + WORD_TOLERANCE));
+      if (words < min || words > max) {
+        warnings.push('major ' + field + ' is ' + words + ' words, target ' + lo + '-' + hi);
+      }
+    }
+    if (!hasConcreteNumber(displayText(s))) {
+      warnings.push('major has no concrete number');
+    }
   }
   return warnings;
 }
