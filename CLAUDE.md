@@ -298,12 +298,12 @@ dev    ← integration branch, work lands here
 | Situation library + pending events | shipped | on `main` |
 | Content modes (safe/mature) | shipped | on `main` |
 | Electric-dusk visual restyle | shipped | on `main` |
-| Seed schema, anti-repetition, coverage | **on `dev`, awaiting user testing** | |
-| Scenario tiers (setting/beat/dialogue/prompt) | **on `dev`, awaiting user testing** | |
-| Seen-window measured in lives | **on `dev`, awaiting user testing** | |
-| Engine-controlled name assignment | **on `dev`, awaiting user testing** | pool, both tag forms, drift check, preview path, randomized seed-deck cast |
-| Regional name weighting | **on `dev`, awaiting user testing** | offline geoip, settings override, SSA-derived weights. Adds `geoip-lite`, so `npm install` before running |
-| Content admin module | **on `admin-module`, awaiting user testing** | localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
+| Seed schema, anti-repetition, coverage | shipped | on `dev` |
+| Scenario tiers (setting/beat/dialogue/prompt) | shipped | on `dev` |
+| Seen-window measured in lives | shipped | on `dev` |
+| Engine-controlled name assignment | shipped | on `dev` — pool, both tag forms, drift check, preview path, randomized seed-deck cast |
+| Regional name weighting | shipped | on `dev` — offline geoip, settings override, SSA-derived weights |
+| Content admin module | shipped | on `dev` — localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
 
 ---
 
