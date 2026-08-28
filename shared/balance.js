@@ -11,6 +11,14 @@ export const BAL = {
 
   MAX_AGE: 106,
 
+  // The calendar year a life is assumed to BEGIN in, at age 16. Used only to
+  // work out roughly when a new character was born, so the name pool can be
+  // filtered for era plausibility. It is a constant rather than a clock read
+  // because invariant 6 says a given seed replays identically - forever, not
+  // just this year. Bumping it shifts which names read as plausible by a few
+  // years and moves nothing else.
+  PRESENT_YEAR: 2026,
+
   // You are not 'broke' the moment you are in the red - you are broke when the
   // debt exceeds what anyone would plausibly lend you. Student loans get their
   // own grace, because being 60k down at 22 is normal, not a game over.

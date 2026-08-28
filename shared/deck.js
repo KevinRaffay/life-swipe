@@ -5,11 +5,12 @@
 // hand-authored seed, otherwise a procedural fallback - and then quietly kicks
 // off a background fetch. Swiping never waits on the network.
 
-import { stageOf, STAGES, contentTier, canDealDarkCard, ageOf } from './engine.js';
+import { stageOf, STAGES, contentTier, canDealDarkCard, ageOf, noteAssignedName } from './engine.js';
 import { checkCompliance, isMatureScenario } from './content.js';
 import { makeFallbackScenario } from './fallback.js';
 import { validateBatch } from './schema.js';
 import { nextRandom } from './rng.js';
+import { hasNameTag, resolveCardNames, createNameLedger } from './names.js';
 
 // Must stay smaller than the smallest per-stage pool, or every candidate ends
 // up "recent" and the deck is forced to repeat itself.
@@ -206,11 +207,37 @@ export class Deck {
       if (this.onSeedShown) this.onSeedShown(card.id);
     }
 
+    // The storyteller writes "{{new:roommate}}"; the engine decides who that
+    // is, HERE, at the moment the card is dealt. Not when the batch arrived: a
+    // buffered card can sit for a dozen swipes, and the name has to be chosen
+    // against the state the player is actually in.
+    card = this.resolveNames(card, state);
+
     this.remember(card.id);
     this.maybeRefill(state);
     // uid is per-deal; id is per-scenario. The card stack keys off uid so a
     // repeated scenario still counts as a new card.
     return { ...card, uid: ++this.dealt };
+  }
+
+  // Synchronous, and cannot fail - draw() promises both (invariant 4). Draws
+  // from the run's own RNG, so a seeded life still names its cast identically
+  // on replay (invariant 6). The ledger write goes through the engine.
+  resolveNames(card, state) {
+    const tagged = ['setting', 'beat', 'dialogue', 'prompt', 'scenario'].some((f) => hasNameTag(card[f]))
+      || ['leftEffects', 'rightEffects'].some((side) =>
+        card[side] && card[side].relationship && hasNameTag(card[side].relationship.name));
+    if (!tagged) return card;
+
+    const { card: resolved, assigned } = resolveCardNames(card, {
+      ledger: state.names || createNameLedger(),
+      relationships: state.relationships,
+      kids: state.kids,
+      age: ageOf(state),
+      rng: () => nextRandom(state),
+    });
+    for (const entry of assigned) noteAssignedName(state, entry);
+    return resolved;
   }
 
   remember(id) {
@@ -235,6 +262,9 @@ export class Deck {
         const { scenarios } = validateBatch(raw || [], {
           tier: contentTier(state),
           age: ageOf(state),
+          // Name drift is screened server-side too. Two independent passes,
+          // same posture as the content gates: this one sees the live map.
+          relationships: state.relationships,
         });
         const stage = stageOf(state).id;
         for (const s of scenarios) {

@@ -47,7 +47,13 @@ Breaking any of these is a bug regardless of what the tests say.
    randomness must go through `nextRandom(state)`.
 7. **Cross-life memory lives outside per-life state.** `seen_patterns` and
    `seen_seed_ids` are per-player, in `localStorage`, never in the state object.
-8. **Content gates are defence in depth.** Three independent gates stand between
+8. **The engine names the cast.** The storyteller emits a role tag
+   (`{{new:roommate}}`); `shared/names.js` picks the name and `Deck.draw`
+   resolves it at deal time. The model never invents a name and never renames
+   anyone — `state.relationships` is keyed by name, so a rename silently forks
+   a person in two. Assigned names live in the relationships map as before;
+   `state.names.byTag` only remembers which tag meant whom.
+9. **Content gates are defence in depth.** Three independent gates stand between
    a player and content they didn't choose: tier visibility, the dark-arc
    budget, and the keyword backstop. Don't collapse them into one.
 
@@ -62,6 +68,8 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/schema.js` | structural validation + mode compliance. Runs server-side *and* client-side. |
 | `shared/content.js` | content-mode policy, the minor rule, keyword detection, dark-arc budget. |
 | `shared/scenario-format.js` | weight tiers and which narrative fields each carries. |
+| `shared/names.js` | the name pool reader, era filter, diversity weighting, tag resolution, drift check. |
+| `server/name-pool.json` | 187 names across 49 origins, with era and gender hints. Data only. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
 | `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
 | `shared/fallback.js` | procedural templates so offline play never runs dry. |
@@ -83,6 +91,7 @@ npm start                              # build + serve on :8787
 npm run dev                            # vite :5173 + api :8787
 npm run simulate -- 300 seed --mode=both
 npm run coverage                       # seed coverage per bucket/mode
+npm run names                          # validate the name pool + measure its spread
 npm run extract-patterns -- source.txt # draft library patterns (never auto-merges)
 ```
 
@@ -116,21 +125,41 @@ seen list.
 **Seed deck** — 57 hand-authored scenarios plus 27 procedural fallback
 templates. Coverage targets: 8 for the opening bracket, 4 elsewhere, per mode.
 
+**Names** — 187 names across 49 cultural origins in `server/name-pool.json`,
+each carrying the era it was in use and any gender it reads as. The engine
+filters by the character's implied birth year (`PRESENT_YEAR` in `balance.js`,
+plus a per-role age offset) and then samples **category first**, weighted
+`1/(1+used)^1.5` against origins this life has already spent — a uniform draw
+over the whole pool would just hand out names in proportion to how many of each
+origin the file happens to contain. The starting cast (Mom, Dad, Priya) and the
+hand-authored Sam thread are written into seed prose and stay as they are.
+
 ---
 
 ## Verification expectations
 
-Two commands must exit 0 before anything merges:
+Three commands must exit 0 before anything merges:
 
 ```bash
-npm run simulate -- 200 x --mode=both   # three hard assertions
+npm run simulate -- 200 x --mode=both   # five hard assertions
 npm run coverage                        # every bucket at target
+npm run names                           # pool is well formed and spreads
 ```
 
 The assertions are:
 - no mature content in a safe-mode life
 - no mature content dealt to a character under 18, in either mode
 - no library pattern fires twice for the same player
+- no unresolved `{{new:role}}` tag reaches a player
+- no two characters in one life share a first name
+
+The naming assertions only mean something because the simulator injects
+synthetic tagged cards (`synthesiseNamedCard`) — with no model in the loop
+nothing would otherwise emit a tag, and the whole path would pass untested.
+The duplicate-name check reads `state.names.byTag`, **not** the relationships
+map: the map is keyed by name, so a collision there does not appear as two
+entries, it appears as two people quietly becoming one. Checking the map
+instead gave an assertion that could never fail, which is how it was found.
 
 **Measure, don't assume.** Every significant bug in this project was found by
 running a number, not by reading code:
@@ -160,6 +189,11 @@ confirm it fails before trusting it.
 - **The Bash tool truncates around 8KB**, which silently breaks long heredocs —
   the terminator is lost and bash reports "unexpected EOF". Write in chunks.
 - **`PATH` needs exporting** in the Bash tool before node/git/coreutils resolve.
+- **JSON imported from `shared/` needs the import attribute.** `shared/` runs in
+  the browser, the server and the simulator, and a vite alias like `@library`
+  means nothing to the last two. Use
+  `import pool from '../server/name-pool.json' with { type: 'json' }` — Node 22+
+  and Rollup 4 both take it, and vite inlines the file into the bundle.
 - **Don't leave a server on :8787.** It has blocked the user's `npm start` once.
   Check ownership before killing anything on that port — it may be theirs.
 
@@ -190,6 +224,7 @@ dev    ← integration branch, work lands here
 | Seed schema, anti-repetition, coverage | **on `dev`, awaiting user testing** | |
 | Scenario tiers (setting/beat/dialogue/prompt) | **on `dev`, awaiting user testing** | |
 | Seen-window measured in lives | **on `dev`, awaiting user testing** | |
+| Engine-controlled name assignment | **on `engine-controlled-random-name-assignment`, awaiting user testing** | pool + tags + drift check + preview path |
 
 ### Known open items
 

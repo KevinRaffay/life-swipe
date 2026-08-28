@@ -16,6 +16,7 @@ import { buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPromp
 import { effectiveTier } from '../shared/content.js';
 import { checkCoverage, coverage } from '../scripts/coverage.js';
 import { validateBatch } from '../shared/schema.js';
+import { NAME_POOL, resolveBatchEphemeral } from '../shared/names.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -32,6 +33,29 @@ const situationLibrary = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'situation-library.json'), 'utf8'),
 );
 
+/**
+ * Name resolution OUTSIDE a real player context - the admin live preview,
+ * which posts sample state and has no persisted player to write to.
+ *
+ * Everything here is in-memory and scoped to this one call: the ledger is
+ * created, spent and dropped inside the function, so a preview can never
+ * consume a name or a category from anybody's actual life. Seeded from the
+ * request rather than the clock, so the same sample state previews the same
+ * cast twice running.
+ */
+function previewNames(scenarios, summary) {
+  const relationships = {};
+  for (const r of summary.relationships || []) {
+    if (r && r.name) relationships[r.name] = { role: r.role || 'acquaintance' };
+  }
+  return resolveBatchEphemeral(scenarios, {
+    relationships,
+    kids: summary.kids || [],
+    age: summary.age,
+    seedInput: { age: summary.age, stage: summary.stage, turn: summary.turn, people: summary.relationships },
+  });
+}
+
 /* -------------------------------------------------------------- endpoints */
 
 app.get('/api/config', (_req, res) => {
@@ -42,7 +66,7 @@ app.get('/api/config', (_req, res) => {
 // Always 200 with { scenarios, source }. A failure here is not a game-over;
 // it just means the client keeps playing from seeds.
 app.post('/api/scenarios', async (req, res) => {
-  const { summary, recent = [], count = 5, librarySlot = null } = req.body || {};
+  const { summary, recent = [], count = 5, librarySlot = null, preview = false } = req.body || {};
 
   if (!summary || typeof summary !== 'object' || !summary.stage) {
     return res.status(400).json({ error: 'summary with a stage is required', scenarios: [] });
@@ -79,15 +103,25 @@ app.post('/api/scenarios', async (req, res) => {
       });
 
       const parsed = extractJson(text);
-      const { ok, scenarios, errors, rejectedForMode } = validateBatch(parsed, {
+      const { ok, scenarios, errors, rejectedForMode, rejectedForNameDrift } = validateBatch(parsed, {
         minValid: 3,
         tier,
         age: summary.age,
+        // First of two passes at name drift; the client runs the same check
+        // again against the live map before anything is buffered.
+        relationships: summary.relationships,
       });
 
       if (ok) {
+        // In real play the client resolves "{{new:roommate}}" at deal time,
+        // against live state. A preview has no player and nothing to write to,
+        // so it gets names here from a throwaway ledger seeded by the request.
+        const { scenarios: out, assignedNames } = preview
+          ? previewNames(scenarios, summary)
+          : { scenarios, assignedNames: null };
+
         return res.json({
-          scenarios,
+          scenarios: out,
           source: 'llm',
           model: MODEL,
           tier,
@@ -95,6 +129,8 @@ app.post('/api/scenarios', async (req, res) => {
           attempt: attempt + 1,
           dropped: errors.length,
           rejectedForMode,
+          rejectedForNameDrift,
+          ...(preview ? { preview: true, assignedNames } : {}),
         });
       }
       attempts.push(`attempt ${attempt + 1}: ${errors.slice(0, 3).join('; ') || 'no valid scenarios'}`);
@@ -145,6 +181,10 @@ app.post('/api/obituary', async (req, res) => {
 app.get('/api/seed-scenarios', (_req, res) => res.json(seedScenarios));
 
 app.get('/api/situation-library', (_req, res) => res.json(situationLibrary));
+
+// The cast the engine draws from. Served for tooling and preview parity; the
+// client bundles it directly, since naming has to work offline too.
+app.get('/api/name-pool', (_req, res) => res.json(NAME_POOL));
 
 // Content stats, so a thin bucket can be seen rather than inferred from
 // repetition complaints.

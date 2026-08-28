@@ -81,6 +81,33 @@ function synthesiseLibraryCard(pattern) {
   };
 }
 
+// SIMULATION ONLY, same bargain as the library stand-in above. With no model
+// in the loop nothing ever emits a "{{new:role}}" tag, so the naming path
+// would go completely unexercised by a run that otherwise touches everything.
+// This injects the card the storyteller would have written.
+const NEW_CHARACTER_ROLES = [
+  'roommate', 'coworker', 'friend', 'neighbour', 'boss', 'rival', 'landlord', 'sibling',
+];
+
+function synthesiseNamedCard(state, role, stageId) {
+  const tag = '{{new:' + role + '}}';
+  return {
+    id: 'name_' + role + '_' + state.turn,
+    prompt: `${tag} turns up with an opinion. ${tag} is not going to let it go.`,
+    scenario: `${tag} turns up with an opinion. ${tag} is not going to let it go.`,
+    leftLabel: 'Hear them out',
+    rightLabel: 'Walk away',
+    weight: 'minor',
+    stages: [stageId],
+    modes: ['safe', 'mature'],
+    leftEffects: { happiness: 2, relationship: { name: tag, role, qualityDelta: 4 } },
+    rightEffects: { happiness: -2, relationship: { name: tag, role, qualityDelta: -4 } },
+    source: 'llm',
+  };
+}
+
+const firstNameOf = (n) => String(n || '').trim().split(/\s+/)[0].toLowerCase();
+
 function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedStore = null) {
   let bypassWarnings = 0;
   const deck = new Deck({
@@ -96,10 +123,27 @@ function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedSto
   const rejectionReasons = new Map();
   const chooser = { rngState: seedFrom('choices:' + seed) };
   const violations = [];
+  const nameViolations = [];
+  // The name checks re-run every turn, so a collision that happens once would
+  // otherwise be reported for the rest of the life and make 30 real problems
+  // look like 300.
+  const reportedNameIssues = new Set();
+  const noteNameViolation = (v) => {
+    const key = v.kind + '|' + v.text;
+    if (reportedNameIssues.has(key)) return;
+    reportedNameIssues.add(key);
+    nameViolations.push(v);
+  };
   let darkScenarios = 0;
 
   while (!state.ended && state.turn < MAX_TURNS) {
     let card;
+    // Roughly one card in six introduces somebody new, which is about the rate
+    // a real batch does it at.
+    if (state.turn % 6 === 3) {
+      const role = NEW_CHARACTER_ROLES[state.turn % NEW_CHARACTER_ROLES.length];
+      deck.buffer.push(synthesiseNamedCard(state, role, stageOf(state).id));
+    }
     if (librarySlotDue(state)) {
       slotsOffered += 1;
       const { eligible, rejected } = filterPatterns(state, situationLibrary, seenPatterns);
@@ -133,8 +177,44 @@ function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedSto
       }
     }
 
+    // A tag that survives to the player is the naming feature failing loudly.
+    if (String(card.scenario || '').includes('{{') || String(card.prompt || '').includes('{{')) {
+      noteNameViolation({
+        kind: 'unresolved-name-tag', age: Math.floor(ageAtDeal), id: card.id,
+        text: String(card.scenario || card.prompt).slice(0, 80),
+      });
+    }
+
     const side = nextRandom(chooser) < 0.5 ? 'left' : 'right';
     state = applyChoice(state, card, side).state;
+
+    // Two characters landing on one name is the collision the ledger exists to
+    // prevent. It has to be measured on the LEDGER, not on the relationships
+    // map: the map is keyed by name, so a collision there does not show up as
+    // two entries, it shows up as two people silently becoming one.
+    const firsts = new Map();
+    const byTag = (state.names && state.names.byTag) || {};
+    for (const [tag, name] of Object.entries(byTag)) {
+      const key = firstNameOf(name);
+      if (firsts.has(key)) {
+        noteNameViolation({
+          kind: 'duplicate-first-name', age: Math.floor(ageOf(state)), id: card.id,
+          text: `${firsts.get(key)} and ${tag} are both "${name}"`,
+        });
+      }
+      firsts.set(key, tag);
+    }
+    // The starting cast and any children count as spent names too.
+    for (const name of [...Object.keys(state.relationships), ...state.kids.map((k) => k.name)]) {
+      const key = firstNameOf(name);
+      if (firsts.has(key) && byTag[firsts.get(key)] && firstNameOf(byTag[firsts.get(key)]) === key
+          && !Object.values(byTag).includes(name)) {
+        noteNameViolation({
+          kind: 'duplicate-first-name', age: Math.floor(ageOf(state)), id: card.id,
+          text: `${name} collides with an assigned name`,
+        });
+      }
+    }
   }
   return {
     state,
@@ -146,6 +226,8 @@ function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedSto
     darkArcs: state.dark ? state.dark.arcsUsed : 0,
     darkBudget: state.dark ? state.dark.budget : 0,
     violations,
+    nameViolations,
+    namesAssigned: Object.keys((state.names && state.names.byTag) || {}).length,
     libraryFired,
     bypassWarnings,
     seedRepeats: deck.stats.seenFilterBypassed,
@@ -288,6 +370,8 @@ function report(runs, mode) {
 /* ----------------------------------------------------------------- main */
 
 const allViolations = [];
+const allNameViolations = [];
+let totalNamesAssigned = 0;
 const repeatOffences = [];
 for (const mode of MODES_TO_RUN) {
   const runs = [];
@@ -320,7 +404,11 @@ for (const mode of MODES_TO_RUN) {
     for (const [id, n] of counts) if (n > 1) repeatOffences.push({ mode, player: p, id, times: n });
   }
   report(runs, mode);
-  for (const r of runs) allViolations.push(...r.violations);
+  for (const r of runs) {
+    allViolations.push(...r.violations);
+    allNameViolations.push(...r.nameViolations);
+    totalNamesAssigned += r.namesAssigned;
+  }
 }
 
 console.log('\n=== LIBRARY ASSERTION ===');
@@ -334,6 +422,22 @@ if (repeatOffences.length === 0) {
   process.exitCode = 1;
 }
 
+
+console.log('\n=== NAME ASSERTIONS ===');
+console.log(`  ${totalNamesAssigned} names assigned by the engine across all lives`);
+if (allNameViolations.length === 0) {
+  console.log('  PASS  no unresolved "{{new:role}}" tag reached a player');
+  console.log('  PASS  no two characters shared a first name in one life');
+} else {
+  const byKind = new Map();
+  for (const v of allNameViolations) byKind.set(v.kind, [...(byKind.get(v.kind) || []), v]);
+  for (const [kind, list] of byKind) {
+    console.log(`  FAIL  ${kind}: ${list.length} occurrence(s)`);
+    for (const v of list.slice(0, 5)) console.log(`          age ${v.age}  ${v.id}  "${v.text}"`);
+    if (list.length > 5) console.log(`          ...and ${list.length - 5} more`);
+  }
+  process.exitCode = 1;
+}
 
 console.log('\n=== CONTENT ASSERTIONS ===');
 if (allViolations.length === 0) {

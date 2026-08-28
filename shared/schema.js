@@ -8,6 +8,7 @@
 
 import { checkCompliance, MODES } from './content.js';
 import { TIERS, normalizeNarrative, displayText } from './scenario-format.js';
+import { checkNameDrift } from './names.js';
 
 const WEIGHTS = new Set([...TIERS, 'trivial']);
 const OUTCOMES = new Set(['death', 'injury', 'windfall']);
@@ -196,8 +197,10 @@ export function validateScenario(raw, index = 0) {
  * @param {number}  [opts.minValid]  reject the batch below this many survivors
  * @param {string}  [opts.tier]      'safe' | 'mature' - screen content against it
  * @param {number}  [opts.age]       character age, for the under-18 rule
+ * @param {object|Array} [opts.relationships]  the live cast, for the name-drift
+ *   check. Either the state map or the summary array.
  */
-export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {}) {
+export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relationships = null } = {}) {
   if (typeof raw === 'string') {
     try {
       raw = JSON.parse(raw);
@@ -212,6 +215,7 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {})
   const scenarios = [];
   const errors = [];
   let rejectedForMode = 0;
+  let rejectedForNameDrift = 0;
   raw.forEach((item, i) => {
     const res = validateScenario(item, i);
     if (!res.ok) {
@@ -228,10 +232,23 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {})
         return;
       }
     }
+    // Name-drift backstop. The engine, not the storyteller, owns who anyone
+    // is; a card that renames somebody already in the cast would fork them
+    // into a second relationship with its own closeness score, because the
+    // map is keyed by name. Same treatment as a mode violation: drop the one
+    // card, keep its neighbours, let the caller retry if too few survive.
+    if (relationships) {
+      const drift = checkNameDrift(res.scenario, relationships);
+      if (drift.length) {
+        rejectedForNameDrift += 1;
+        errors.push(`scenario[${i}]: name drift (${drift.join('; ')})`);
+        return;
+      }
+    }
     scenarios.push(res.scenario);
   });
 
-  return { ok: scenarios.length >= minValid, scenarios, errors, rejectedForMode };
+  return { ok: scenarios.length >= minValid, scenarios, errors, rejectedForMode, rejectedForNameDrift };
 }
 
 function hash(str) {
