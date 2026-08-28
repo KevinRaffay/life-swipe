@@ -173,6 +173,32 @@ const genderOk = (entry, want) =>
   !want || entry.gender_assoc === want || entry.gender_assoc === 'neutral';
 
 /**
+ * How much the player's region favours this name, as a multiplier on the draw.
+ *
+ * `region_frequency` holds a location quotient measured from SSA birth records
+ * (see scripts/build-region-weights.js): 1 means "as common here as
+ * nationally", 9 means nine times as common, 0.3 means a third as common.
+ * Three things return exactly 1, the do-nothing value:
+ *   - no region on the session (geolocation off, failed, or overridden to none)
+ *   - a region the data cannot speak to (anywhere outside the US, and Florida,
+ *     which is missing from the published archive)
+ *   - a name with no entry for that region, which means no signal, NOT absence
+ * The exponent damps the quotient and the ceiling caps it, so even the most
+ * regionally concentrated name in the pool stays a tendency, not a certainty.
+ */
+export function regionalWeight(entry, region, {
+  power = BAL.NAMES.regionPower,
+  ceiling = BAL.NAMES.regionCeiling,
+} = {}) {
+  if (!region || !power) return 1;
+  const table = entry && entry.region_frequency;
+  if (!table) return 1;
+  const lq = table[region];
+  if (!Number.isFinite(lq) || lq <= 0) return 1;
+  return Math.min(ceiling, Math.pow(lq, power));
+}
+
+/**
  * Pick a name.
  *
  * Category first, then a name inside it - NOT a uniform draw over the whole
@@ -181,6 +207,14 @@ const genderOk = (entry, want) =>
  * every life. Weighting by 1/(1+used)^1.5 makes an origin this life has
  * already used markedly less likely to come up again, which is what "diverse"
  * has to mean at the scale of a single playthrough.
+ *
+ * REGION is the second dimension, and it is a weight, never a filter. A name
+ * carries a location quotient per region ("2.4x more common in Massachusetts
+ * than nationally"); a name with nothing to say about a region, or a player
+ * with no region at all, scores exactly 1 and is left alone. Nothing is ever
+ * excluded for being regionally unusual - people move, and a pool that only
+ * offered a Minnesotan Minnesotan names would be a worse lie than the one
+ * this feature set out to fix.
  *
  * Degrades in a fixed order and never throws: draw() cannot fail (invariant 4).
  */
@@ -191,6 +225,7 @@ export function assignName({
   taken = new Set(),
   categoryUse = {},
   rng = Math.random,
+  region = null,
 } = {}) {
   const want = hintFor(role).gender;
   const free = (e) => !taken.has(firstName(e.name));
@@ -218,8 +253,20 @@ export function assignName({
     else byCategory.set(entry.category, [entry]);
   }
 
+  // Region enters as a multiplier on both halves of the draw. It has to touch
+  // the CATEGORY choice, not just the pick within one: categories hold three
+  // to six names each, so weighting only inside them would move almost
+  // nothing, and "more Somali names in Minnesota" is a statement about which
+  // origins come up, not about which Somali name you get.
+  const regionOf = (entry) => regionalWeight(entry, region);
+
   const categories = [...byCategory.keys()];
-  const weights = categories.map((c) => 1 / Math.pow(1 + (categoryUse[c] || 0), 1.5));
+  const weights = categories.map((c) => {
+    const members = byCategory.get(c);
+    const diversity = 1 / Math.pow(1 + (categoryUse[c] || 0), 1.5);
+    const affinity = members.reduce((sum, e) => sum + regionOf(e), 0) / members.length;
+    return diversity * affinity;
+  });
   const total = weights.reduce((a, b) => a + b, 0);
 
   let roll = rng() * total;
@@ -229,8 +276,17 @@ export function assignName({
     if (roll <= 0) { chosen = categories[i]; break; }
   }
 
+  // ...and again inside the chosen category, so Minnesota's Somali name is
+  // more often the one Minnesota actually registers.
   const bucket = byCategory.get(chosen);
-  const entry = bucket[Math.floor(rng() * bucket.length) % bucket.length] || bucket[0];
+  const inner = bucket.map(regionOf);
+  const innerTotal = inner.reduce((a, b) => a + b, 0);
+  let pick = rng() * innerTotal;
+  let entry = bucket[bucket.length - 1];
+  for (let i = 0; i < bucket.length; i++) {
+    pick -= inner[i];
+    if (pick <= 0) { entry = bucket[i]; break; }
+  }
   return { name: entry.name, category: entry.category, entry };
 }
 
@@ -304,6 +360,7 @@ const TEXT_FIELDS = ['setting', 'beat', 'dialogue', 'prompt', 'scenario'];
  * @param {Array}  opts.kids          so a character cannot be named after a kid
  * @param {number} opts.age           the player's age, for era plausibility
  * @param {Function} opts.rng         () => [0,1), the run's own RNG
+ * @param {string}   [opts.region]    the player's region code, or null for none
  * @returns {{ card: object, assigned: Array }}
  */
 export function resolveCardNames(card, {
@@ -313,6 +370,7 @@ export function resolveCardNames(card, {
   age = START_AGE,
   rng = Math.random,
   pool = NAME_POOL,
+  region = null,
 } = {}) {
   const assigned = [];
   const pending = {};
@@ -344,6 +402,7 @@ export function resolveCardNames(card, {
       taken,
       categoryUse,
       rng,
+      region,
     });
     // A pool with nothing left to give is not a reason to show the player a
     // card with braces in it; fall back to the role itself, capitalised.
@@ -398,10 +457,11 @@ export function resolveBatchEphemeral(scenarios, {
   age = START_AGE,
   seedInput = 'preview',
   pool = NAME_POOL,
+  region = null,
 } = {}) {
   const { ledger, rng } = ephemeralNameContext(seedInput);
   const out = (scenarios || []).map((scenario) => {
-    const { card, assigned } = resolveCardNames(scenario, { ledger, relationships, kids, age, rng, pool });
+    const { card, assigned } = resolveCardNames(scenario, { ledger, relationships, kids, age, rng, pool, region });
     for (const entry of assigned) {
       ledger.byTag[entry.key] = entry.name;
       if (entry.category) ledger.categories[entry.category] = (ledger.categories[entry.category] || 0) + 1;

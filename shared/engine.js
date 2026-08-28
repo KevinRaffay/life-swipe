@@ -36,7 +36,12 @@ export const hasFlag = (s, f) => s.flags.includes(f);
 
 /* ------------------------------------------------------------------ state */
 
-export function createState({ seed = Date.now(), name = 'You', contentMode = DEFAULT_MODE } = {}) {
+// `region` tilts the starting friend's name the same way it tilts everyone
+// else's. It is read here and NOT stored: it belongs to the session, not to
+// the life, and a saved game should not carry the player's location around.
+export function createState({
+  seed = Date.now(), name = 'You', contentMode = DEFAULT_MODE, region = null,
+} = {}) {
   const state = {
     seed: String(seed),
     rngState: seedFrom(seed),
@@ -90,6 +95,7 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
     birthYear: impliedBirthYear(ageOf(state), 'best friend'),
     taken: new Set(Object.keys(state.relationships).map((n) => n.toLowerCase())),
     rng: () => nextRandom(state),
+    region,
   });
   if (friend) {
     state.relationships[friend.name] = { role: 'best friend', quality: 80, flags: [] };

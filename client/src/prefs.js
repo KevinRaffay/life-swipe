@@ -28,6 +28,41 @@ export function confirmAge() {
   write(AGE_KEY, 'yes');
 }
 
+/* ------------------------------------------------------------- region ---- */
+
+// The player's region, used only to weight which names the engine hands out.
+//
+// PRIVACY: what is stored here is a region CODE and nothing else - "US-MN", or
+// a bare country like "DE". Never an IP address, never coordinates, never a
+// city. The server derives the code offline from the request IP and discards
+// the address (server/geo.js); this is where the result comes to rest.
+//
+// Two keys, on purpose. CHOICE_KEY is what the player picked and is the
+// authority: 'auto' to accept detection, 'none' to switch weighting off, or a
+// region code to pin it. DETECTED_KEY only caches what the server guessed, so
+// a returning player does not re-ask on every load. IP geolocation is wrong
+// for anyone on a VPN, a mobile carrier or a corporate network, which is why
+// the override exists and why it always wins.
+const REGION_CHOICE_KEY = 'lifeswipe.regionChoice';
+const REGION_DETECTED_KEY = 'lifeswipe.regionDetected';
+
+export const getRegionChoice = () => read(REGION_CHOICE_KEY) || 'auto';
+export const setRegionChoice = (value) => write(REGION_CHOICE_KEY, String(value || 'auto'));
+export const getDetectedRegion = () => read(REGION_DETECTED_KEY) || null;
+export const setDetectedRegion = (code) => write(REGION_DETECTED_KEY, String(code || ''));
+
+/**
+ * The region actually in force: the player's pin, or the detected default, or
+ * null. Null is a complete answer - names simply fall back to era-only
+ * selection, which is how the game worked before regions existed.
+ */
+export function getActiveRegion() {
+  const choice = getRegionChoice();
+  if (choice === 'none') return null;
+  if (choice !== 'auto') return choice;
+  return getDetectedRegion() || null;
+}
+
 /* -------------------------------------------------- cross-life memory ---- */
 
 // Library patterns this player has already been shown, in ANY life. Kept out

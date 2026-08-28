@@ -17,6 +17,7 @@ import { effectiveTier } from '../shared/content.js';
 import { checkCoverage, coverage } from '../scripts/coverage.js';
 import { validateBatch } from '../shared/schema.js';
 import { NAME_POOL, resolveBatchEphemeral } from '../shared/names.js';
+import { resolveRegion } from './geo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -24,6 +25,14 @@ const DIST = path.join(ROOT, 'dist');
 const PORT = Number(process.env.PORT) || 8787;
 
 const app = express();
+// Behind a reverse proxy, req.ip is the proxy unless Express is told otherwise,
+// which would hand every player the datacentre's region. Off by default because
+// trusting X-Forwarded-For from an untrusted client lets it claim any region:
+// set TRUST_PROXY (a hop count, or a subnet) only when a proxy really is there.
+if (process.env.TRUST_PROXY) {
+  const value = Number(process.env.TRUST_PROXY);
+  app.set('trust proxy', Number.isFinite(value) ? value : process.env.TRUST_PROXY);
+}
 app.use(express.json({ limit: '512kb' }));
 
 const seedScenarios = JSON.parse(
@@ -185,6 +194,17 @@ app.get('/api/situation-library', (_req, res) => res.json(situationLibrary));
 // The cast the engine draws from. Served for tooling and preview parity; the
 // client bundles it directly, since naming has to work offline too.
 app.get('/api/name-pool', (_req, res) => res.json(NAME_POOL));
+
+// GET /api/region -> { region: "US-MN" | null, reason }
+//
+// Resolved offline from the caller's own IP (see server/geo.js for the privacy
+// contract: the address is used and dropped here, and only a state-or-country
+// code ever leaves). The client asks once, stores the code, and lets the
+// player override it - so this is a suggested default, never a decision.
+app.get('/api/region', (req, res) => {
+  const { region, reason } = resolveRegion(req.ip);
+  res.json({ region, reason });
+});
 
 // Content stats, so a thin bucket can be seen rather than inferred from
 // repetition complaints.

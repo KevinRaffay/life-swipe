@@ -12,11 +12,13 @@
     "simulate": "node scripts/simulate.js",
     "extract-patterns": "node scripts/extract-patterns.js",
     "coverage": "node scripts/coverage.js",
-    "names": "node scripts/name-check.js"
+    "names": "node scripts/name-check.js",
+    "build-region-weights": "node scripts/build-region-weights.js"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "geoip-lite": "^2.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

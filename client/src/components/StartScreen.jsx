@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { getContentMode, setContentMode, hasConfirmedAge, confirmAge } from '../prefs.js';
+import {
+  getContentMode, setContentMode, hasConfirmedAge, confirmAge,
+  getRegionChoice, setRegionChoice, getDetectedRegion,
+} from '../prefs.js';
+import { US_REGIONS, labelFor } from '@shared/regions.js';
 
 export default function StartScreen({ onStart, llmEnabled, model }) {
   const [mode, setMode] = useState(getContentMode);
   const [askingAge, setAskingAge] = useState(false);
+  const [region, setRegion] = useState(getRegionChoice);
+  const detected = getDetectedRegion();
+
+  const chooseRegion = (value) => {
+    setRegion(value);
+    setRegionChoice(value);
+  };
 
   const chooseMode = (next) => {
     if (next === 'mature' && !hasConfirmedAge()) {
@@ -61,6 +72,32 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
           ))}
         </div>
       )}
+
+      <div className="region">
+        <label className="region__label" htmlFor="region-select">
+          Where you are
+        </label>
+        <select
+          id="region-select"
+          className="region__select"
+          value={region}
+          onChange={(e) => chooseRegion(e.target.value)}
+        >
+          <option value="auto">
+            Auto-detect{detected ? ` (${labelFor(detected)})` : ''}
+          </option>
+          <option value="none">No regional flavour</option>
+          <optgroup label="United States">
+            {US_REGIONS.map((r) => (
+              <option key={r.code} value={r.code}>{r.label}</option>
+            ))}
+          </optgroup>
+        </select>
+        <p className="region__note">
+          Nudges what the people you meet are called. Detection is often wrong
+          on a VPN or a phone &mdash; set it yourself and it stays set.
+        </p>
+      </div>
 
       <ul className="start__rules">
         <li>You start at 16. The clock does not stop.</li>

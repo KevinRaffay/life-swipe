@@ -53,6 +53,7 @@ export class Deck {
     seenSeedIds = [],
     onSeedShown = null,
     warn = (msg) => console.warn(msg),
+    region = null,
   } = {}) {
     this.seeds = validateBatch(seedScenarios).scenarios.map((s) => ({ ...s, source: 'seed' }));
     this.fetchBatch = fetchBatch;
@@ -64,6 +65,11 @@ export class Deck {
     // not cards). The deck only adds to it as this life runs.
     this.seenSeedIds = [...seenSeedIds];
     this.onSeedShown = onSeedShown;
+    // The player's region, which tilts name selection. A property of the
+    // SESSION, deliberately not of game state: it describes who is playing,
+    // not who the character is, so a story that moves them to another state
+    // does not change it - and it stays out of the serialised save.
+    this.region = region;
     this.warn = warn;
     // One warning per age band and mode per life. An exhausted bucket is worth
     // saying once; saying it on every draw is just noise that gets ignored.
@@ -235,6 +241,7 @@ export class Deck {
       kids: state.kids,
       age: ageOf(state),
       rng: () => nextRandom(state),
+      region: this.region,
     });
     for (const entry of assigned) noteAssignedName(state, entry);
     return resolved;

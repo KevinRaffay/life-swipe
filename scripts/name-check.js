@@ -12,6 +12,7 @@
 import fs from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import { assignName, createNameLedger, impliedBirthYear } from '../shared/names.js';
+import { BAL } from '../shared/balance.js';
 import { seedFrom, nextRandom } from '../shared/rng.js';
 
 const POOL_PATH = fileURLToPath(new URL('../server/name-pool.json', import.meta.url));
@@ -51,6 +52,20 @@ pool.forEach((e, i) => {
     const key = e.name.toLowerCase();
     if (seen.has(key)) errors.push(`${at}: duplicate of entry[${seen.get(key)}]`);
     else seen.set(key, i);
+  }
+
+  // region_frequency is optional and generated (scripts/build-region-weights.js).
+  // A zero or a negative would silently erase a name from a region, turning a
+  // weight into the exclusion filter this feature is specifically not.
+  if (e.region_frequency !== undefined) {
+    if (typeof e.region_frequency !== 'object' || Array.isArray(e.region_frequency)) {
+      errors.push(`${at}: region_frequency must be an object`);
+    } else {
+      for (const [code, lq] of Object.entries(e.region_frequency)) {
+        if (!/^[A-Z]{2}(-[A-Z0-9]{1,3})?$/.test(code)) errors.push(`${at}: bad region code "${code}"`);
+        if (!Number.isFinite(lq) || lq <= 0) errors.push(`${at}: region_frequency.${code} must be > 0`);
+      }
+    }
   }
 });
 
@@ -155,6 +170,94 @@ if (eraMisses.length) errors.push(`${eraMisses.length} era violations, e.g. ${er
 // A uniform draw over 49 categories would put ~16% in the top 8. Anything near
 // half means the weighting has stopped working and one origin is dominating.
 if (topShare > 0.5) warnings.push(`top 8 categories hold ${(topShare * 100).toFixed(1)}% - weighting looks weak`);
+
+/* ------------------------------------------------------- regional weighting */
+
+// Does the region actually move the draw, and does it move it the RIGHT way?
+// Both halves matter. A weighting strong enough to shift the mix but not
+// strong enough to flatten it is the whole design, so measure both.
+const REGION_SAMPLE = 4000;
+
+function drawFor(region, seedTag) {
+  const holder = { rngState: seedFrom('region:' + seedTag) };
+  const rng = () => nextRandom(holder);
+  const counts = new Map();
+  const names = new Map();
+  for (let i = 0; i < REGION_SAMPLE; i++) {
+    // A fresh life every 8 draws, so the diversity weighting behaves as it
+    // does in play rather than accumulating over thousands of names.
+    if (i % 8 === 0) { drawFor.taken = new Set(); drawFor.use = {}; }
+    const role = ROLES[Math.floor(rng() * ROLES.length) % ROLES.length];
+    const picked = assignName({
+      pool, role, birthYear: impliedBirthYear(24, role),
+      taken: drawFor.taken, categoryUse: drawFor.use, rng, region,
+    });
+    if (!picked) continue;
+    drawFor.taken.add(picked.name.toLowerCase());
+    drawFor.use[picked.category] = (drawFor.use[picked.category] || 0) + 1;
+    counts.set(picked.category, (counts.get(picked.category) || 0) + 1);
+    names.set(picked.name, (names.get(picked.name) || 0) + 1);
+  }
+  return { counts, names };
+}
+
+const share = (m, key) => (m.get(key) || 0) / REGION_SAMPLE;
+const topShareOf = (m) => [...m.values()].sort((a, b) => b - a).slice(0, 8)
+  .reduce((a, b) => a + b, 0) / REGION_SAMPLE;
+
+const baseline = drawFor(null, 'baseline');
+
+// What a region "should" produce is read OUT of the data, never asserted at
+// it. Writing the expectations by hand is how you end up testing your own
+// assumptions about who lives where - and an early version of this check did
+// exactly that, expecting Armenian and Filipino names to lead in California.
+// They are genuinely elevated there (3.4x and 1.7x), but Vietnamese and
+// Persian are elevated MORE, so the hand-written expectation failed while the
+// weighting was working perfectly. The data picks the target now.
+function topCategoriesFor(region, n = 3) {
+  const byCat = new Map();
+  for (const e of pool) {
+    const lq = (e.region_frequency || {})[region] ?? 1;
+    if (!byCat.has(e.category)) byCat.set(e.category, []);
+    byCat.get(e.category).push(lq);
+  }
+  return [...byCat.entries()]
+    .map(([c, v]) => [c, v.reduce((a, b) => a + b, 0) / v.length])
+    .filter(([, mean]) => mean > 1.05)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n)
+    .map(([c]) => c);
+}
+
+const PROBES = ['US-MN', 'US-HI', 'US-NM', 'US-MA', 'US-CA', 'US-IL']
+  .map((region) => [region, topCategoriesFor(region)]);
+
+console.log(`\nregional weighting (${REGION_SAMPLE} draws each, regionPower ${BAL.NAMES.regionPower})`);
+console.log('  region   expected origins                        share  vs none   top8');
+let regionMoves = 0;
+for (const [region, cats] of PROBES) {
+  const got = drawFor(region, region);
+  const here = cats.reduce((s, c) => s + share(got.counts, c), 0);
+  const there = cats.reduce((s, c) => s + share(baseline.counts, c), 0);
+  const lift = there > 0 ? here / there : (here > 0 ? Infinity : 1);
+  const top8 = topShareOf(got.counts);
+  console.log(`  ${region}    ${cats.join('/').padEnd(38)} ${(here * 100).toFixed(1)}%  ${lift.toFixed(1)}x   ${(top8 * 100).toFixed(0)}%`);
+  if (lift > 1.15) regionMoves++;
+  // Weighting must not become a filter: no one origin may take over a region.
+  if (top8 > 0.6) errors.push(`${region}: top 8 origins hold ${(top8 * 100).toFixed(0)}% - weighting is too strong`);
+}
+if (regionMoves < PROBES.length) {
+  errors.push(`${PROBES.length - regionMoves} of ${PROBES.length} regions did not lift their own origins`);
+}
+
+// The no-region path must stay exactly what it was before regions existed.
+const neutral = drawFor(null, 'baseline');
+if (JSON.stringify([...neutral.counts]) !== JSON.stringify([...baseline.counts])) {
+  errors.push('the no-region draw is not reproducible');
+}
+console.log(`  (none)   era-only baseline                       -      1.0x   ${(topShareOf(baseline.counts) * 100).toFixed(0)}%`);
+
+/* -------------------------------------------------------------- verdict */
 
 if (warnings.length) {
   console.log('\nwarnings:');
