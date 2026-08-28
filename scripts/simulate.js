@@ -81,12 +81,12 @@ function synthesiseLibraryCard(pattern) {
   };
 }
 
-function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = []) {
+function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedStore = null) {
   let bypassWarnings = 0;
   const deck = new Deck({
     seedScenarios,
     seenSeedIds,
-    onSeedShown: (id) => { if (!seenSeedIds.includes(id)) seenSeedIds.push(id); },
+    onSeedShown: (id) => { if (seedStore) seedStore.ids[id] = seedStore.life; },
     warn: () => { bypassWarnings += 1; },   // counted, not printed, per life
   });
   let state = createState({ seed, contentMode });
@@ -296,10 +296,19 @@ for (const mode of MODES_TO_RUN) {
   for (let p = 0; p < players && lifeNo < LIVES; p++) {
     // One player, several lives, one shared memory of what they have been shown.
     const seen = [];
-    const seenSeeds = [];   // cross-life seed memory for this one player
+    // Cross-life seed memory, keyed by the life a card was last shown, so the
+    // lookback is measured in lives exactly as prefs.js measures it.
+    const seedStore = { life: 0, ids: {} };
+    const LOOKBACK = 2;
     const firedByLife = [];
     for (let l = 0; l < LIVES_PER_PLAYER && lifeNo < LIVES; l++, lifeNo++) {
-      const run = playOne(`${BASE_SEED}:${mode}:${lifeNo}`, mode, seen, seenSeeds);
+      seedStore.life += 1;
+      for (const [id, at] of Object.entries(seedStore.ids)) {
+        if (at < seedStore.life - LOOKBACK) delete seedStore.ids[id];
+      }
+      const cutoff = seedStore.life - LOOKBACK;
+      const seenSeeds = Object.entries(seedStore.ids).filter(([, at]) => at > cutoff).map(([id]) => id);
+      const run = playOne(`${BASE_SEED}:${mode}:${lifeNo}`, mode, seen, seenSeeds, seedStore);
       run.player = p;
       runs.push(run);
       firedByLife.push(run.libraryFired);

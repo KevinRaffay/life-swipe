@@ -9,7 +9,7 @@ import {
 import { nextRandom } from '@shared/rng.js';
 
 import { fetchScenarios, getConfig } from './api.js';
-import { getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen } from './prefs.js';
+import { getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen, beginLife } from './prefs.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import CardStack from './components/CardStack.jsx';
 import Hud from './components/Hud.jsx';
@@ -63,6 +63,8 @@ export default function App() {
   // Mode is fixed at birth and never changes mid-life: switching would orphan
   // in-flight arcs and the flags they planted.
   const start = useCallback((contentMode = 'safe') => {
+    // Advances the per-player life counter that the seen-window is measured in.
+    beginLife();
     const deck = makeDeck();
     deckRef.current = deck;
     const fresh = createState({ seed: `${Date.now()}-${Math.random()}`, contentMode });

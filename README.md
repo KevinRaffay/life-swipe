@@ -610,3 +610,20 @@ seeds currently pass with zero warnings; majors run 60–88 words, mean 69.
 change, so their `minor` still meant the 9-month tier while everything else had
 moved on. Migrating them fixed the regression flagged there: swipes per life in
 safe mode drop from ~69 back to **56.8 (p90 79)**, inside the 40–80 target.
+
+### Anti-repetition: the window is measured in lives
+
+`seen_seed_ids` excludes anything shown in the **last two lives**, not the last
+N cards. That distinction is the whole thing, and two earlier attempts got it
+wrong in opposite directions:
+
+| window | opening repeat rate | warnings/life | why it failed |
+| --- | --- | --- | --- |
+| 120 cards | 0% | up to 29 | larger than the 57-card corpus, so it never rolled — every card ended permanently excluded |
+| 23 cards | 50.6% | 0 | a life draws ~50 cards, so the previous life's opening was always forgiven |
+| **2 lives** | **5.6%** | **2–6** | immune to corpus size and life length |
+
+The remaining warnings are legitimate: deep into a 200-swipe life a bucket
+genuinely can run dry, because one life draws more cards than a bucket holds.
+They are throttled to one per five-year age band per life, and the message says
+so rather than pointing at coverage, which was never the problem.

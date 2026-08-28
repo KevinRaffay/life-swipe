@@ -15,6 +15,7 @@ import { nextRandom } from './rng.js';
 // up "recent" and the deck is forced to repeat itself.
 const RECENT_MEMORY = 10;
 
+
 const stageIndex = (id) => STAGES.findIndex((s) => s.id === id);
 
 // How many stages behind the player a card was written for.
@@ -58,9 +59,14 @@ export class Deck {
     this.onLibrarySlot = onLibrarySlot;
     // Cross-life memory of seed cards already shown. Seeded from the player's
     // store and appended to as this life runs.
+    // The caller decides what counts as recently seen (a lookback in LIVES,
+    // not cards). The deck only adds to it as this life runs.
     this.seenSeedIds = [...seenSeedIds];
     this.onSeedShown = onSeedShown;
     this.warn = warn;
+    // One warning per age band and mode per life. An exhausted bucket is worth
+    // saying once; saying it on every draw is just noise that gets ignored.
+    this.warned = new Set();
     this.lookahead = lookahead;
     this.buffer = [];
     this.recentIds = [];
@@ -161,11 +167,18 @@ export class Deck {
         pool = this.seeds.filter((s) => !this.usedSeedIds.has(s.id) && this.eligible(s, state));
         if (pool.length) {
           this.stats.seenFilterBypassed += 1;
-          this.warn(
-            '[deck] seed pool exhausted for age ' + Math.floor(ageOf(state)) +
-            ' / ' + state.contentMode + ' - repeating a previously seen card. ' +
-            'That bucket is too thin: run npm run coverage.',
-          );
+          const band = Math.floor(ageOf(state) / 5) * 5;
+          const key = band + ':' + state.contentMode;
+          if (!this.warned.has(key)) {
+            this.warned.add(key);
+            this.warn(
+              '[deck] every seed card for age ' + band + '-' + (band + 4) + ' / ' +
+              state.contentMode + ' has been shown recently, so one is being ' +
+              'repeated. ' + pool.length + ' card(s) exist here. Normal deep into a long life; if it happens in the ' +
+              'first few swipes of a fresh run, that bucket really is thin ' +
+              '(npm run coverage).',
+            );
+          }
         }
       }
       if (pool.length) {
