@@ -7,6 +7,7 @@ import SeedForm from './components/SeedForm.jsx';
 import Extraction from './components/Extraction.jsx';
 import Preview from './components/Preview.jsx';
 import Stats from './components/Stats.jsx';
+import Logs from './components/Logs.jsx';
 
 const TABS = [
   ['library', 'Library'],
@@ -14,6 +15,7 @@ const TABS = [
   ['extraction', 'Extract & drafts'],
   ['preview', 'Preview'],
   ['stats', 'Stats'],
+  ['logs', 'Logs'],
 ];
 
 const matches = (row, q) => !q || JSON.stringify(row).toLowerCase().includes(q.toLowerCase());
@@ -256,6 +258,7 @@ export default function App() {
       )}
 
       {tab === 'stats' && <Stats stats={stats} />}
+      {tab === 'logs' && <Logs />}
     </main>
   );
 }

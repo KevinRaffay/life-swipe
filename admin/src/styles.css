@@ -150,6 +150,9 @@ fieldset.modes legend { font-size: 11px; color: var(--muted); text-transform: up
   font-size: 11px; padding: 2px 8px; border-radius: 99px;
   background: var(--surface-2); border: 1px solid var(--stroke); color: var(--muted);
 }
+.pill--passed { color: var(--ok); border-color: rgba(62, 207, 142, 0.4); }
+.pill--failed { color: var(--danger); border-color: rgba(242, 99, 126, 0.4); }
+.pill--fell_back_to_seed { color: var(--warn); border-color: rgba(232, 178, 58, 0.4); }
 
 /* -------------------------------------------------------------- preview */
 

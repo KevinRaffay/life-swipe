@@ -40,3 +40,16 @@ export const rejectDraft = (id, reason) =>
   json(`${base}/drafts/${encodeURIComponent(id)}/reject`, { method: 'POST', body: { reason } });
 
 export const preview = (body) => json(`${base}/preview`, { method: 'POST', body });
+
+const qs = (params) => {
+  const usp = new URLSearchParams();
+  for (const [k, v] of Object.entries(params || {})) {
+    if (v !== null && v !== undefined && v !== '') usp.set(k, v);
+  }
+  const s = usp.toString();
+  return s ? `?${s}` : '';
+};
+
+export const getLogs = (params) => json(`${base}/logs${qs(params)}`);
+export const getLogSummary = () => json(`${base}/logs/summary`);
+export const getLogEntry = (id) => json(`${base}/logs/${encodeURIComponent(id)}`);
