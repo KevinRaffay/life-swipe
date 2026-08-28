@@ -24,7 +24,7 @@ function Meter({ label, value, tone }) {
   );
 }
 
-export default function Hud({ state, stage, storyteller, tier }) {
+export default function Hud({ state, storyteller, tier }) {
   const age = Math.floor(state.ageMonths / 12);
   const broke = state.money < 0;
 
@@ -35,10 +35,7 @@ export default function Hud({ state, stage, storyteller, tier }) {
           <span className="hud__age-number">{age}</span>
           <span className="hud__age-label">years</span>
         </div>
-        <div className="hud__stage">
-          <span className="hud__stage-name">{stage.label}</span>
-          <span className="hud__turn">swipe {state.turn + 1}</span>
-        </div>
+        <span className="hud__turn">swipe {state.turn + 1}</span>
         <div className={`hud__money${broke ? ' is-broke' : ''}`}>{money(state.money)}</div>
       </div>
 

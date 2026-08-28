@@ -107,8 +107,6 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   letter-spacing: 0.16em; text-transform: uppercase;
 }
 
-.hud__stage { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
-.hud__stage-name { font-size: 12px; font-weight: 600; letter-spacing: 0.01em; color: var(--muted); }
 .hud__turn { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); }
 
 .hud__money {
@@ -143,6 +141,22 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 }
 .hud__storyteller--live { color: var(--right); }
 .hud__storyteller--thinking { color: var(--violet); }
+
+/* --------------------------------------------------------- stage banner */
+
+.stage-banner { display: flex; align-items: center; gap: 10px; }
+.stage-banner__rule {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--stroke), transparent);
+}
+.stage-banner__label {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.16em;
+  text-transform: uppercase; white-space: nowrap;
+  background: linear-gradient(135deg, var(--gold), var(--right-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 /* ------------------------------------------------------------ toast slot */
 

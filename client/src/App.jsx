@@ -159,7 +159,13 @@ export default function App() {
 
   return (
     <main className="app">
-      <Hud state={state} stage={stageOf(state)} storyteller={storyteller} tier={contentTier(state)} />
+      <Hud state={state} storyteller={storyteller} tier={contentTier(state)} />
+
+      <div className="stage-banner">
+        <span className="stage-banner__rule" />
+        <span className="stage-banner__label">{stageOf(state).label}</span>
+        <span className="stage-banner__rule" />
+      </div>
 
       <EventToast events={events} deltas={deltas} />
 
