@@ -6,6 +6,8 @@
 // This layer only checks SHAPE. Clamping values to sane ranges is the engine's
 // job (engine.js -> normalizeEffects), because that depends on live game state.
 
+import { checkCompliance, MODES } from './content.js';
+
 const WEIGHTS = new Set(['trivial', 'minor', 'major']);
 const OUTCOMES = new Set(['death', 'injury', 'windfall']);
 
@@ -138,7 +140,12 @@ export function validateScenario(raw, index = 0) {
       leftLabel: raw.leftLabel.trim().slice(0, 40),
       rightLabel: raw.rightLabel.trim().slice(0, 40),
       weight,
+      modes: Array.isArray(raw.modes) && raw.modes.some((m) => MODES.includes(m))
+        ? raw.modes.filter((m) => MODES.includes(m))
+        : ['safe', 'mature'],
       priority: Number.isFinite(raw.priority) ? raw.priority : 0,
+      minAge: Number.isFinite(raw.minAge) ? raw.minAge : undefined,
+      maxAge: Number.isFinite(raw.maxAge) ? raw.maxAge : undefined,
       stages: Array.isArray(raw.stages) ? raw.stages.filter(isStr) : undefined,
       requiresFlags: Array.isArray(raw.requiresFlags)
         ? raw.requiresFlags.map(normalizeFlag).filter(Boolean)
@@ -155,7 +162,16 @@ export function validateScenario(raw, index = 0) {
 
 // Validates a whole batch. Partial credit: good cards survive bad neighbours,
 // but a batch that is mostly garbage is rejected so the caller can retry.
-export function validateBatch(raw, { minValid = 1 } = {}) {
+/**
+ * Validates a whole batch. Partial credit: good cards survive bad neighbours,
+ * but a batch that is mostly garbage is rejected so the caller can retry.
+ *
+ * @param {object}  [opts]
+ * @param {number}  [opts.minValid]  reject the batch below this many survivors
+ * @param {string}  [opts.tier]      'safe' | 'mature' - screen content against it
+ * @param {number}  [opts.age]       character age, for the under-18 rule
+ */
+export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {}) {
   if (typeof raw === 'string') {
     try {
       raw = JSON.parse(raw);
@@ -169,13 +185,27 @@ export function validateBatch(raw, { minValid = 1 } = {}) {
 
   const scenarios = [];
   const errors = [];
+  let rejectedForMode = 0;
   raw.forEach((item, i) => {
     const res = validateScenario(item, i);
-    if (res.ok) scenarios.push(res.scenario);
-    else errors.push(...res.errors);
+    if (!res.ok) {
+      errors.push(...res.errors);
+      return;
+    }
+    // Mode backstop. The prompt does the primary work; this catches drift, and
+    // it runs on the server AND again on the client before a card is dealt.
+    if (tier) {
+      const compliance = checkCompliance(res.scenario, { tier, age });
+      if (!compliance.ok) {
+        rejectedForMode += 1;
+        errors.push(`scenario[${i}]: content violates ${tier} tier (${compliance.violations.join(', ')})`);
+        return;
+      }
+    }
+    scenarios.push(res.scenario);
   });
 
-  return { ok: scenarios.length >= minValid, scenarios, errors };
+  return { ok: scenarios.length >= minValid, scenarios, errors, rejectedForMode };
 }
 
 function hash(str) {

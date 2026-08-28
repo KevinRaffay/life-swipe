@@ -19,7 +19,11 @@
     "rightEffects": {
       "happiness": 1,
       "health": 1
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_party",
@@ -54,7 +58,11 @@
       "flags": [
         "studious"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_job",
@@ -81,7 +89,11 @@
       "flags": [
         "unhurried"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_sat",
@@ -105,7 +117,11 @@
       "flags": [
         "band_kid"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_crush",
@@ -132,7 +148,11 @@
       "flags": [
         "avoidant"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_car",
@@ -155,7 +175,11 @@
       "flags": [
         "saver"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_cheat",
@@ -182,7 +206,11 @@
       "flags": [
         "principled"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_football",
@@ -207,7 +235,11 @@
     },
     "rightEffects": {
       "happiness": 1
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_smoke",
@@ -227,7 +259,11 @@
     },
     "rightEffects": {
       "happiness": -1
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "hs_summer",
@@ -251,7 +287,11 @@
       "flags": [
         "good_summer"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_choice",
@@ -289,7 +329,11 @@
       ],
       "timeCostMonths": 18
     },
-    "priority": 3
+    "priority": 3,
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_major",
@@ -318,7 +362,11 @@
       "education": "B.A. Philosophy",
       "timeCostMonths": 24
     },
-    "priority": 2
+    "priority": 2,
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_sam",
@@ -354,7 +402,11 @@
           "heavy_drinker"
         ]
       }
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_abroad",
@@ -377,7 +429,11 @@
     "rightEffects": {
       "happiness": -4,
       "timeCostMonths": 6
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_internship",
@@ -400,7 +456,11 @@
       "money": 6800,
       "happiness": -4,
       "timeCostMonths": 4
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_dropout",
@@ -440,7 +500,11 @@
         "in_school"
       ],
       "timeCostMonths": 24
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_crypto",
@@ -469,7 +533,11 @@
       "flags": [
         "cautious_investor"
       ]
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "col_sam_serious",
@@ -502,7 +570,11 @@
         "role": "former friend",
         "qualityDelta": -30
       }
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_firstjob",
@@ -550,7 +622,11 @@
       },
       "timeCostMonths": 18
     },
-    "priority": 2
+    "priority": 2,
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_move",
@@ -586,7 +662,11 @@
         "qualityDelta": 8
       },
       "timeCostMonths": 24
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_marry_sam",
@@ -632,7 +712,11 @@
         "qualityDelta": -22
       },
       "timeCostMonths": 12
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_401k",
@@ -661,7 +745,11 @@
         "conservative_portfolio"
       ],
       "happiness": 1
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_gym",
@@ -685,7 +773,11 @@
     "rightEffects": {
       "health": -3,
       "happiness": 1
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_kid",
@@ -717,7 +809,11 @@
         "child_free"
       ],
       "timeCostMonths": 24
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_house",
@@ -744,7 +840,11 @@
         "renter"
       ],
       "timeCostMonths": 18
-    }
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
   },
   {
     "id": "ec_sideproject",
@@ -771,6 +871,352 @@
     "rightEffects": {
       "health": 5,
       "happiness": 2
+    },
+    "modes": [
+      "safe",
+      "mature"
+    ]
+  },
+  {
+    "id": "mt_pills",
+    "modes": [
+      "mature"
+    ],
+    "stages": [
+      "early",
+      "family"
+    ],
+    "minAge": 24,
+    "weight": "minor",
+    "scenario": "The knee surgery left you with a bottle of thirty and a refill you did not ask for. There are nine left and it is Tuesday, which you know because you have started noticing which day it is.",
+    "leftLabel": "Flush them",
+    "rightLabel": "Keep the refill",
+    "leftEffects": {
+      "happiness": -8,
+      "health": 4,
+      "flags": [
+        "refused_refill"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "health": -6,
+      "flags": [
+        "opioid_dependence"
+      ],
+      "risk": {
+        "probability": 0.1,
+        "outcome": "injury",
+        "description": "You run out early and the pharmacy will not budge, and the two days that follow are their own kind of education."
+      }
+    }
+  },
+  {
+    "id": "mt_intervention",
+    "modes": [
+      "mature"
+    ],
+    "requiresFlags": [
+      "opioid_dependence"
+    ],
+    "stages": [
+      "early",
+      "family",
+      "late"
+    ],
+    "minAge": 26,
+    "weight": "major",
+    "scenario": "Everyone is in the living room at 6pm on a Sunday, which has never once happened by accident. Your sister has printed something out.",
+    "leftLabel": "Go to treatment",
+    "rightLabel": "Walk out",
+    "leftEffects": {
+      "money": -18000,
+      "health": 16,
+      "happiness": -6,
+      "flags": [
+        "in_recovery"
+      ],
+      "clearFlags": [
+        "opioid_dependence"
+      ],
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "happiness": -14,
+      "health": -10,
+      "flags": [
+        "burned_the_bridge"
+      ],
+      "timeCostMonths": 18
+    }
+  },
+  {
+    "id": "mt_recovery_year",
+    "modes": [
+      "mature"
+    ],
+    "requiresFlags": [
+      "in_recovery"
+    ],
+    "stages": [
+      "family",
+      "late",
+      "retirement"
+    ],
+    "minAge": 28,
+    "weight": "minor",
+    "scenario": "Fourteen months. Somebody at the meeting asks if you would speak next week, and you notice you have opinions about what you would say.",
+    "leftLabel": "Speak",
+    "rightLabel": "Just listen",
+    "leftEffects": {
+      "happiness": 14,
+      "health": 4,
+      "flags": [
+        "sponsor"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "health": 2
+    }
+  },
+  {
+    "id": "mt_expenses",
+    "modes": [
+      "mature"
+    ],
+    "stages": [
+      "early",
+      "family"
+    ],
+    "minAge": 25,
+    "weight": "major",
+    "scenario": "The expense system has a gap in it you found by accident eleven months ago, and you have been walking through the gap ever since. It is now $34,000 wide. Audit season starts Monday.",
+    "leftLabel": "Self-report",
+    "rightLabel": "Cover it over",
+    "leftEffects": {
+      "money": -34000,
+      "happiness": -12,
+      "flags": [
+        "self_reported_fraud"
+      ],
+      "career": {
+        "title": "Between things",
+        "salary": 0
+      },
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "flags": [
+        "embezzlement_unreported"
+      ],
+      "risk": {
+        "probability": 0.22,
+        "outcome": "injury",
+        "description": "The auditor is twenty-six, thorough, and has nothing else on her desk. The word 'felony' is used in a room with a window."
+      },
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "mt_sentencing",
+    "modes": [
+      "mature"
+    ],
+    "requiresFlags": [
+      "embezzlement_unreported"
+    ],
+    "stages": [
+      "family",
+      "late"
+    ],
+    "minAge": 30,
+    "weight": "major",
+    "scenario": "Your lawyer says eighteen months is the offer and that the alternative is a jury who will be shown a spreadsheet. He says it the way people say things they have said many times.",
+    "leftLabel": "Take the plea",
+    "rightLabel": "Go to trial",
+    "leftEffects": {
+      "money": -40000,
+      "happiness": -18,
+      "health": -8,
+      "flags": [
+        "served_time",
+        "felony_record"
+      ],
+      "career": {
+        "title": "Formerly employable",
+        "salary": 0
+      },
+      "timeCostMonths": 24
+    },
+    "rightEffects": {
+      "money": -90000,
+      "happiness": -10,
+      "flags": [
+        "felony_record"
+      ],
+      "risk": {
+        "probability": 0.2,
+        "outcome": "injury",
+        "description": "The jury takes four hours. The sentence is longer than the offer was."
+      },
+      "timeCostMonths": 24
+    }
+  },
+  {
+    "id": "mt_reentry",
+    "modes": [
+      "mature"
+    ],
+    "requiresFlags": [
+      "felony_record"
+    ],
+    "stages": [
+      "family",
+      "late"
+    ],
+    "minAge": 33,
+    "weight": "major",
+    "scenario": "The box on the application is a checkbox and the checkbox is not optional. A man from a reentry program says there is a contractor in Bayonne who does not ask, and a facilities job in Newark where you would have to say it out loud in an interview.",
+    "leftLabel": "Say it out loud",
+    "rightLabel": "Take the job that won't ask",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "disclosed_record",
+        "rebuilt"
+      ],
+      "career": {
+        "title": "Facilities Technician",
+        "salary": 46000
+      },
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "money": 6000,
+      "happiness": -5,
+      "flags": [
+        "off_the_books"
+      ],
+      "career": {
+        "title": "Site labourer, cash",
+        "salary": 38000
+      },
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "mt_sportsbook",
+    "modes": [
+      "mature"
+    ],
+    "stages": [
+      "early",
+      "family",
+      "late"
+    ],
+    "minAge": 24,
+    "weight": "minor",
+    "scenario": "The sportsbook app gave you $200 free and you turned it into $1,400 in a weekend, which felt less like luck than like a skill nobody had told you about.",
+    "leftLabel": "Cash out, delete it",
+    "rightLabel": "Let it ride",
+    "leftEffects": {
+      "money": 1400,
+      "happiness": 3,
+      "flags": [
+        "walked_away_early"
+      ]
+    },
+    "rightEffects": {
+      "money": -2200,
+      "happiness": -4,
+      "flags": [
+        "gambling_habit"
+      ],
+      "risk": {
+        "probability": 0.18,
+        "outcome": "windfall",
+        "description": "A parlay lands that should not have landed, and the number on the screen is bigger than a month of your salary."
+      }
+    }
+  },
+  {
+    "id": "mt_bookie",
+    "modes": [
+      "mature"
+    ],
+    "requiresFlags": [
+      "gambling_habit"
+    ],
+    "stages": [
+      "family",
+      "late"
+    ],
+    "minAge": 28,
+    "weight": "major",
+    "scenario": "You are $61,000 down across four apps and one man named Terrence who does not use apps. Terrence is polite. Terrence has been polite for three weeks now.",
+    "leftLabel": "Tell your family",
+    "rightLabel": "Borrow to cover it",
+    "leftEffects": {
+      "money": -61000,
+      "happiness": -16,
+      "flags": [
+        "came_clean_debt",
+        "in_recovery"
+      ],
+      "clearFlags": [
+        "gambling_habit"
+      ],
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "money": -61000,
+      "happiness": -10,
+      "health": -8,
+      "flags": [
+        "borrowed_badly"
+      ],
+      "risk": {
+        "probability": 0.15,
+        "outcome": "injury",
+        "description": "Terrence stops being polite in a parking structure on a Thursday."
+      },
+      "timeCostMonths": 12
+    }
+  },
+  {
+    "id": "mt_dui",
+    "modes": [
+      "mature"
+    ],
+    "stages": [
+      "early",
+      "family",
+      "late"
+    ],
+    "minAge": 23,
+    "weight": "major",
+    "scenario": "You are four drinks in and the car is right there and the drive is eleven minutes on roads you could do asleep, which is a thought you notice having.",
+    "leftLabel": "Leave the car",
+    "rightLabel": "Drive it",
+    "leftEffects": {
+      "money": -60,
+      "happiness": -2,
+      "flags": [
+        "called_a_car"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "flags": [
+        "drove_impaired"
+      ],
+      "risk": {
+        "probability": 0.24,
+        "outcome": "injury",
+        "description": "The stop is routine until it is not, and the phrase 'driving while intoxicated' enters your record, your insurance, and every background check for the next decade."
+      }
     }
   }
 ]

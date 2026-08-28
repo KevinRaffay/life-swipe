@@ -12,7 +12,8 @@ import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 
 import { complete, extractJson, hasKey, MODEL, AnthropicError } from './anthropic.js';
-import { SYSTEM_PROMPT, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt } from './prompt.js';
+import { buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt } from './prompt.js';
+import { effectiveTier } from '../shared/content.js';
 import { validateBatch } from '../shared/schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,13 +47,18 @@ app.post('/api/scenarios', async (req, res) => {
     return res.json({ scenarios: [], source: 'none', reason: 'no ANTHROPIC_API_KEY set' });
   }
 
-  const user = buildUserPrompt({ summary, recent: recent.slice(-10), count });
+  // The client sends a tier, but the server resolves it again from age and
+  // mode. A client that asks for mature content for a 15-year-old gets safe
+  // content, because this line does not consult the request's own answer.
+  const tier = effectiveTier({ age: summary.age, contentMode: summary.contentMode });
+  const system = buildSystemPrompt(tier);
+  const user = buildUserPrompt({ summary: { ...summary, tier }, recent: recent.slice(-10), count });
   const attempts = [];
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       const { text } = await complete({
-        system: SYSTEM_PROMPT,
+        system,
         user: attempt === 0
           ? user
           : user + '\n\nIMPORTANT: your previous reply was not valid. Reply with ONLY a JSON array of 5 scenario objects. No prose, no code fences.',
@@ -62,15 +68,21 @@ app.post('/api/scenarios', async (req, res) => {
       });
 
       const parsed = extractJson(text);
-      const { ok, scenarios, errors } = validateBatch(parsed, { minValid: 3 });
+      const { ok, scenarios, errors, rejectedForMode } = validateBatch(parsed, {
+        minValid: 3,
+        tier,
+        age: summary.age,
+      });
 
       if (ok) {
         return res.json({
           scenarios,
           source: 'llm',
           model: MODEL,
+          tier,
           attempt: attempt + 1,
           dropped: errors.length,
+          rejectedForMode,
         });
       }
       attempts.push(`attempt ${attempt + 1}: ${errors.slice(0, 3).join('; ') || 'no valid scenarios'}`);

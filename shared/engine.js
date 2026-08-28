@@ -7,6 +7,10 @@
 import { BAL } from './balance.js';
 import { seedFrom, nextRandom, chance, range, gauss } from './rng.js';
 import { validateScenario, normalizeFlag } from './schema.js';
+import {
+  MODES, DEFAULT_MODE, effectiveTier, createDarkState, noteDarkScenario,
+  isMatureScenario, darkArcAllowed,
+} from './content.js';
 
 export const STAGES = [
   { id: 'highschool', label: 'High School',         minAge: 16, maxAge: 18 },
@@ -27,8 +31,8 @@ export const hasFlag = (s, f) => s.flags.includes(f);
 
 /* ------------------------------------------------------------------ state */
 
-export function createState({ seed = Date.now(), name = 'You' } = {}) {
-  return {
+export function createState({ seed = Date.now(), name = 'You', contentMode = DEFAULT_MODE } = {}) {
+  const state = {
     seed: String(seed),
     rngState: seedFrom(seed),
     name,
@@ -47,6 +51,10 @@ export function createState({ seed = Date.now(), name = 'You' } = {}) {
     },
     kids: [],
     flags: ['lives_with_parents'],
+    // Which mode a flag was created under, so later systems can filter on it.
+    flagMeta: {},
+    contentMode: MODES.includes(contentMode) ? contentMode : DEFAULT_MODE,
+    dark: null,
     history: [],
     credits: 0,
     alive: true,
@@ -54,7 +62,18 @@ export function createState({ seed = Date.now(), name = 'You' } = {}) {
     ending: null,
     causeOfDeath: null,
   };
+  // Rolled once at birth from the run's own RNG and then spent - never
+  // re-rolled, which is what keeps mature mode from becoming a crime spree.
+  state.dark = createDarkState(() => nextRandom(state));
+  return state;
 }
+
+// The tier actually in force right now. Age beats mode: a minor gets safe
+// content even in a mature life, and this is the only function that decides it.
+export const contentTier = (s) =>
+  effectiveTier({ age: ageOf(s), contentMode: s.contentMode });
+
+export const canDealDarkCard = (s) => darkArcAllowed(s);
 
 const cloneState = (s) => JSON.parse(JSON.stringify(s));
 
@@ -267,13 +286,20 @@ export function applyChoice(state, rawScenario, side) {
 
   s.turn += 1;
 
+  // 0. Account for mature content before anything else, so the arc budget is
+  //    spent even if this card turns out to be the one that kills you.
+  if (isMatureScenario(scenario)) noteDarkScenario(s);
+
   // 1. Immediate proposed effects (already clamped).
   s.money += eff.money;
   s.health = clamp(s.health + eff.health, 0, 100);
   s.happiness = clamp(s.happiness + eff.happiness, 0, 100);
 
   for (const f of eff.flags) {
-    if (!s.flags.includes(f) && s.flags.length < BAL.CLAMP.maxFlags) s.flags.push(f);
+    if (!s.flags.includes(f) && s.flags.length < BAL.CLAMP.maxFlags) {
+      s.flags.push(f);
+      s.flagMeta[f] = { mode: s.contentMode, tier: contentTier(s), age: Math.floor(ageOf(s)), turn: s.turn };
+    }
   }
   if (eff.clearFlags.length) s.flags = s.flags.filter((f) => !eff.clearFlags.includes(f));
 
@@ -470,6 +496,12 @@ export function stateSummary(s) {
     annualIncome: Math.round(annualIncome(s)),
     annualExpenses: Math.round(annualExpenses(s)),
     turn: s.turn,
+    contentMode: s.contentMode,
+    // The tier the server must generate at. Already age-resolved, so the
+    // server never has to reason about the minor rule itself.
+    tier: contentTier(s),
+    darkArcAllowed: canDealDarkCard(s),
+    darkArcs: s.dark ? { used: s.dark.arcsUsed, budget: s.dark.budget } : null,
   };
 }
 

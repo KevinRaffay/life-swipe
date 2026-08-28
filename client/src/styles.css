@@ -493,3 +493,57 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------------------------------------------------------- content mode */
+
+.modes { display: flex; gap: 10px; width: 100%; max-width: 340px; }
+
+.mode-pill {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 12px 12px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  text-align: left;
+  transition: background 200ms ease, border-color 200ms ease, box-shadow 220ms ease;
+}
+.mode-pill__name { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
+.mode-pill__desc { font-size: 10.5px; font-weight: 500; color: var(--dim); line-height: 1.3; }
+
+.mode-pill--safe.is-on {
+  border-color: var(--right);
+  background: linear-gradient(180deg, rgba(0, 229, 160, 0.14), rgba(0, 229, 160, 0.22));
+  box-shadow: 0 8px 26px -8px rgba(0, 229, 160, 0.6);
+}
+.mode-pill--mature.is-on {
+  border-color: var(--left);
+  background: linear-gradient(180deg, rgba(255, 61, 113, 0.15), rgba(255, 61, 113, 0.24));
+  box-shadow: 0 8px 26px -8px rgba(255, 61, 113, 0.6);
+}
+.mode-pill.is-on .mode-pill__desc { color: var(--text); opacity: 0.85; }
+
+.agegate {
+  width: 100%; max-width: 340px;
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid rgba(255, 61, 113, 0.4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  text-align: left;
+}
+.agegate__title { margin: 0 0 6px; font-size: 15px; font-weight: 750; color: var(--left); }
+.agegate__body { margin: 0 0 14px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.agegate__actions { display: flex; gap: 9px; }
+.agegate__actions .btn { flex: 1; padding: 11px 12px; font-size: 13px; }
+
+.hud__row--tags { justify-content: flex-start; }
+
+.mode-chip {
+  font-size: 8.5px; font-weight: 800; letter-spacing: 0.2em;
+  padding: 3px 8px; border-radius: 99px;
+  border: 1px solid var(--stroke); color: var(--dim);
+}
+.mode-chip--mature { color: var(--left); border-color: rgba(255, 61, 113, 0.45); }
+.mode-chip em { font-style: normal; opacity: 0.75; letter-spacing: 0.1em; }

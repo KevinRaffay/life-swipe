@@ -4,7 +4,7 @@
 // PROPOSES effects. The engine clamps every number, rolls every probability and
 // decides every death. Nothing the model returns is authoritative.
 
-export const SYSTEM_PROMPT = `You are the STORYTELLER for "Life Swipe", a darkly comic life-simulation game.
+const SYSTEM_TEMPLATE = `You are the STORYTELLER for "Life Swipe", a darkly comic life-simulation game.
 The player lives one life from 16 until they die or go broke, one binary swipe at a time.
 
 YOUR ROLE, PRECISELY:
@@ -22,6 +22,8 @@ Comedy comes from precision and understatement, never from wackiness or exclamat
 marks. Both options should feel defensible; no obvious right answer. 1-3 sentences
 per scenario. Choice labels are 1-4 words.
 Dark, yes; cruel, no. No graphic violence, no self-harm as a punchline, no slurs.
+
+__CONTENT_BLOCK__
 
 OUTPUT FORMAT - a JSON array of exactly 5 objects and NOTHING else. No prose, no
 markdown fences, no trailing commentary:
@@ -91,6 +93,39 @@ quietly". The player sees a life, not a state machine.
 
 Write for the CURRENT life stage. A 52-year-old does not get prom scenarios.`;
 
+/* ------------------------------------------------- swappable content tiers */
+
+const CONTENT_SAFE = `CONTENT TIER: SAFE.
+Grounded life drama. The stakes are real and are allowed to hurt: bankruptcy,
+serious illness, injury, divorce, estrangement, layoffs, accidents and death all
+belong here. What does not belong: illegal drug use, crime, arrest, prison,
+gambling arcs, or sexual content.
+
+Alcohol and cigarettes may appear as ordinary social detail - a bad Wednesday,
+a cigarette offered behind the auditorium - but never as an addiction arc.
+Stakes come from money, health, career, relationships, family and chance.`;
+
+const CONTENT_MATURE = `CONTENT TIER: MATURE.
+Everything the safe tier allows, plus arcs the safe tier refuses: drug use and
+addiction, crime and its consequences, arrest, prison and reentry, gambling and
+debt to people who do not take cheques, and self-destruction generally. Write
+them with grit and consequence. Dark comedy is welcome; glamour is not.
+
+Hold these lines even here:
+- No explicit sexual content, in any mode. Desire and its consequences, yes;
+  the scene itself, no.
+- No usable instructions for anything illegal. Depict the DECISION and what it
+  costs, never the method. "You have been cutting it with something cheaper"
+  is a card; a recipe is not.
+- Dark arcs must sometimes bend toward recovery, treatment, reentry or plain
+  ordinary survival - not only toward punishment. A life that goes wrong is
+  still a life, and people do come back.
+- Addiction and incarceration are conditions people live through, not
+  punchlines about the person. The joke is on the situation.
+
+RATE: dark material is seasoning, not the meal. Unless this request explicitly
+says a dark arc is permitted, write ordinary life.`;
+
 const STAGE_GUIDANCE = {
   highschool: 'High school. Friends, parents, cars, first jobs, small crimes, large feelings. Money is in the tens and hundreds.',
   college: 'College or first job. Debt, roommates, majors, internships, the first real relationships. Money is in the thousands.',
@@ -99,6 +134,19 @@ const STAGE_GUIDANCE = {
   late: 'Late career. Layoffs and reinvention, adult children, the body sending invoices, the retirement spreadsheet.',
   retirement: 'Retirement. Time is suddenly abundant and finite. Grandchildren, scams aimed at you, specialists, the shrinking address book.',
 };
+
+/**
+ * The system prompt for a given content tier. The tier is already age-resolved
+ * by the engine, so this function never has to reason about the minor rule.
+ * @param {'safe'|'mature'} tier
+ */
+export function buildSystemPrompt(tier = 'safe') {
+  const block = tier === 'mature' ? CONTENT_MATURE : CONTENT_SAFE;
+  return SYSTEM_TEMPLATE.replace('__CONTENT_BLOCK__', block);
+}
+
+// Kept so existing callers and tests still resolve to something sensible.
+export const SYSTEM_PROMPT = buildSystemPrompt('safe');
 
 export function buildUserPrompt({ summary, recent, count = 5 }) {
   const flagLine = summary.flags.length ? summary.flags.join(', ') : '(none yet)';
@@ -115,7 +163,18 @@ export function buildUserPrompt({ summary, recent, count = 5 }) {
     : '  (this is the beginning)';
   const dollars = (n) => '$' + Math.round(n).toLocaleString('en-US');
 
-  return `CURRENT LIFE STAGE: ${summary.stageLabel} (${summary.stage})
+  const tier = summary.tier === 'mature' ? 'mature' : 'safe';
+  const darkLine = tier === 'mature'
+    ? (summary.darkArcAllowed
+        ? 'A dark arc IS permitted in this batch. At most ONE of the five cards may use it; the other four are ordinary life.'
+        : 'NO dark arc in this batch. Every card is ordinary life, whatever the tier allows in general.')
+    : 'Safe tier: no dark arcs at all.';
+
+  return `CONTENT DIRECTIVE
+  tier: ${tier}${summary.age < 18 ? ' (character is a MINOR - safe tier is forced regardless of the player mode)' : ''}
+  ${darkLine}
+
+CURRENT LIFE STAGE: ${summary.stageLabel} (${summary.stage})
 ${STAGE_GUIDANCE[summary.stage] || ''}
 
 STATE (owned by the engine, shown to you for context only):

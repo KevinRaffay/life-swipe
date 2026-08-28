@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import seedScenarios from '@data/scenarios-seed.json';
 import { Deck } from '@shared/deck.js';
 import {
-  createState, applyChoice, stageOf, finalStats, stateSummary, recentDecisions,
+  createState, applyChoice, stageOf, finalStats, stateSummary, recentDecisions, contentTier,
 } from '@shared/engine.js';
 
 import { fetchScenarios, getConfig } from './api.js';
@@ -45,10 +45,12 @@ export default function App() {
     }),
   }), []);
 
-  const start = useCallback(() => {
+  // Mode is fixed at birth and never changes mid-life: switching would orphan
+  // in-flight arcs and the flags they planted.
+  const start = useCallback((contentMode = 'safe') => {
     const deck = makeDeck();
     deckRef.current = deck;
-    const fresh = createState({ seed: `${Date.now()}-${Math.random()}` });
+    const fresh = createState({ seed: `${Date.now()}-${Math.random()}`, contentMode });
     const first = deck.draw(fresh);
     const second = deck.draw(fresh);
     setState(fresh);
@@ -103,7 +105,11 @@ export default function App() {
   if (phase === 'ended') {
     return (
       <main className="app">
-        <Obituary stats={finalStats(state)} history={state.history} onRestart={start} />
+        <Obituary
+          stats={finalStats(state)}
+          history={state.history}
+          onRestart={() => start(state.contentMode)}
+        />
       </main>
     );
   }
@@ -115,7 +121,7 @@ export default function App() {
 
   return (
     <main className="app">
-      <Hud state={state} stage={stageOf(state)} storyteller={storyteller} />
+      <Hud state={state} stage={stageOf(state)} storyteller={storyteller} tier={contentTier(state)} />
 
       <EventToast events={events} deltas={deltas} />
 

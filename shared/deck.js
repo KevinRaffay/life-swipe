@@ -5,7 +5,8 @@
 // hand-authored seed, otherwise a procedural fallback - and then quietly kicks
 // off a background fetch. Swiping never waits on the network.
 
-import { stageOf, STAGES } from './engine.js';
+import { stageOf, STAGES, contentTier, canDealDarkCard, ageOf } from './engine.js';
+import { checkCompliance, isMatureScenario } from './content.js';
 import { makeFallbackScenario } from './fallback.js';
 import { validateBatch } from './schema.js';
 import { nextRandom } from './rng.js';
@@ -57,6 +58,23 @@ export class Deck {
 
   eligible(scenario, state) {
     if (this.recentIds.includes(scenario.id)) return false;
+
+    // Content mode gate. A mature card needs three things at once: a mature
+    // tier (which already resolves the under-18 rule), an unspent arc budget,
+    // and a clean compliance check. Any one of them failing hides the card.
+    if (isMatureScenario(scenario)) {
+      if (contentTier(state) !== 'mature') return false;
+      if (!canDealDarkCard(state)) return false;
+    }
+    const compliance = checkCompliance(scenario, {
+      tier: contentTier(state),
+      age: ageOf(state),
+    });
+    if (!compliance.ok) return false;
+    const age = ageOf(state);
+    if (Number.isFinite(scenario.minAge) && age < scenario.minAge) return false;
+    if (Number.isFinite(scenario.maxAge) && age > scenario.maxAge) return false;
+
     const stage = stageOf(state).id;
     const strict = scenario.source === 'seed';
     if (scenario.stages && scenario.stages.length) {
@@ -159,7 +177,10 @@ export class Deck {
     this.inFlight = Promise.resolve()
       .then(() => this.fetchBatch(state))
       .then((raw) => {
-        const { scenarios } = validateBatch(raw || []);
+        const { scenarios } = validateBatch(raw || [], {
+          tier: contentTier(state),
+          age: ageOf(state),
+        });
         const stage = stageOf(state).id;
         for (const s of scenarios) {
           if (this.recentIds.includes(s.id)) continue;

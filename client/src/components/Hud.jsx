@@ -24,7 +24,7 @@ function Meter({ label, value, tone }) {
   );
 }
 
-export default function Hud({ state, stage, storyteller }) {
+export default function Hud({ state, stage, storyteller, tier }) {
   const age = Math.floor(state.ageMonths / 12);
   const broke = state.money < 0;
 
@@ -40,6 +40,20 @@ export default function Hud({ state, stage, storyteller }) {
           <span className="hud__turn">swipe {state.turn + 1}</span>
         </div>
         <div className={`hud__money${broke ? ' is-broke' : ''}`}>{money(state.money)}</div>
+      </div>
+
+      <div className="hud__row hud__row--tags">
+        <span
+          className={`mode-chip mode-chip--${state.contentMode}`}
+          title={
+            state.contentMode === 'mature' && tier === 'safe'
+              ? 'Mature life, but safe content is forced while under 18'
+              : `${state.contentMode} mode`
+          }
+        >
+          {state.contentMode === 'mature' ? 'MATURE' : 'SAFE'}
+          {state.contentMode === 'mature' && tier === 'safe' && <em> · minor</em>}
+        </span>
       </div>
 
       <div className="hud__row hud__row--meters">

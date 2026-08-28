@@ -325,3 +325,78 @@ outranks them:
 | `ec_firstjob` | 2 | sets the first real salary |
 
 Add `"priority": 1` to any seed that has to fire for later cards to make sense.
+
+---
+
+## Content modes
+
+Two modes, chosen on the new-game screen and **locked for the life** — switching
+mid-life would orphan in-flight arcs and the flags they planted.
+
+Mode is a tone-and-subject dial, **not a difficulty setting**. Safe mode keeps
+every real stake: bankruptcy, illness, injury, divorce, estrangement, accidents
+and death. What it drops is drugs, crime, prison and vice.
+
+| | Safe | Mature |
+| --- | --- | --- |
+| money, health, career, love, family, accidents | yes | yes |
+| addiction, crime, arrest, prison, gambling | no | occasionally |
+| explicit sexual content | no | **no** |
+| how-to detail for anything illegal | no | **no** |
+
+The choice is remembered across lives. Selecting Mature asks for age
+confirmation **once**, then never again.
+
+### The hard rule
+
+`effectiveTier({ age, contentMode })` in [content.js](shared/content.js) is the
+only function that decides what a life may contain, and **age beats mode**: a
+character under 18 gets safe-tier content even in a mature life. This is
+engine-enforced, not prompt-suggested. The server recomputes the tier from age
+and mode rather than trusting the tier the client sends, so a tampered request
+cannot buy mature content for a 15-year-old.
+
+Three independent gates stand between a player and content they did not choose:
+
+1. **Tier** — mature cards are invisible unless the resolved tier is mature.
+2. **Arc budget** — see below.
+3. **Keyword compliance** — a blunt backstop over scenario text, labels, risk
+   descriptions and flag names, run on the server *and* again on the client.
+
+### Why mature mode is not a crime spree
+
+Each mature life rolls a budget of **1–3 dark arcs** at birth, from the run's own
+RNG. It is spent, never re-rolled. An arc spans up to 3 cards, with 8 swipes of
+quiet enforced between arcs. Measured over 300 lives: mean 1.67 arcs, max 3,
+100% of lives inside the 1–3 target.
+
+Dark arcs are also required to bend toward recovery and reentry sometimes, not
+only punishment — the mature seed deck ships an intervention, a recovery-year
+card and a reentry card alongside the sentencing one.
+
+### Checking it
+
+```bash
+npm run simulate -- 300 seed --mode=both
+```
+
+The report adds a CONTENT MODE section (arc distribution per life) and two
+assertions that **fail the run with exit code 1**:
+
+- no mature content in a safe-mode life
+- no mature content dealt to a character under 18, in either mode
+
+Both were verified by deliberately breaking them: mis-tagging a mature seed as
+safe *and* disabling all three gates makes the run fail and name every offending
+card. With any single gate intact it still passes, which is the point of having
+three.
+
+### One judgment call
+
+`MINOR_SUBSTANCES_BLOCKED` in [content.js](shared/content.js) is `false`. The
+spec says no drugs for minors full stop; set it `true` for that reading. It ships
+`false` because the hand-authored coming-of-age deck depends on exactly that kind
+of peer-pressure card — a cigarette offered behind the auditorium, a party with
+something blue in the bathtub — and those are the game's most age-appropriate
+stakes, not its most adult. Hard drugs, crime, prison, gambling and sexual
+content are blocked for minors either way.
