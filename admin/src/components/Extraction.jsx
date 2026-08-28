@@ -58,6 +58,7 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
   };
 
   const warningsFor = (id) => (result?.warnings || []).find((w) => w.id === id)?.warnings || [];
+  const duplicateFor = (id) => (result?.duplicates || []).find((d) => d.id === id);
 
   return (
     <div className="pane">
@@ -88,6 +89,7 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
             Added {result.added} candidates in {(result.ms / 1000).toFixed(1)}s.
             {result.problems?.length ? ` ${result.problems.length} schema problem(s): ${result.problems.join('; ')}` : ''}
             {result.collisions?.length ? ` Ids also present in the library: ${result.collisions.join(', ')}.` : ''}
+            {result.duplicates?.length ? ` ${result.duplicates.length} possible content duplicate(s).` : ''}
           </p>
         )}
       </section>
@@ -98,6 +100,7 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
 
         {drafts.map((d) => {
           const warnings = warningsFor(d.id);
+          const duplicate = duplicateFor(d.id);
           if (editing === d.id) {
             return (
               <div key={d.id} className="draft">
@@ -125,8 +128,9 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
               </div>
               <p>{d.pattern}</p>
               <p className="muted small">{d.typical_effects}</p>
-              {warnings.length > 0 && (
+              {(warnings.length > 0 || duplicate) && (
                 <ul className="problems">
+                  {duplicate && <li>possible duplicate of <code>{duplicate.duplicateOf}</code> ({Math.round(duplicate.score * 100)}% word overlap)</li>}
                   {warnings.map((w, i) => <li key={i}>anonymity: {w}</li>)}
                 </ul>
               )}

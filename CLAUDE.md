@@ -342,6 +342,14 @@ Other things worth knowing before working on it:
   content hash so a file edited underneath you is refused rather than clobbered.
 - **Extraction never merges.** It appends to `situation-library.draft.json` and
   stops; entering the library is always an explicit human approval.
+- **Extraction flags likely content duplicates, it doesn't block them.**
+  `duplicateWarnings` in `server/extraction.js` does word-overlap scoring
+  (Jaccard over each pattern's tokenized `pattern` sentence, threshold 0.6)
+  against the live library, the existing draft queue, and earlier candidates
+  in the same batch — catching a rephrased repeat that id matching (`idCollisions`)
+  can't. Advisory only, same as the anonymity sweep: a person reads every flag
+  and decides. Shared by both extraction callers (admin `/api/extract` and
+  `scripts/extract-patterns.js`), same as the rest of `server/extraction.js`.
 - The cross-reference check answers only *"can any content file or the engine
   ever set this flag?"*. It is **not** the same measurement as "8 of 13 patterns
   are dead in simulation" below — that is about chains that cannot complete
