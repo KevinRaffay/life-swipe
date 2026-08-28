@@ -151,8 +151,29 @@ if (fs.existsSync(DIST)) {
   });
 }
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`\n  Life Swipe listening on http://localhost:${PORT}`);
   console.log(`  storyteller: ${hasKey() ? MODEL : 'OFFLINE (no ANTHROPIC_API_KEY - seed content only)'}`);
   console.log(`  client build: ${fs.existsSync(DIST) ? 'dist/' : 'MISSING (run npm start)'}\n`);
+});
+
+// A busy port is an ordinary thing - usually a previous run still alive - and
+// deserves an instruction rather than a stack trace.
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error('\n  Port ' + PORT + ' is already in use, most likely by a previous Life Swipe server.\n');
+    console.error('  Run it somewhere else:');
+    console.error('      bash:        PORT=8788 npm start');
+    console.error('      PowerShell:  $env:PORT=8788; npm start\n');
+    console.error('  Or stop whatever is holding the port:');
+    console.error('      PowerShell:  Get-NetTCPConnection -LocalPort ' + PORT +
+                  ' -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }');
+    console.error('      any shell:   npx kill-port ' + PORT + '\n');
+    process.exit(1);
+  }
+  if (err.code === 'EACCES') {
+    console.error('\n  Not allowed to bind port ' + PORT + '. Try a port above 1024.\n');
+    process.exit(1);
+  }
+  throw err;
 });
