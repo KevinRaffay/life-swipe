@@ -106,6 +106,7 @@
       45
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [
@@ -127,6 +128,7 @@
       50
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [
@@ -148,6 +150,7 @@
       55
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [
@@ -169,6 +172,7 @@
       60
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [
@@ -231,6 +235,7 @@
       60
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [
@@ -271,6 +276,7 @@
       28
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [],
@@ -346,6 +352,7 @@
       45
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [
@@ -427,6 +434,7 @@
       50
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [],
@@ -502,6 +510,7 @@
       60
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [],
@@ -541,6 +550,7 @@
       55
     ],
     "modes": [
+      "safe",
       "mature"
     ],
     "requires": [],
@@ -548,6 +558,287 @@
       "crisis_sobriety_attempt_amid_compounding_losses"
     ],
     "typical_effects": "Major branch point: successful sobriety attempt unlocks health recovery and partial relationship repair but requires sustained effort checks; relapse deepens all existing penalties and accelerates legal exposure.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "market_crash_job_loss_2",
+    "pattern": "A sudden, systemic market collapse wipes out a young worker's position at an established firm, forcing them to seek opportunity in lower-status or less regulated corners of the industry.",
+    "category": "career",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "market_crash_job_loss"
+    ],
+    "typical_effects": "Triggers a pivot to a riskier or ethically murkier environment; can accelerate financial gain in the short term while increasing exposure to legal and reputational risk.",
+    "rarity": "uncommon",
+    "note": "The crash is external and impersonal; the consequential decision is what the character does next."
+  },
+  {
+    "id": "early_career_toxic_mentorship",
+    "pattern": "A young professional entering a high-status industry is mentored by a charismatic senior figure who normalises excess and self-enrichment as the primary goal of the work.",
+    "category": "career",
+    "life_stage": [
+      18,
+      28
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "early_career_toxic_mentorship"
+    ],
+    "typical_effects": "Sets a values baseline skewed toward personal gain over integrity; creates a branch point between adopting or rejecting the culture, with long-term consequences for legal and reputational standing.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "aggressive_sales_talent_in_grey",
+    "pattern": "A person with exceptional persuasive talent finds that their skills produce outsized rewards in a lightly regulated or ethically ambiguous market, reinforcing the behaviour and raising the stakes.",
+    "category": "career",
+    "life_stage": [
+      20,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "aggressive_sales_talent_in_grey_market"
+    ],
+    "typical_effects": "Creates a positive feedback loop of financial reward and escalating risk-taking; sets up a later branch point when regulatory attention arrives.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "neighbour_becomes_business_partner",
+    "pattern": "A casual social relationship with a neighbour or acquaintance transforms into a formal business partnership, blurring the line between friendship and professional accountability.",
+    "category": "career",
+    "life_stage": [
+      22,
+      45
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "neighbour_becomes_business_partner"
+    ],
+    "typical_effects": "Introduces loyalty and personal affection as factors that complicate rational business decisions; creates vulnerability when the partner acts impulsively or self-interestedly.",
+    "rarity": "common"
+  },
+  {
+    "id": "negative_press_triggers_unexpected_growt",
+    "pattern": "A critical or scandalous media profile intended to damage a person's reputation instead attracts ambitious followers who are drawn to the notoriety, accelerating the very behaviour the coverage condemned.",
+    "category": "career",
+    "life_stage": [
+      25,
+      50
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "negative_press_triggers_unexpected_growth"
+    ],
+    "typical_effects": "Provides a short-term boost to status and resources while deepening regulatory scrutiny; creates a false sense of invulnerability.",
+    "rarity": "uncommon",
+    "note": "The irony of the outcome should be surfaced in the storytelling."
+  },
+  {
+    "id": "wealth_induced_lifestyle_spiral",
+    "pattern": "Rapid accumulation of wealth leads to a lifestyle of escalating consumption, substance use and moral compromise that gradually erodes relationships, judgement and legal standing.",
+    "category": "health",
+    "life_stage": [
+      25,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "wealth_induced_lifestyle_spiral"
+    ],
+    "typical_effects": "Slow-burn degradation of health, family stability and decision-making quality; should generate a series of pending_events representing compounding consequences rather than a single crisis.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "affair_leads_to_remarriage_and",
+    "pattern": "An extramarital affair ends a first marriage and leads to a second marriage that initially appears to represent a fresh start but carries its own instabilities.",
+    "category": "romance",
+    "life_stage": [
+      25,
+      45
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "affair_leads_to_remarriage_and_new_family"
+    ],
+    "typical_effects": "Resets domestic life while introducing guilt, divided loyalties and the possibility that the same patterns repeat; second marriage is a branch point for genuine change or continued dysfunction.",
+    "rarity": "common"
+  },
+  {
+    "id": "regulatory_investigation_slow_build",
+    "pattern": "Success built on ethically or legally questionable practices attracts quiet regulatory scrutiny that intensifies over years before becoming an existential threat.",
+    "category": "career",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "regulatory_investigation_slow_build"
+    ],
+    "typical_effects": "Creates a long-running background threat; should fire as a pending_event that periodically surfaces, forcing the character to choose between reform, concealment or flight.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "offshore_concealment_through_trusted_pro",
+    "pattern": "A person under financial or legal pressure routes assets through a trusted third party — a relative, friend or foreign contact — to place them beyond the reach of authorities, creating a fragile arrangement dependent on that person's continued cooperation and survival.",
+    "category": "money",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "offshore_concealment_through_trusted_proxy"
+    ],
+    "typical_effects": "Provides temporary relief but introduces a critical single point of failure; the proxy's death, arrest or defection should be a high-impact pending_event.",
+    "rarity": "rare"
+  },
+  {
+    "id": "proxy_death_triggers_asset_crisis",
+    "pattern": "The unexpected death of a person through whom assets or arrangements were secretly held forces a desperate scramble to protect or recover what was concealed in their name.",
+    "category": "money",
+    "life_stage": [
+      30,
+      60
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "offshore_concealment_through_trusted_proxy"
+    ],
+    "excludes": [
+      "proxy_death_triggers_asset_crisis"
+    ],
+    "typical_effects": "Acute crisis requiring immediate high-risk action; branch point between cutting losses and doubling down on concealment, with legal jeopardy attached to either path.",
+    "rarity": "rare"
+  },
+  {
+    "id": "father_figure_urges_retreat_ignored",
+    "pattern": "A trusted older family member or mentor clearly advises the protagonist to step back from a dangerous situation, but the protagonist's ego and attachment to their identity prevent them from listening.",
+    "category": "family",
+    "life_stage": [
+      28,
+      50
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "father_figure_urges_retreat_ignored"
+    ],
+    "typical_effects": "Marks a clear moment of agency where the character chooses escalation over safety; the ignored advice should be referenced when later consequences arrive.",
+    "rarity": "common"
+  },
+  {
+    "id": "cooperating_witness_deal_breached",
+    "pattern": "Facing overwhelming evidence, a person agrees to cooperate with authorities against their associates, but loyalty or panic causes them to secretly warn a colleague, undermining the deal and exposing them to harsher consequences.",
+    "category": "chaos",
+    "life_stage": [
+      30,
+      60
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "cooperating_witness_deal_breached"
+    ],
+    "typical_effects": "Should be a high-stakes branch point; breaching the deal collapses the character's legal protection and accelerates collapse of their professional world, though residual goodwill may still reduce the sentence.",
+    "rarity": "rare"
+  },
+  {
+    "id": "post_conviction_reinvention_as_expert",
+    "pattern": "After serving a reduced sentence for white-collar wrongdoing, a person rebuilds their livelihood by monetising the very expertise and notoriety that led to their conviction.",
+    "category": "career",
+    "life_stage": [
+      35,
+      65
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "post_conviction_reinvention_as_expert"
+    ],
+    "typical_effects": "Creates an ambiguous new chapter — financial recovery is possible but reputation remains contested; branch point between genuine rehabilitation and cynical exploitation of infamy.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "substance_crisis_during_acute_emergency",
+    "pattern": "A person under the influence of substances faces an acute emergency requiring clear-headed action, and their impaired state turns a manageable problem into a dangerous or absurd crisis.",
+    "category": "health",
+    "life_stage": [
+      22,
+      55
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [],
+    "typical_effects": "Should produce immediate physical or legal consequences and serve as a wake-up moment; whether the character treats it as such is the branch point.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "domestic_violence_triggers_family_collap",
+    "pattern": "A moment of violence toward a partner during a period of personal crisis becomes the breaking point that ends the relationship and results in loss of access to children.",
+    "category": "family",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "domestic_violence_triggers_family_collapse"
+    ],
+    "typical_effects": "Irreversible relationship rupture; should trigger custody loss as a pending_event and a health/addiction branch point as the character confronts the consequences of their behaviour.",
     "rarity": "uncommon"
   }
 ]

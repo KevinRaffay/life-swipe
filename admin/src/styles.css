@@ -186,6 +186,26 @@ details summary { cursor: pointer; color: var(--accent); font-size: 12px; margin
 .bar__fill { display: block; height: 100%; background: var(--accent); }
 .bar__n { width: 28px; text-align: right; color: var(--muted); }
 
+/* ---------------------------------------------------------------- modal */
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(8, 9, 12, 0.72);
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px; z-index: 100;
+}
+.modal {
+  position: relative; background: var(--surface); border: 1px solid var(--stroke);
+  border-radius: 14px; padding: 20px 20px 16px; width: 100%; max-width: 640px;
+  max-height: 100%; overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.modal__close {
+  position: absolute; top: 10px; right: 10px;
+  background: none; border: none; color: var(--muted); font-size: 20px; line-height: 1;
+  padding: 4px 9px; border-radius: 8px; cursor: pointer;
+}
+.modal__close:hover { color: var(--text); background: var(--surface-2); }
+
 /* ---------------------------------------------------------------- toast */
 
 .toast {

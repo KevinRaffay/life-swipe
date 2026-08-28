@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as api from './api.js';
 import Table from './components/Table.jsx';
 import Warnings from './components/Warnings.jsx';
+import Modal from './components/Modal.jsx';
 import PatternForm from './components/PatternForm.jsx';
 import SeedForm from './components/SeedForm.jsx';
 import Extraction from './components/Extraction.jsx';
@@ -213,7 +214,10 @@ export default function App() {
           </section>
 
           {editing !== undefined && (
-            <section className="card">
+            <Modal
+              title={editing ? `Editing ${editing.id}` : tab === 'library' ? 'New pattern' : 'New scenario'}
+              onClose={() => setEditing(undefined)}
+            >
               {tab === 'library' ? (
                 <PatternForm
                   value={editing}
@@ -233,7 +237,7 @@ export default function App() {
                   onDelete={(record) => remove('seeds', record)}
                 />
               )}
-            </section>
+            </Modal>
           )}
         </div>
       )}

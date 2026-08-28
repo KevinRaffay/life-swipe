@@ -311,6 +311,7 @@ dev    ← integration branch, work lands here
 | Regional name weighting | shipped | on `main` — offline geoip, settings override, SSA-derived weights |
 | Content admin module | shipped | on `main` — localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
 | LLM request/response logging + log viewer | shipped | on `main` — wraps the `/api/scenarios` generation call only (not obituary, extraction or preview); JSON Lines, gzip rotation, `/admin` Logs tab |
+| Admin edit forms open in a modal dialog | awaiting testing | on `admin_edit_modals` — library, seed and draft-review forms open in a centered dialog (`admin/src/components/Modal.jsx`) instead of inline below the grid; Esc/backdrop-click/Cancel discard and unmount. The cross-reference warnings panel stays above the grid, not in the dialog. Draft review gained a row-level quick "Approve" alongside "Edit & approve". No data logic, validation or API changes |
 
 ---
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as api from '../api.js';
 import PatternForm from './PatternForm.jsx';
+import Modal from './Modal.jsx';
 
 /**
  * Paste source text, extract candidates, review them one at a time.
@@ -101,22 +102,6 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
         {drafts.map((d) => {
           const warnings = warningsFor(d.id);
           const duplicate = duplicateFor(d.id);
-          if (editing === d.id) {
-            return (
-              <div key={d.id} className="draft">
-                <PatternForm
-                  value={d}
-                  vocab={vocab}
-                  siblings={library}
-                  busy={busy}
-                  onSave={(record) => approve(d, record)}
-                  onCancel={() => setEditing(null)}
-                  onDelete={() => setRejecting(d.id)}
-                />
-                <p className="muted small">Saving here approves the draft and merges it into the library.</p>
-              </div>
-            );
-          }
           return (
             <div key={d.id} className="draft">
               <div className="draft__head">
@@ -142,9 +127,25 @@ export default function Extraction({ drafts, vocab, library, llmEnabled, onChang
                 </div>
               ) : (
                 <div className="actions">
-                  <button className="btn btn--primary" onClick={() => setEditing(d.id)}>Review &amp; approve</button>
-                  <button className="btn" onClick={() => setRejecting(d.id)}>Reject</button>
+                  <button className="btn btn--primary" onClick={() => approve(d, d)} disabled={busy}>Approve</button>
+                  <button className="btn" onClick={() => setEditing(d.id)}>Edit &amp; approve</button>
+                  <button className="btn btn--danger" onClick={() => setRejecting(d.id)}>Reject</button>
                 </div>
+              )}
+
+              {editing === d.id && (
+                <Modal title={`Review ${d.id}`} onClose={() => setEditing(null)}>
+                  <PatternForm
+                    value={d}
+                    vocab={vocab}
+                    siblings={library}
+                    busy={busy}
+                    onSave={(record) => approve(d, record)}
+                    onCancel={() => setEditing(null)}
+                    onDelete={() => { setEditing(null); setRejecting(d.id); }}
+                  />
+                  <p className="muted small">Saving here approves the draft and merges it into the library.</p>
+                </Modal>
               )}
             </div>
           );
