@@ -17,6 +17,14 @@ import { createNameLedger, hasNameTag, assignName, impliedBirthYear, castKey } f
 // The tag the seed deck uses for the friend the player starts life with.
 const BEST_FRIEND_TAG = castKey('best friend');
 
+// Narrative-only flags (the engine's own economics never branch on these -
+// see CANONICAL FLAGS in server/prompt.js for the ones that do) that record
+// whether a character actually has the credentials a white-collar or skilled
+// trade path presupposes. Read by stateSummary() below and by the situation
+// library's `requires` gates, so a manual-labor life doesn't get offered a
+// corporate career it was never plausibly on track for.
+export const CAREER_BACKGROUND_FLAGS = ['college_degree', 'trade_cert', 'white_collar_experience'];
+
 export const STAGES = [
   { id: 'highschool', label: 'High School',         minAge: 16, maxAge: 18 },
   { id: 'college',    label: 'College / First Job', minAge: 18, maxAge: 22 },
@@ -555,6 +563,14 @@ export function stateSummary(s) {
     happiness: Math.round(s.happiness),
     career: { title: s.career.title, salary: Math.round(s.career.salary) },
     education: s.education,
+    // Same guarantee as `relationships` below: computed fresh from state that
+    // is never trimmed, so it reaches every prompt regardless of how far the
+    // qualifying event has scrolled out of the recent-decisions window.
+    careerBackground: {
+      occupation: s.career.title,
+      educationLevel: s.education,
+      qualifyingFlags: s.flags.filter((f) => CAREER_BACKGROUND_FLAGS.includes(f)),
+    },
     relationships: Object.entries(s.relationships).map(([name, r]) => ({
       name, role: r.role, quality: Math.round(r.quality), flags: r.flags,
     })),
