@@ -26,26 +26,45 @@ export { NAME_POOL };
 
 /* -------------------------------------------------------------- the tag */
 
-// "{{new:roommate}}" or "{{new:roommate#2}}" - the second form is how a life
-// gets a second roommate on purpose rather than by accident.
-export const NAME_TAG = /\{\{\s*new\s*:\s*([A-Za-z0-9 _#'-]{1,48}?)\s*\}\}/g;
+// Two forms, both resolved the same way - what differs is who writes them.
+//
+//   {{new:roommate}}     the STORYTELLER introducing someone new. The role is
+//                        all the identity there is, so "{{new:roommate#2}}" is
+//                        how a life gets a second roommate on purpose.
+//   {{cast:sam}}         an AUTHORED recurring character, in the seed deck.
+//                        The id is the identity and it does not move, which
+//                        matters because Sam is a roommate at 19, a partner at
+//                        21 and a spouse at 27 - one person, three roles. A
+//                        role-derived key would make them three people.
+//                        The id doubles as the age/gender hint, so an id that
+//                        is not role-shaped ("sam", "dev") names a peer of
+//                        unfixed gender - which is what every authored cast
+//                        member happens to be. Give a cast member a parent or
+//                        a boss and the id needs the role word in it.
+export const NAME_TAG = /\{\{\s*(new|cast)\s*:\s*([A-Za-z0-9 _#'-]{1,48}?)\s*\}\}/g;
 
 /** Cheap pre-check, so the common case (no tags at all) costs one indexOf. */
 export const hasNameTag = (text) => typeof text === 'string' && text.includes('{{');
 
+/** Ledger keys for authored cast are namespaced, so they cannot collide. */
+export const castKey = (id) => 'cast:' + String(id || '').toLowerCase().trim().replace(/[\s_]+/g, ' ');
+
 /**
- * Split a raw tag body into the ledger key and the bare role.
- * "Roommate #2" -> { key: 'roommate#2', role: 'roommate' }
+ * Split a tag into the ledger key and the role to name against.
+ *   ('new',  'Roommate #2') -> { key: 'roommate#2',    role: 'roommate' }
+ *   ('cast', 'best friend') -> { key: 'cast:best friend', role: 'best friend' }
  */
-export function parseTag(raw) {
+export function parseTag(raw, kind = 'new') {
   const body = String(raw || '')
     .toLowerCase()
     .trim()
     .replace(/[\s_]+/g, ' ')
     .slice(0, 48);
-  const key = body.replace(/\s*#\s*/, '#');
-  const role = key.split('#')[0].trim();
-  return { key: key || 'someone', role: role || 'someone' };
+  const cleaned = body.replace(/\s*#\s*/, '#');
+  const role = cleaned.split('#')[0].trim() || 'someone';
+  return kind === 'cast'
+    ? { key: castKey(cleaned) , role }
+    : { key: cleaned || 'someone', role };
 }
 
 /* ------------------------------------------------------------ role hints */
@@ -300,13 +319,15 @@ export function resolveCardNames(card, {
   const taken = takenNames({ relationships, kids, ledger });
   const categoryUse = { ...(ledger.categories || {}) };
 
-  const resolve = (raw) => {
-    const { key, role } = parseTag(raw);
+  const resolve = (raw, kind) => {
+    const { key, role } = parseTag(raw, kind);
     const known = pending[key] || (ledger.byTag || {})[key];
     if (known) return known;
 
     // Somebody already fills this role and only one person can - use them.
-    if (!key.includes('#') && SINGULAR_ROLES.has(roleGroup(role))) {
+    // Authored cast are exempt: their id IS their identity, so a card that
+    // says {{cast:sam}} means Sam even when a spouse already exists.
+    if (kind !== 'cast' && !key.includes('#') && SINGULAR_ROLES.has(roleGroup(role))) {
       const group = roleGroup(role);
       for (const [name, rel] of Object.entries(relationships || {})) {
         if (rel && roleGroup(rel.role) === group) {
@@ -335,7 +356,7 @@ export function resolveCardNames(card, {
   };
 
   const swap = (text) => (hasNameTag(text)
-    ? String(text).replace(NAME_TAG, (_m, body) => resolve(body))
+    ? String(text).replace(NAME_TAG, (_m, kind, body) => resolve(body, kind.toLowerCase()))
     : text);
 
   const out = { ...card };

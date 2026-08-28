@@ -65,6 +65,30 @@ for (const [cat, n] of categories) {
 
 console.log(`pool: ${pool.length} names, ${categories.size} categories`);
 
+/* ------------------------------------------------------- the seed deck */
+
+// A hand-authored card may not hardcode a person's name: it would be the same
+// person in every life, which is the thing this whole feature removes. Cards
+// name their cast with "{{cast:sam}}" instead. Mom and Dad are exempt - those
+// are how you address a parent, not names.
+const ADDRESS_TERMS = new Set(['Mom', 'Dad']);
+const seedPath = fileURLToPath(new URL('../data/scenarios-seed.json', import.meta.url));
+const seedDeck = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+const hardcoded = [];
+
+for (const card of seedDeck) {
+  for (const side of ['leftEffects', 'rightEffects']) {
+    const rel = card[side] && card[side].relationship;
+    if (!rel || typeof rel.name !== 'string') continue;
+    if (rel.name.includes('{{') || ADDRESS_TERMS.has(rel.name)) continue;
+    hardcoded.push(`${card.id}.${side} names "${rel.name}"`);
+  }
+}
+if (hardcoded.length) {
+  errors.push(`${hardcoded.length} seed card(s) hardcode a name: ${hardcoded.slice(0, 3).join(', ')}`);
+}
+console.log(`seed deck: ${seedDeck.length} cards, ${hardcoded.length} hardcoded names`);
+
 /* ---------------------------------------------------------- distribution */
 
 // Roles a life actually generates, weighted the way the storyteller reaches

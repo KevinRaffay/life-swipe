@@ -81,8 +81,10 @@ export const TEMPLATES = [
   T(['family', 'late'], 'major',
     'The marriage has become a logistics arrangement with a shared calendar.',
     'Go to counseling', 'Let it drift',
-    { money: -3600, happiness: 8, relationship: { name: 'Sam', qualityDelta: 18 } },
-    { happiness: -9, relationship: { name: 'Sam', qualityDelta: -20 }, flags: ['estranged_spouse'] }),
+    // Whoever the spouse turned out to be. A fallback has no business assuming
+    // it was Sam: "spouse" resolves to the person already in that role.
+    { money: -3600, happiness: 8, relationship: { name: '{{new:spouse}}', role: 'spouse', qualityDelta: 18 } },
+    { happiness: -9, relationship: { name: '{{new:spouse}}', role: 'spouse', qualityDelta: -20 }, flags: ['estranged_spouse'] }),
 
   /* ------------------------------------------------------------ late life */
   T(['late'], 'standard',

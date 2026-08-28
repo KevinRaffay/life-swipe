@@ -47,8 +47,9 @@ Breaking any of these is a bug regardless of what the tests say.
    randomness must go through `nextRandom(state)`.
 7. **Cross-life memory lives outside per-life state.** `seen_patterns` and
    `seen_seed_ids` are per-player, in `localStorage`, never in the state object.
-8. **The engine names the cast.** The storyteller emits a role tag
-   (`{{new:roommate}}`); `shared/names.js` picks the name and `Deck.draw`
+8. **The engine names the cast.** Nobody in a life is named in advance except
+   Mom and Dad. The storyteller emits `{{new:roommate}}` and the seed deck
+   writes `{{cast:sam}}`; `shared/names.js` picks the name and `Deck.draw`
    resolves it at deal time. The model never invents a name and never renames
    anyone — `state.relationships` is keyed by name, so a rename silently forks
    a person in two. Assigned names live in the relationships map as before;
@@ -131,8 +132,23 @@ filters by the character's implied birth year (`PRESENT_YEAR` in `balance.js`,
 plus a per-role age offset) and then samples **category first**, weighted
 `1/(1+used)^1.5` against origins this life has already spent — a uniform draw
 over the whole pool would just hand out names in proportion to how many of each
-origin the file happens to contain. The starting cast (Mom, Dad, Priya) and the
-hand-authored Sam thread are written into seed prose and stay as they are.
+origin the file happens to contain.
+
+Two tag forms, resolved identically; what differs is who writes them.
+`{{new:roommate}}` is the storyteller introducing somebody, where the role is
+the whole identity (`{{new:roommate#2}}` for a deliberate second). `{{cast:sam}}`
+is an authored recurring character in the seed deck, where the **id** is the
+identity — Sam is a roommate at 19, a partner at 21 and a spouse at 27, and a
+role-derived key would make them three different people. The cast id doubles as
+the age/gender hint, so a non-role id names a peer; a cast member who is a
+parent or a boss needs the role word in the id.
+
+The seed deck's four authored characters (`cast:best friend`, `cast:sam`,
+`cast:casey`, `cast:dev`) are named per life, the friend at `createState` and
+the rest on the card that introduces them. **Mom and Dad stay Mom and Dad** —
+those are how you address a parent, not names, and nobody calls their father by
+his first name in the second person. `npm run names` fails if any seed card
+hardcodes a name other than those two.
 
 ---
 
@@ -143,7 +159,8 @@ Three commands must exit 0 before anything merges:
 ```bash
 npm run simulate -- 200 x --mode=both   # five hard assertions
 npm run coverage                        # every bucket at target
-npm run names                           # pool is well formed and spreads
+npm run names                           # pool is well formed, spreads, and no
+                                        # seed card hardcodes a person's name
 ```
 
 The assertions are:
@@ -224,7 +241,7 @@ dev    ← integration branch, work lands here
 | Seed schema, anti-repetition, coverage | **on `dev`, awaiting user testing** | |
 | Scenario tiers (setting/beat/dialogue/prompt) | **on `dev`, awaiting user testing** | |
 | Seen-window measured in lives | **on `dev`, awaiting user testing** | |
-| Engine-controlled name assignment | **on `engine-controlled-random-name-assignment`, awaiting user testing** | pool + tags + drift check + preview path |
+| Engine-controlled name assignment | **on `engine-controlled-random-name-assignment`, awaiting user testing** | pool, both tag forms, drift check, preview path, randomized seed-deck cast |
 
 ### Known open items
 

@@ -12,7 +12,10 @@ import {
   isMatureScenario, darkArcAllowed,
 } from './content.js';
 import { createLibraryState, notePatternFired } from './library.js';
-import { createNameLedger, hasNameTag } from './names.js';
+import { createNameLedger, hasNameTag, assignName, impliedBirthYear, castKey } from './names.js';
+
+// The tag the seed deck uses for the friend the player starts life with.
+const BEST_FRIEND_TAG = castKey('best friend');
 
 export const STAGES = [
   { id: 'highschool', label: 'High School',         minAge: 16, maxAge: 18 },
@@ -46,10 +49,11 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
     career: { title: 'High School Student', salary: 0 },
     education: 'High school (in progress)',
     pension: 0,
+    // Mom and Dad are how you address a parent, not names, so they stay put.
+    // The best friend gets a real name, assigned below once the RNG exists.
     relationships: {
       Mom: { role: 'mother', quality: 72, flags: [] },
       Dad: { role: 'father', quality: 64, flags: [] },
-      Priya: { role: 'best friend', quality: 80, flags: [] },
     },
     kids: [],
     // Role tag -> the name the engine gave that character, for this life only.
@@ -77,6 +81,20 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
   // re-rolled, which is what keeps mature mode from becoming a crime spree.
   state.dark = createDarkState(() => nextRandom(state));
   state.library = createLibraryState(() => nextRandom(state));
+  // The friend you already had at 16. Named here rather than hardcoded, so a
+  // new life does not open on the same person every time - and recorded under
+  // the cast tag the seed deck references, so the card that mentions them by
+  // name three swipes from now means this same friend.
+  const friend = assignName({
+    role: 'best friend',
+    birthYear: impliedBirthYear(ageOf(state), 'best friend'),
+    taken: new Set(Object.keys(state.relationships).map((n) => n.toLowerCase())),
+    rng: () => nextRandom(state),
+  });
+  if (friend) {
+    state.relationships[friend.name] = { role: 'best friend', quality: 80, flags: [] };
+    noteAssignedName(state, { key: BEST_FRIEND_TAG, name: friend.name, category: friend.category });
+  }
   return state;
 }
 

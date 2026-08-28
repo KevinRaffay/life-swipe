@@ -214,8 +214,13 @@ export function buildUserPrompt({ summary, recent, count = 5, librarySlot = null
   // "{{new:roommate}}" for somebody it named eight swipes ago, and while the
   // engine would resolve it back to the same person anyway, the model writes
   // them better when it knows what they are called.
-  const assigned = summary.assignedNames && Object.keys(summary.assignedNames).length
-    ? Object.entries(summary.assignedNames).map(([tag, name]) => `{{new:${tag}}} = ${name}`).join('; ')
+  // Authored cast ("cast:sam") are filtered out: they are already in the
+  // people list under their name, and the model has no business writing a tag
+  // form only the seed deck uses.
+  const spentTags = Object.entries(summary.assignedNames || {})
+    .filter(([tag]) => !tag.startsWith('cast:'));
+  const assigned = spentTags.length
+    ? spentTags.map(([tag, name]) => `{{new:${tag}}} = ${name}`).join('; ')
     : null;
   const kidLine = summary.kids.length
     ? summary.kids.map((k) => `${k.name}, age ${k.age}`).join('; ')

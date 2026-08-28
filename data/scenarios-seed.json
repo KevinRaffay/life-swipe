@@ -45,7 +45,7 @@
         "party_kid"
       ],
       "relationship": {
-        "name": "Priya",
+        "name": "{{cast:best friend}}",
         "role": "best friend",
         "qualityDelta": 8
       },
@@ -70,7 +70,7 @@
       16,
       18
     ],
-    "prompt": "Dev's parents are in Sedona. There will be a bathtub of something blue in it. Priya says she will go if you go."
+    "prompt": "{{cast:dev}}'s parents are in Sedona. There will be a bathtub of something blue in it. {{cast:best friend}} says they will go if you go."
   },
   {
     "id": "hs_job",
@@ -152,7 +152,7 @@
     "leftEffects": {
       "happiness": 10,
       "relationship": {
-        "name": "Casey",
+        "name": "{{cast:casey}}",
         "role": "first love",
         "quality": 78
       },
@@ -174,7 +174,7 @@
       16,
       18
     ],
-    "prompt": "Casey has been leaving a very specific amount of space next to them at lunch for three weeks."
+    "prompt": "{{cast:casey}} has been leaving a very specific amount of space next to them at lunch for three weeks."
   },
   {
     "id": "hs_car",
@@ -433,7 +433,7 @@
       "college"
     ],
     "weight": "standard",
-    "leftLabel": "Be friends with Sam",
+    "leftLabel": "Be friends with {{cast:sam}}",
     "rightLabel": "Keep it polite",
     "leftEffects": {
       "happiness": 11,
@@ -442,7 +442,7 @@
         "knows_sam"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "close friend",
         "quality": 82,
         "flags": [
@@ -453,7 +453,7 @@
     "rightEffects": {
       "happiness": -2,
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "roommate",
         "quality": 40,
         "flags": [
@@ -469,7 +469,7 @@
       18,
       22
     ],
-    "prompt": "Your roommate Sam has opinions about music, a fake ID, and a bottle of gin they refer to as 'the emergency.' Sam wants to be friends.",
+    "prompt": "Your roommate {{cast:sam}} has opinions about music, a fake ID, and a bottle of gin they refer to as 'the emergency.' {{cast:sam}} wants to be friends.",
     "setting": "Move-in day, a room with two of everything."
   },
   {
@@ -643,7 +643,7 @@
         "dating_sam"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "partner",
         "qualityDelta": 12
       }
@@ -651,7 +651,7 @@
     "rightEffects": {
       "happiness": -8,
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "former friend",
         "qualityDelta": -30
       }
@@ -664,7 +664,7 @@
       18,
       30
     ],
-    "prompt": "Sam kisses you on a fire escape in March and asks, without much preamble, whether this is a thing now.",
+    "prompt": "{{cast:sam}} kisses you on a fire escape in March and asks, without much preamble, whether this is a thing now.",
     "setting": "March, a fire escape, the party audible below."
   },
   {
@@ -786,7 +786,7 @@
       "married"
     ],
     "weight": "major",
-    "leftLabel": "Marry Sam",
+    "leftLabel": "Marry {{cast:sam}}",
     "rightLabel": "Not yet",
     "leftEffects": {
       "money": -14000,
@@ -797,7 +797,7 @@
         "sam_heavy_drinker"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "spouse",
         "quality": 88,
         "flags": [
@@ -812,7 +812,7 @@
         "cold_feet"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "qualityDelta": -22
       },
       "timeCostMonths": 12
@@ -825,10 +825,10 @@
       22,
       50
     ],
-    "prompt": "Sam proposes in a parking garage, which Sam insists is romantic because of the acoustics. Sam has been drinking, but Sam has been drinking for eleven years, so this tells you nothing.",
+    "prompt": "{{cast:sam}} proposes in a parking garage, which {{cast:sam}} insists is romantic because of the acoustics. {{cast:sam}} has been drinking, but {{cast:sam}} has been drinking for eleven years, so this tells you nothing.",
     "setting": "A parking garage on the fourth level, eleven at night.",
-    "beat": "Sam has been holding the ring since the restaurant and has clearly rehearsed this badly.",
-    "dialogue": "\"The acoustics are incredible up here,\" Sam says, kneeling anyway."
+    "beat": "{{cast:sam}} has been holding the ring since the restaurant and has clearly rehearsed this badly.",
+    "dialogue": "\"The acoustics are incredible up here,\" {{cast:sam}} says, kneeling anyway."
   },
   {
     "id": "ec_401k",
@@ -1505,7 +1505,7 @@
     "rightEffects": {
       "happiness": -3,
       "relationship": {
-        "name": "Dev",
+        "name": "{{cast:dev}}",
         "role": "cousin",
         "qualityDelta": -10
       }
