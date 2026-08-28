@@ -280,13 +280,17 @@ confirm it fails before trusting it.
 
 ## Branch workflow
 
-New work goes on a branch off `dev`. **The user merges to `main` themselves**
-after testing; do not merge to `main` unless explicitly asked.
+New work goes on a branch off `dev`. Always create that branch before starting
+a new feature — never commit a new feature straight to `dev`. Name it short
+and `snake_case`, describing the feature (`request_response_logging`, not
+`fix` or `feature/thing` or `request-response-logging`). **The user merges to
+`main` themselves** after testing; do not merge to `main` unless explicitly
+asked.
 
 ```
 main   ← user merges, after testing dev
 dev    ← integration branch, work lands here
-<feature branches off dev>
+<feature branches off dev, short snake_case name>
 ```
 
 ---
