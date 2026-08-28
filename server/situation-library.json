@@ -106,7 +106,6 @@
       45
     ],
     "modes": [
-      "safe",
       "mature"
     ],
     "requires": [
@@ -529,7 +528,6 @@
       65
     ],
     "modes": [
-      "safe",
       "mature"
     ],
     "requires": [
@@ -550,7 +548,6 @@
       55
     ],
     "modes": [
-      "safe",
       "mature"
     ],
     "requires": [],
@@ -796,7 +793,7 @@
       65
     ],
     "modes": [
-      "safe"
+      "mature"
     ],
     "requires": [],
     "excludes": [
