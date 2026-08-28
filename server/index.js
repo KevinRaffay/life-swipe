@@ -11,7 +11,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 
-import { complete, extractJson, hasKey, MODEL, AnthropicError } from './anthropic.js';
+import { complete, extractJson, hasKey, MODEL } from './anthropic.js';
+import { callLLM, AnthropicError } from './llm.js';
 import { buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt } from './prompt.js';
 import { effectiveTier } from '../shared/content.js';
 import { checkCoverage, coverage } from '../scripts/coverage.js';
@@ -109,56 +110,82 @@ app.post('/api/scenarios', async (req, res) => {
     librarySlot,
   });
   const attempts = [];
+  const calls = [];       // every LLM call made for this request, logged once each below
+  let won = null;         // the attempt (if any) whose output actually validated
 
   for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const { text } = await complete({
-        system,
-        user: attempt === 0
-          ? user
-          : user + '\n\nIMPORTANT: your previous reply was not valid. Reply with ONLY a JSON array of 5 scenario objects. No prose, no code fences.',
-        prefill: '[',
-        maxTokens: 4000,
-        temperature: attempt === 0 ? 1 : 0.7,
-      });
-
-      const parsed = extractJson(text);
-      const { ok, scenarios, errors, rejectedForMode, rejectedForNameDrift } = validateBatch(parsed, {
-        minValid: 3,
-        tier,
+    const call = await callLLM({
+      system,
+      user: attempt === 0
+        ? user
+        : user + '\n\nIMPORTANT: your previous reply was not valid. Reply with ONLY a JSON array of 5 scenario objects. No prose, no code fences.',
+      prefill: '[',
+      maxTokens: 4000,
+      temperature: attempt === 0 ? 1 : 0.7,
+      meta: {
         age: summary.age,
-        // First of two passes at name drift; the client runs the same check
-        // again against the live map before anything is buffered.
-        relationships: summary.relationships,
-      });
+        contentMode: summary.contentMode,
+        triggeredBy: attempt === 0 ? 'batch_generation' : 'validator_retry',
+        librarySlotUsed: librarySlot ? librarySlot.id : null,
+      },
+    });
+    calls.push(call);
 
-      if (ok) {
-        // In real play the client resolves "{{new:roommate}}" at deal time,
-        // against live state. A preview has no player and nothing to write to,
-        // so it gets names here from a throwaway ledger seeded by the request.
-        const { scenarios: out, assignedNames } = preview
-          ? previewNames(scenarios, summary)
-          : { scenarios, assignedNames: null };
-
-        return res.json({
-          scenarios: out,
-          source: 'llm',
-          model: MODEL,
-          tier,
-          librarySlot: librarySlot ? librarySlot.id : null,
-          attempt: attempt + 1,
-          dropped: errors.length,
-          rejectedForMode,
-          rejectedForNameDrift,
-          ...(preview ? { preview: true, assignedNames } : {}),
-        });
-      }
-      attempts.push(`attempt ${attempt + 1}: ${errors.slice(0, 3).join('; ') || 'no valid scenarios'}`);
-    } catch (err) {
-      attempts.push(`attempt ${attempt + 1}: ${err.message}`);
+    if (call.error) {
+      attempts.push(`attempt ${attempt + 1}: ${call.error.message}`);
       // Auth and rate-limit problems will not fix themselves on a retry.
-      if (err instanceof AnthropicError && (err.status === 401 || err.status === 429)) break;
+      if (call.error instanceof AnthropicError && (call.error.status === 401 || call.error.status === 429)) break;
+      continue;
     }
+
+    const parsed = extractJson(call.text);
+    const { ok, scenarios, errors, rejectedForMode, rejectedForNameDrift } = validateBatch(parsed, {
+      minValid: 3,
+      tier,
+      age: summary.age,
+      // First of two passes at name drift; the client runs the same check
+      // again against the live map before anything is buffered.
+      relationships: summary.relationships,
+    });
+
+    if (ok) {
+      won = { call, scenarios, errors, rejectedForMode, rejectedForNameDrift };
+      break;
+    }
+    call.validationErrors = errors;
+    attempts.push(`attempt ${attempt + 1}: ${errors.slice(0, 3).join('; ') || 'no valid scenarios'}`);
+  }
+
+  // Log every call now that the whole request's outcome is known: the winner
+  // (if any) passed; an earlier call that will be retried failed; whichever
+  // call was the LAST one made is what the player actually falls back away
+  // from if nothing won.
+  calls.forEach((call, i) => {
+    if (won && call === won.call) call.finalizeLog('passed');
+    else if (!won && i === calls.length - 1) call.finalizeLog('fell_back_to_seed', call.validationErrors);
+    else call.finalizeLog('failed', call.validationErrors);
+  });
+
+  if (won) {
+    // In real play the client resolves "{{new:roommate}}" at deal time,
+    // against live state. A preview has no player and nothing to write to,
+    // so it gets names here from a throwaway ledger seeded by the request.
+    const { scenarios: out, assignedNames } = preview
+      ? previewNames(won.scenarios, summary)
+      : { scenarios: won.scenarios, assignedNames: null };
+
+    return res.json({
+      scenarios: out,
+      source: 'llm',
+      model: MODEL,
+      tier,
+      librarySlot: librarySlot ? librarySlot.id : null,
+      attempt: calls.indexOf(won.call) + 1,
+      dropped: won.errors.length,
+      rejectedForMode: won.rejectedForMode,
+      rejectedForNameDrift: won.rejectedForNameDrift,
+      ...(preview ? { preview: true, assignedNames } : {}),
+    });
   }
 
   console.warn('[scenarios] falling back to seed content:', attempts.join(' | '));

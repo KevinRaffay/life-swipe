@@ -84,6 +84,8 @@ Breaking any of these is a bug regardless of what the tests say.
 | `server/index.js` | serves `dist/`, proxies Anthropic, resolves the content tier. |
 | `server/prompt.js` | system + user prompts. (The spec calls this `llm.js`.) |
 | `server/anthropic.js` | Messages API client, no SDK. |
+| `server/llm.js` | wraps the Anthropic call with request/response logging. The generation endpoint calls this instead of `anthropic.js` directly; obituary, extraction and admin preview do not. |
+| `server/log-store.js` | the log file itself: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `client/src/prefs.js` | per-player cross-life memory. |
 | `client/src/components/CardStack.jsx` | the swipe gesture and tiered card rendering. |
 | `server/admin/` | the content admin API. Localhost only, no auth — read `index.js` before touching it. |
@@ -304,6 +306,7 @@ dev    ← integration branch, work lands here
 | Engine-controlled name assignment | shipped | on `dev` — pool, both tag forms, drift check, preview path, randomized seed-deck cast |
 | Regional name weighting | shipped | on `dev` — offline geoip, settings override, SSA-derived weights |
 | Content admin module | shipped | on `dev` — localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
+| LLM request/response logging + log viewer | **on `request-response-logging`, awaiting user testing** | wraps the `/api/scenarios` generation call only (not obituary, extraction or preview); JSON Lines, gzip rotation, `/admin` Logs tab |
 
 ---
 
@@ -344,6 +347,40 @@ Other things worth knowing before working on it:
   that, so adding it later is a new file plus a nav entry.
 - `admin/` is a separate Vite root building to `dist-admin/`. `npm run build`
   never sees it, which is why no admin code can reach the player bundle.
+
+### Request/response logging
+
+`server/llm.js` wraps the Anthropic call made by `/api/scenarios` — the one
+that runs on every swipe — and writes one JSON line per call to
+`server/logs/llm-requests.jsonl` regardless of outcome. The write is
+fire-and-forget (`log-store.js`'s `appendLog`, called from inside the
+`fs.appendFile` callback), so a slow disk never delays the response already on
+its way to the player.
+
+Deliberately **not** wrapped: the obituary call, admin preview, and pattern
+extraction. The log schema is shaped around gameplay (`triggeredBy` is only
+`"batch_generation"` or `"validator_retry"`; `age`/`contentMode`/
+`librarySlotUsed` all come from a live player's state), and those three calls
+don't have that context. Preview and extraction already show their own raw
+output in the admin UI, so nothing about them is opaque today.
+
+A request is logged once, after validation has run, not at call time —
+`callLLM` returns a `finalizeLog(validationResult, validationErrors)` closure
+because the call itself has no way to know whether its output will be
+accepted. On a two-attempt request, the winning attempt (if any) logs
+`"passed"`, an earlier attempt that got retried logs `"failed"`, and whichever
+attempt was the *last* one made logs `"fell_back_to_seed"` if nothing won —
+that is the one line that actually corresponds to what the player experienced.
+
+Rotation is by size (10MB) or entry count (5000), whichever comes first —
+`LIFESWIPE_LOG_MAX_BYTES` / `LIFESWIPE_LOG_MAX_ENTRIES` override either. The
+active file becomes `llm-requests.<epoch-ms>.jsonl.gz`; the 5 most recent
+rotations are kept, older ones deleted automatically. Reads (the admin's Logs
+tab) scan the active file plus every rotated file, so a filtered date range
+spanning a rotation boundary still returns complete results.
+
+The admin has no URL router (see above), so "Logs" is a tab like the others,
+not literally a route at `/admin/logs`.
 
 ---
 

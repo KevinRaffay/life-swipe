@@ -6,3 +6,4 @@ situation-library.draft.json
 dist-admin/
 situation-library.draft.rejected.json
 *.bak
+server/logs/

@@ -14,6 +14,7 @@ import { crossReference } from './cross-reference.js';
 import { previewPattern, previewSeed, yearFor } from './preview.js';
 import { extractPatterns, identityWarnings, idCollisions } from '../extraction.js';
 import { hasKey, MODEL } from '../anthropic.js';
+import { queryLogs, getLogEntry, getLogSummary } from '../log-store.js';
 import { US_REGIONS } from '../../shared/regions.js';
 
 // try/await rather than Promise.resolve(fn()).catch(): a handler that throws
@@ -247,6 +248,33 @@ export function createAdminRouter() {
     }
     const result = await previewPattern(pattern, sample, { count, region });
     res.json({ kind: 'pattern', patternId: pattern ? pattern.id : null, year: yearFor(sample.age), ...result });
+  }));
+
+  /* ------------------------------------------------------- request log ---- */
+
+  // Read-only: this only surfaces what server/llm.js already wrote. "summary"
+  // and any other literal segment must be registered before the ":id" route
+  // below, or express matches it as an id instead.
+  router.get('/api/logs/summary', asHandler((_req, res) => res.json(getLogSummary())));
+
+  router.get('/api/logs/:id', asHandler((req, res) => {
+    const entry = getLogEntry(req.params.id);
+    if (!entry) return res.status(404).json({ error: `no log entry with id ${req.params.id}` });
+    res.json(entry);
+  }));
+
+  router.get('/api/logs', asHandler((req, res) => {
+    const { page, pageSize, from, to, outcome, contentMode, hasLibrarySlot, search } = req.query;
+    res.json(queryLogs({
+      page: Number(page) || 1,
+      pageSize: Number(pageSize) || 50,
+      from: from || null,
+      to: to || null,
+      outcome: outcome || null,
+      contentMode: contentMode || null,
+      hasLibrarySlot: hasLibrarySlot === 'yes' ? true : hasLibrarySlot === 'no' ? false : null,
+      search: search || null,
+    }));
   }));
 
   return router;
