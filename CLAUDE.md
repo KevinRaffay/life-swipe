@@ -289,8 +289,8 @@ dev    ← integration branch, work lands here
 | Seed schema, anti-repetition, coverage | **on `dev`, awaiting user testing** | |
 | Scenario tiers (setting/beat/dialogue/prompt) | **on `dev`, awaiting user testing** | |
 | Seen-window measured in lives | **on `dev`, awaiting user testing** | |
-| Engine-controlled name assignment | **on `engine-controlled-random-name-assignment`, awaiting user testing** | pool, both tag forms, drift check, preview path, randomized seed-deck cast |
-| Regional name weighting | **on `regional-name-weighting`, awaiting user testing** | offline geoip, settings override, SSA-derived weights |
+| Engine-controlled name assignment | **on `dev`, awaiting user testing** | pool, both tag forms, drift check, preview path, randomized seed-deck cast |
+| Regional name weighting | **on `dev`, awaiting user testing** | offline geoip, settings override, SSA-derived weights. Adds `geoip-lite`, so `npm install` before running |
 
 ---
 
