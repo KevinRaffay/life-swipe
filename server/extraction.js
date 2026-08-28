@@ -149,3 +149,53 @@ export const idCollisions = (patterns, library) => {
   const existing = new Set((library || []).map((p) => p.id));
   return patterns.filter((p) => existing.has(p.id)).map((p) => p.id);
 };
+
+const DUP_STOPWORDS = new Set(['the', 'a', 'an', 'of', 'to', 'in', 'on', 'at', 'for', 'and', 'or',
+  'with', 'who', 'their', 'that', 'this', 'into', 'from', 'they', 'them', 'has', 'have', 'had',
+  'is', 'are', 'was', 'were', 'it', 'its', 'but', 'by', 'as', 'over', 'after', 'before', 'when']);
+
+const tokenize = (text) => new Set(
+  String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !DUP_STOPWORDS.has(w)),
+);
+
+const jaccard = (a, b) => {
+  if (!a.size || !b.size) return 0;
+  let shared = 0;
+  for (const w of a) if (b.has(w)) shared++;
+  return shared / (a.size + b.size - shared);
+};
+
+// Two patterns describing the same shape in different words is the failure
+// mode id matching can't catch - the model rephrases instead of repeating
+// itself verbatim. Word-overlap is crude but the patterns are one anonymised
+// sentence each, so it doesn't need to be smarter than that.
+export const DUPLICATE_THRESHOLD = 0.6;
+
+/**
+ * Flags candidates whose `pattern` text closely overlaps an existing pattern
+ * (library or draft queue, whatever the caller passes as `existing`) or an
+ * earlier candidate in the same batch. Advisory only, same as
+ * `identityWarnings` - extraction never blocks or merges, a person reads
+ * every flag and decides.
+ *
+ * @returns {{ id: string, duplicateOf: string, score: number }[]}
+ */
+export function duplicateWarnings(patterns, existing) {
+  const pool = (existing || []).map((p) => ({ id: p.id, tokens: tokenize(p.pattern) }));
+  const out = [];
+  for (const p of patterns) {
+    const tokens = tokenize(p.pattern);
+    let best = null;
+    for (const c of pool) {
+      const score = jaccard(tokens, c.tokens);
+      if (score >= DUPLICATE_THRESHOLD && (!best || score > best.score)) best = { id: c.id, score };
+    }
+    if (best) out.push({ id: p.id, duplicateOf: best.id, score: Math.round(best.score * 100) / 100 });
+    pool.push({ id: p.id, tokens });
+  }
+  return out;
+}

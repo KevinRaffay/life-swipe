@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { hasKey } from '../server/anthropic.js';
-import { extractPatterns, identityWarnings, idCollisions, MAX_SOURCE_CHARS } from '../server/extraction.js';
+import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings, MAX_SOURCE_CHARS } from '../server/extraction.js';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
@@ -60,6 +60,7 @@ console.log('model    ' + model);
 
 const existing = JSON.parse(fs.readFileSync(path.join(ROOT, 'server', 'situation-library.json'), 'utf8'));
 const collisions = idCollisions(patterns, existing);
+const duplicates = duplicateWarnings(patterns, existing);
 
 fs.writeFileSync(OUT, JSON.stringify(patterns, null, 2) + '\n');
 
@@ -73,6 +74,11 @@ if (problems.length) {
 }
 if (collisions.length) {
   console.log('ID COLLISIONS with the live library: ' + collisions.join(', ') + '\n');
+}
+if (duplicates.length) {
+  console.log('POSSIBLE CONTENT DUPLICATES');
+  for (const d of duplicates) console.log('  ' + d.id + '  looks like  ' + d.duplicateOf + '  (' + d.score + ')');
+  console.log('');
 }
 
 console.log('ANONYMITY REVIEW - read every one of these yourself');

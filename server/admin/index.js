@@ -12,7 +12,7 @@ import { validateLibraryPattern, validateSeedScenario, generateId,
   PATTERN_CATEGORIES, PATTERN_RARITIES, MODES } from './content-schema.js';
 import { crossReference } from './cross-reference.js';
 import { previewPattern, previewSeed, yearFor } from './preview.js';
-import { extractPatterns, identityWarnings, idCollisions } from '../extraction.js';
+import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } from '../extraction.js';
 import { hasKey, MODEL } from '../anthropic.js';
 import { queryLogs, getLogEntry, getLogSummary } from '../log-store.js';
 import { US_REGIONS } from '../../shared/regions.js';
@@ -177,6 +177,7 @@ export function createAdminRouter() {
       draftsVersion: saved.version,
       problems: result.problems,
       collisions: idCollisions(result.patterns, library),
+      duplicates: duplicateWarnings(stamped, [...library, ...existingDrafts]),
       warnings: stamped.map((p) => ({ id: p.id, warnings: identityWarnings(p) })).filter((w) => w.warnings.length),
       model: result.model,
       ms: result.ms,
