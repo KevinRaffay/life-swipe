@@ -300,13 +300,13 @@ dev    ← integration branch, work lands here
 | Situation library + pending events | shipped | on `main` |
 | Content modes (safe/mature) | shipped | on `main` |
 | Electric-dusk visual restyle | shipped | on `main` |
-| Seed schema, anti-repetition, coverage | shipped | on `dev` |
-| Scenario tiers (setting/beat/dialogue/prompt) | shipped | on `dev` |
-| Seen-window measured in lives | shipped | on `dev` |
-| Engine-controlled name assignment | shipped | on `dev` — pool, both tag forms, drift check, preview path, randomized seed-deck cast |
-| Regional name weighting | shipped | on `dev` — offline geoip, settings override, SSA-derived weights |
-| Content admin module | shipped | on `dev` — localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
-| LLM request/response logging + log viewer | **on `request-response-logging`, awaiting user testing** | wraps the `/api/scenarios` generation call only (not obituary, extraction or preview); JSON Lines, gzip rotation, `/admin` Logs tab |
+| Seed schema, anti-repetition, coverage | shipped | on `main` |
+| Scenario tiers (setting/beat/dialogue/prompt) | shipped | on `main` |
+| Seen-window measured in lives | shipped | on `main` |
+| Engine-controlled name assignment | shipped | on `main` — pool, both tag forms, drift check, preview path, randomized seed-deck cast |
+| Regional name weighting | shipped | on `main` — offline geoip, settings override, SSA-derived weights |
+| Content admin module | shipped | on `main` — localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
+| LLM request/response logging + log viewer | shipped | on `main` — wraps the `/api/scenarios` generation call only (not obituary, extraction or preview); JSON Lines, gzip rotation, `/admin` Logs tab |
 
 ---
 
