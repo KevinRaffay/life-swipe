@@ -38,9 +38,11 @@ export const BAL = {
 
   // Default months advanced per swipe, by declared weight.
   TIME: {
-    trivial: 1,
-    minor: 9,
-    major: 30,
+    minor: 1,      // a moment or a week   (was "trivial")
+    standard: 9,   // months               (was "minor")
+    major: 30,     // a life decision
+    trivial: 1,    // alias for older content and model output
+
     stageCapMonths: {
       highschool: 12,
       college: 18,

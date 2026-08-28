@@ -9,7 +9,7 @@ import {
 import { nextRandom } from '@shared/rng.js';
 
 import { fetchScenarios, getConfig } from './api.js';
-import { getSeenPatterns, markPatternSeen } from './prefs.js';
+import { getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen } from './prefs.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import CardStack from './components/CardStack.jsx';
 import Hud from './components/Hud.jsx';
@@ -42,6 +42,8 @@ export default function App() {
   const makeDeck = useCallback(() => new Deck({
     seedScenarios,
     lookahead: 6,
+    seenSeedIds: getSeenSeedIds(),
+    onSeedShown: markSeedSeen,
     // Selection happens here, not on the server: it needs the run's RNG (so a
     // seeded life replays identically) and the cross-life seen list.
     onLibrarySlot: (gameState) => {

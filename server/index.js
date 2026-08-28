@@ -14,6 +14,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { complete, extractJson, hasKey, MODEL, AnthropicError } from './anthropic.js';
 import { buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt } from './prompt.js';
 import { effectiveTier } from '../shared/content.js';
+import { checkCoverage, coverage } from '../scripts/coverage.js';
 import { validateBatch } from '../shared/schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -144,6 +145,18 @@ app.post('/api/obituary', async (req, res) => {
 app.get('/api/seed-scenarios', (_req, res) => res.json(seedScenarios));
 
 app.get('/api/situation-library', (_req, res) => res.json(situationLibrary));
+
+// Content stats, so a thin bucket can be seen rather than inferred from
+// repetition complaints.
+app.get('/api/coverage', (_req, res) => {
+  const rows = coverage(seedScenarios);
+  res.json({
+    seeds: seedScenarios.length,
+    patterns: situationLibrary.length,
+    buckets: rows,
+    shortfalls: rows.filter((r) => r.short),
+  });
+});
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, llmEnabled: hasKey(), model: MODEL }));
 

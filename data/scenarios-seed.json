@@ -4,7 +4,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
+    "weight": "minor",
     "scenario": "The light on Harlow turns yellow. Left gets you home in nine minutes. Right is the long way, past the reservoir, where nothing has ever happened to anybody.",
     "leftLabel": "Beat the light",
     "rightLabel": "Take the long way",
@@ -23,6 +23,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -30,7 +34,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
+    "weight": "minor",
     "scenario": "Dev's parents are in Sedona. There will be a bathtub of something blue in it. Priya says she will go if you go.",
     "leftLabel": "Go to the party",
     "rightLabel": "Stay in, sleep",
@@ -62,6 +66,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -69,7 +77,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "The garden center is hiring. Eleven dollars an hour to water things and watch a man named Rick describe his divorce.",
     "leftLabel": "Take the job",
     "rightLabel": "Keep your afternoons",
@@ -93,6 +101,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -100,7 +112,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "Six Saturdays of test prep, or six Saturdays of the marching band, which you are told will matter to you forever and which you will remember in flashes.",
     "leftLabel": "Test prep",
     "rightLabel": "Marching band",
@@ -121,6 +133,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -128,7 +144,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
+    "weight": "minor",
     "scenario": "Casey has been leaving a very specific amount of space next to them at lunch for three weeks.",
     "leftLabel": "Say something",
     "rightLabel": "Say nothing",
@@ -152,6 +168,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -159,7 +179,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "A 1998 Corolla, $1,600, described by its owner as 'basically immortal.' It is the color of an old bandage.",
     "leftLabel": "Buy the Corolla",
     "rightLabel": "Keep the money",
@@ -179,6 +199,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -186,7 +210,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
+    "weight": "minor",
     "scenario": "The chemistry final is tomorrow and someone has a photograph of it. You did not ask for the photograph. It is simply on your phone now.",
     "leftLabel": "Look at it",
     "rightLabel": "Delete it",
@@ -210,6 +234,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -217,7 +245,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "Varsity tryouts. Coach Bell says you have the frame for it. Coach Bell says this to everyone with a frame.",
     "leftLabel": "Try out",
     "rightLabel": "Skip it",
@@ -239,6 +267,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -246,7 +278,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
+    "weight": "minor",
     "scenario": "Behind the auditorium, someone holds out a cigarette like it is a small, glowing invitation to a different personality.",
     "leftLabel": "Take one",
     "rightLabel": "Pass",
@@ -263,6 +295,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -270,7 +306,7 @@
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "Last summer before everything gets scheduled forever. There is a hospital volunteer program, and there is the reservoir.",
     "leftLabel": "Volunteer program",
     "rightLabel": "The reservoir",
@@ -291,6 +327,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      16,
+      18
     ]
   },
   {
@@ -333,6 +373,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      22
     ]
   },
   {
@@ -366,6 +410,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      22
     ]
   },
   {
@@ -373,7 +421,7 @@
     "stages": [
       "college"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "Your roommate Sam has opinions about music, a fake ID, and a bottle of gin they refer to as 'the emergency.' Sam wants to be friends.",
     "leftLabel": "Be friends with Sam",
     "rightLabel": "Keep it polite",
@@ -406,6 +454,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      22
     ]
   },
   {
@@ -413,7 +465,7 @@
     "stages": [
       "college"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "A semester in Lisbon. It costs $9,000 you would have to borrow and it is, everyone agrees, the sort of thing you only get to do now.",
     "leftLabel": "Borrow and go",
     "rightLabel": "Stay",
@@ -433,6 +485,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      22
     ]
   },
   {
@@ -440,7 +496,7 @@
     "stages": [
       "college"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "An unpaid internship at a firm whose name opens doors, or $19/hour at a warehouse whose name opens a loading bay.",
     "leftLabel": "Unpaid, prestigious",
     "rightLabel": "Paid, forgettable",
@@ -460,6 +516,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      22
     ]
   },
   {
@@ -504,6 +564,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      22
     ]
   },
   {
@@ -512,7 +576,7 @@
       "college",
       "early"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "A guy from your dorm has moved $4,000 into a coin named after a frog. He is extremely calm about it, which is the frightening part.",
     "leftLabel": "Put in what you have",
     "rightLabel": "Watch from a distance",
@@ -537,6 +601,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      30
     ]
   },
   {
@@ -548,7 +616,7 @@
     "requiresFlags": [
       "knows_sam"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "Sam kisses you on a fire escape in March and asks, without much preamble, whether this is a thing now.",
     "leftLabel": "It's a thing",
     "rightLabel": "It's not",
@@ -574,6 +642,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      30
     ]
   },
   {
@@ -626,6 +698,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      18,
+      30
     ]
   },
   {
@@ -666,6 +742,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      30
     ]
   },
   {
@@ -716,6 +796,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      50
     ]
   },
   {
@@ -724,7 +808,7 @@
       "early",
       "family"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "HR needs your retirement allocation by Friday. There is a slider. Nobody will ever explain the slider to you.",
     "leftLabel": "All equities",
     "rightLabel": "Bonds, safely",
@@ -749,6 +833,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      50
     ]
   },
   {
@@ -758,7 +846,7 @@
       "family",
       "late"
     ],
-    "weight": "trivial",
+    "weight": "minor",
     "scenario": "The gym is $54 a month and eleven minutes away. You have driven past it 400 times.",
     "leftLabel": "Actually go",
     "rightLabel": "Next month",
@@ -777,6 +865,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      65
     ]
   },
   {
@@ -813,6 +905,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      50
     ]
   },
   {
@@ -844,6 +940,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      50
     ]
   },
   {
@@ -852,7 +952,7 @@
       "early",
       "family"
     ],
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "You could build the thing on nights and weekends. Sleep is, statistically, optional for about four months.",
     "leftLabel": "Build it",
     "rightLabel": "Sleep",
@@ -875,6 +975,10 @@
     "modes": [
       "safe",
       "mature"
+    ],
+    "life_stage": [
+      22,
+      50
     ]
   },
   {
@@ -887,7 +991,7 @@
       "family"
     ],
     "minAge": 24,
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "The knee surgery left you with a bottle of thirty and a refill you did not ask for. There are nine left and it is Tuesday, which you know because you have started noticing which day it is.",
     "leftLabel": "Flush them",
     "rightLabel": "Keep the refill",
@@ -909,7 +1013,11 @@
         "outcome": "injury",
         "description": "You run out early and the pharmacy will not budge, and the two days that follow are their own kind of education."
       }
-    }
+    },
+    "life_stage": [
+      24,
+      50
+    ]
   },
   {
     "id": "mt_intervention",
@@ -948,7 +1056,11 @@
         "burned_the_bridge"
       ],
       "timeCostMonths": 18
-    }
+    },
+    "life_stage": [
+      26,
+      65
+    ]
   },
   {
     "id": "mt_recovery_year",
@@ -964,7 +1076,7 @@
       "retirement"
     ],
     "minAge": 28,
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "Fourteen months. Somebody at the meeting asks if you would speak next week, and you notice you have opinions about what you would say.",
     "leftLabel": "Speak",
     "rightLabel": "Just listen",
@@ -978,7 +1090,11 @@
     "rightEffects": {
       "happiness": 4,
       "health": 2
-    }
+    },
+    "life_stage": [
+      30,
+      110
+    ]
   },
   {
     "id": "mt_expenses",
@@ -1017,7 +1133,11 @@
         "description": "The auditor is twenty-six, thorough, and has nothing else on her desk. The word 'felony' is used in a room with a window."
       },
       "timeCostMonths": 12
-    }
+    },
+    "life_stage": [
+      25,
+      50
+    ]
   },
   {
     "id": "mt_sentencing",
@@ -1062,7 +1182,11 @@
         "description": "The jury takes four hours. The sentence is longer than the offer was."
       },
       "timeCostMonths": 24
-    }
+    },
+    "life_stage": [
+      30,
+      65
+    ]
   },
   {
     "id": "mt_reentry",
@@ -1104,7 +1228,11 @@
         "salary": 38000
       },
       "timeCostMonths": 12
-    }
+    },
+    "life_stage": [
+      33,
+      65
+    ]
   },
   {
     "id": "mt_sportsbook",
@@ -1117,7 +1245,7 @@
       "late"
     ],
     "minAge": 24,
-    "weight": "minor",
+    "weight": "standard",
     "scenario": "The sportsbook app gave you $200 free and you turned it into $1,400 in a weekend, which felt less like luck than like a skill nobody had told you about.",
     "leftLabel": "Cash out, delete it",
     "rightLabel": "Let it ride",
@@ -1139,7 +1267,11 @@
         "outcome": "windfall",
         "description": "A parlay lands that should not have landed, and the number on the screen is bigger than a month of your salary."
       }
-    }
+    },
+    "life_stage": [
+      24,
+      65
+    ]
   },
   {
     "id": "mt_bookie",
@@ -1183,7 +1315,11 @@
         "description": "Terrence stops being polite in a parking structure on a Thursday."
       },
       "timeCostMonths": 12
-    }
+    },
+    "life_stage": [
+      30,
+      65
+    ]
   },
   {
     "id": "mt_dui",
@@ -1217,6 +1353,699 @@
         "outcome": "injury",
         "description": "The stop is routine until it is not, and the phrase 'driving while intoxicated' enters your record, your insurance, and every background check for the next decade."
       }
+    },
+    "life_stage": [
+      23,
+      65
+    ]
+  },
+  {
+    "id": "hs_locker",
+    "life_stage": [
+      16,
+      18
+    ],
+    "stages": [
+      "highschool"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "Someone has written something about you on the inside of a locker door, and three people have already told you about it kindly.",
+    "leftLabel": "Find out who",
+    "rightLabel": "Never mention it",
+    "leftEffects": {
+      "happiness": -6,
+      "flags": [
+        "keeps_score"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "flags": [
+        "lets_it_go"
+      ]
     }
+  },
+  {
+    "id": "hs_teacher_recommends",
+    "life_stage": [
+      16,
+      18
+    ],
+    "stages": [
+      "highschool"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "Ms. Okafor keeps you after class to say she has recommended you for something without asking first. It is four Saturdays and a bus ride, and she has clearly already told people you will do it.",
+    "leftLabel": "Do it",
+    "rightLabel": "Tell her no",
+    "leftEffects": {
+      "happiness": -2,
+      "health": -1,
+      "flags": [
+        "mentored"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "flags": [
+        "said_no_early"
+      ]
+    }
+  },
+  {
+    "id": "hs_brother_car",
+    "life_stage": [
+      16,
+      18
+    ],
+    "stages": [
+      "highschool"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "Your cousin wants to borrow the car for two hours and has been vague about which two hours.",
+    "leftLabel": "Hand over the keys",
+    "rightLabel": "Make an excuse",
+    "leftEffects": {
+      "happiness": 3,
+      "risk": {
+        "probability": 0.14,
+        "outcome": "injury",
+        "description": "The car comes back with a story attached and a dent that does not match the story."
+      }
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Dev",
+        "role": "cousin",
+        "qualityDelta": -10
+      }
+    }
+  },
+  {
+    "id": "hs_shift_or_game",
+    "life_stage": [
+      16,
+      18
+    ],
+    "stages": [
+      "highschool"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "The Friday shift pays time and a half. The game is the last one anybody will care about, and everyone you know will be at it, and you will hear about it either way.",
+    "leftLabel": "Take the shift",
+    "rightLabel": "Go to the game",
+    "leftEffects": {
+      "money": 180,
+      "happiness": -6,
+      "flags": [
+        "worked_young"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 9,
+      "flags": [
+        "was_there"
+      ]
+    }
+  },
+  {
+    "id": "hs_dad_shed",
+    "life_stage": [
+      16,
+      18
+    ],
+    "stages": [
+      "highschool"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "Dad has been in the shed since seven and the light is still on, and he has not asked for help, which is how he asks for help.",
+    "leftLabel": "Go out there",
+    "rightLabel": "Leave him to it",
+    "leftEffects": {
+      "happiness": 7,
+      "relationship": {
+        "name": "Dad",
+        "qualityDelta": 12
+      }
+    },
+    "rightEffects": {
+      "happiness": -2
+    }
+  },
+  {
+    "id": "col_laundry_money",
+    "life_stage": [
+      18,
+      22
+    ],
+    "stages": [
+      "college"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "You are down to $14 and eleven days, and the bus fare home for the weekend is $31.",
+    "leftLabel": "Ask your mother",
+    "rightLabel": "Stay put, eat rice",
+    "leftEffects": {
+      "money": 120,
+      "happiness": -5,
+      "relationship": {
+        "name": "Mom",
+        "qualityDelta": 4
+      }
+    },
+    "rightEffects": {
+      "health": -3,
+      "happiness": -2,
+      "flags": [
+        "too_proud_to_ask"
+      ]
+    }
+  },
+  {
+    "id": "col_group_project",
+    "life_stage": [
+      18,
+      22
+    ],
+    "stages": [
+      "college"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "Two of the four names on the project have contributed nothing and one of them has a genuinely difficult year happening. The submission box closes at midnight and your name is on it too.",
+    "leftLabel": "Carry them",
+    "rightLabel": "Tell the tutor",
+    "leftEffects": {
+      "health": -4,
+      "happiness": -3,
+      "flags": [
+        "carries_others"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "flags": [
+        "reports_it"
+      ]
+    }
+  },
+  {
+    "id": "col_summer_abroad_cheap",
+    "life_stage": [
+      18,
+      22
+    ],
+    "stages": [
+      "college"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "A friend has a spare room in another country for the summer and wants $400 for the whole thing. It is almost certainly a bad idea and it is almost certainly the last summer this is possible.",
+    "leftLabel": "Go",
+    "rightLabel": "Work the summer",
+    "leftEffects": {
+      "money": -1400,
+      "happiness": 16,
+      "health": 2,
+      "flags": [
+        "went_away"
+      ]
+    },
+    "rightEffects": {
+      "money": 3800,
+      "happiness": -4
+    }
+  },
+  {
+    "id": "ec_landlord_deposit",
+    "life_stage": [
+      22,
+      30
+    ],
+    "stages": [
+      "early"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "Your old landlord is keeping $900 of the deposit for damage that was there when you moved in, and you have a photograph proving it somewhere.",
+    "leftLabel": "Fight it",
+    "rightLabel": "Write it off",
+    "leftEffects": {
+      "money": 700,
+      "happiness": -5,
+      "health": -2,
+      "flags": [
+        "stands_ground"
+      ]
+    },
+    "rightEffects": {
+      "money": -900,
+      "happiness": -2
+    }
+  },
+  {
+    "id": "ec_wedding_season",
+    "life_stage": [
+      22,
+      30
+    ],
+    "stages": [
+      "early"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "The fourth wedding this year is in another country and you are in the photographs of all of them. The flights, the suit, the gift and the two nights come to more than your rent.",
+    "leftLabel": "Go to all of them",
+    "rightLabel": "Send regrets to one",
+    "leftEffects": {
+      "money": -3200,
+      "happiness": 8,
+      "flags": [
+        "shows_up"
+      ]
+    },
+    "rightEffects": {
+      "money": -900,
+      "happiness": -6,
+      "flags": [
+        "missed_it"
+      ]
+    }
+  },
+  {
+    "id": "ec_promotion_of_friend",
+    "life_stage": [
+      22,
+      30
+    ],
+    "stages": [
+      "early",
+      "family"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "The job you wanted went to the person you eat lunch with, who found out an hour before you did and has been avoiding the kitchen ever since.",
+    "leftLabel": "Congratulate them properly",
+    "rightLabel": "Keep it professional",
+    "leftEffects": {
+      "happiness": 4,
+      "flags": [
+        "gracious"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -7,
+      "flags": [
+        "went_cold"
+      ]
+    }
+  },
+  {
+    "id": "lt_younger_boss",
+    "life_stage": [
+      50,
+      65
+    ],
+    "stages": [
+      "late"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "Your new manager is thirty-one and keeps using the phrase 'legacy approach' in a tone that is not quite an insult. She is also, annoyingly, right about two of the four things.",
+    "leftLabel": "Teach her the rest",
+    "rightLabel": "Let her find out",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "mentored_up"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "flags": [
+        "went_quiet_at_work"
+      ]
+    }
+  },
+  {
+    "id": "lt_parents_house",
+    "life_stage": [
+      50,
+      65
+    ],
+    "stages": [
+      "late"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "scenario": "The house you grew up in has to be emptied in three weekends. There are forty years in it and your siblings have opinions about the piano, the photographs, and who did more.",
+    "leftLabel": "Handle it yourself",
+    "rightLabel": "Split it evenly",
+    "leftEffects": {
+      "money": 14000,
+      "health": -6,
+      "happiness": -8,
+      "flags": [
+        "did_it_alone"
+      ]
+    },
+    "rightEffects": {
+      "money": 6000,
+      "happiness": 2,
+      "flags": [
+        "shared_the_load"
+      ]
+    },
+    "timeCostMonths": 6
+  },
+  {
+    "id": "lt_knee",
+    "life_stage": [
+      50,
+      65
+    ],
+    "stages": [
+      "late"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "The knee has been going for two years and the surgeon says now is better than later, which is what they said about the other one.",
+    "leftLabel": "Have it done",
+    "rightLabel": "Put it off again",
+    "leftEffects": {
+      "money": -9000,
+      "health": 12,
+      "happiness": -3
+    },
+    "rightEffects": {
+      "health": -8,
+      "happiness": -2,
+      "flags": [
+        "deferred_surgery"
+      ]
+    }
+  },
+  {
+    "id": "lt_adult_child_moves_back",
+    "life_stage": [
+      50,
+      65
+    ],
+    "stages": [
+      "late"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "One of your children is coming home for what everyone is carefully calling a few months, with a car full of boxes and a job that ended in a way nobody has explained.",
+    "leftLabel": "Give them the room",
+    "rightLabel": "Set a date",
+    "leftEffects": {
+      "money": -7000,
+      "happiness": 6,
+      "flags": [
+        "open_door"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "set_boundaries"
+      ]
+    }
+  },
+  {
+    "id": "lt_severance_or_stay",
+    "life_stage": [
+      50,
+      65
+    ],
+    "stages": [
+      "late"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "scenario": "They are offering a package to anyone over fifty-five who volunteers, which is how they avoid choosing. The number is eleven months of salary and the alternative is finding out whether they would have chosen you.",
+    "leftLabel": "Volunteer",
+    "rightLabel": "Make them decide",
+    "leftEffects": {
+      "money": 62000,
+      "happiness": -4,
+      "career": {
+        "title": "Between things",
+        "salary": 0
+      },
+      "flags": [
+        "took_the_package"
+      ],
+      "timeCostMonths": 18
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "health": -4,
+      "flags": [
+        "stayed_to_the_end"
+      ],
+      "timeCostMonths": 24
+    }
+  },
+  {
+    "id": "rt_driving_licence",
+    "life_stage": [
+      65,
+      110
+    ],
+    "stages": [
+      "retirement"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "Your daughter has started offering to drive whenever you are going anywhere further than the shops, and she has started offering before you have said where you are going.",
+    "leftLabel": "Hand over the keys",
+    "rightLabel": "Keep driving",
+    "leftEffects": {
+      "money": 4000,
+      "happiness": -9,
+      "flags": [
+        "stopped_driving"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "risk": {
+        "probability": 0.12,
+        "outcome": "injury",
+        "description": "A junction you have used for thirty years arranges itself differently for a moment, and the other driver is fine."
+      }
+    }
+  },
+  {
+    "id": "rt_old_colleague_funeral",
+    "life_stage": [
+      65,
+      110
+    ],
+    "stages": [
+      "retirement"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "The third funeral this year is two hours away and you would know perhaps four people there.",
+    "leftLabel": "Go anyway",
+    "rightLabel": "Send flowers",
+    "leftEffects": {
+      "money": -180,
+      "happiness": 6,
+      "health": -1,
+      "flags": [
+        "still_shows_up"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -4
+    }
+  },
+  {
+    "id": "rt_grandchild_loan",
+    "life_stage": [
+      65,
+      110
+    ],
+    "stages": [
+      "retirement"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "scenario": "A grandchild needs eleven thousand for a deposit and has asked in the specific way people ask when they have rehearsed it in the car outside.",
+    "leftLabel": "Give it to them",
+    "rightLabel": "Explain why not",
+    "leftEffects": {
+      "money": -11000,
+      "happiness": 10,
+      "flags": [
+        "helped_the_young"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "flags": [
+        "said_no_to_family"
+      ]
+    }
+  },
+  {
+    "id": "rt_hearing",
+    "life_stage": [
+      65,
+      110
+    ],
+    "stages": [
+      "retirement"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "You have started saying 'what?' as a reflex before people have finished, and someone has started repeating themselves before you ask.",
+    "leftLabel": "Get them fitted",
+    "rightLabel": "Manage without",
+    "leftEffects": {
+      "money": -3200,
+      "happiness": 7,
+      "health": 3,
+      "flags": [
+        "hearing_aids"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "flags": [
+        "withdrawing"
+      ]
+    }
+  },
+  {
+    "id": "rt_allotment",
+    "life_stage": [
+      65,
+      110
+    ],
+    "stages": [
+      "retirement"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "scenario": "There is a plot available on the site behind the church, and a waiting list of nine people who have each been waiting four years.",
+    "leftLabel": "Take the plot",
+    "rightLabel": "Let it go to someone else",
+    "leftEffects": {
+      "money": -140,
+      "health": 8,
+      "happiness": 9,
+      "flags": [
+        "grows_things"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -2
+    }
+  },
+  {
+    "id": "rt_will_conversation",
+    "life_stage": [
+      65,
+      110
+    ],
+    "stages": [
+      "retirement"
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "scenario": "The solicitor wants to know what happens to everything, and the honest answer involves saying out loud which of your children you trust with it. They will read this document one day and know what you decided.",
+    "leftLabel": "Split it evenly",
+    "rightLabel": "Split it honestly",
+    "leftEffects": {
+      "happiness": 3,
+      "flags": [
+        "kept_the_peace"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "said_what_they_meant"
+      ]
+    },
+    "timeCostMonths": 6
   }
 ]

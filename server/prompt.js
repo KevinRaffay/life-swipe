@@ -33,7 +33,7 @@ markdown fences, no trailing commentary:
     "scenario": "string, 1-3 sentences, second person",
     "leftLabel": "string, 1-4 words",
     "rightLabel": "string, 1-4 words",
-    "weight": "trivial" | "minor" | "major",
+    "weight": "minor" | "standard" | "major",
     "leftEffects": { ... },
     "rightEffects": { ... }
   }
@@ -54,10 +54,10 @@ EFFECTS OBJECT (every field optional):
   "timeCostMonths": number  how much time this choice consumes
 
 WEIGHT AND TIME:
-  trivial = a moment or a week   (timeCostMonths ~0.25-2)
-  minor   = months               (timeCostMonths ~3-12)
-  major   = a life decision      (timeCostMonths ~12-36)
-Each batch of 5 should mix weights: roughly 2 trivial, 2 minor, 1 major. Death
+  minor    = a moment or a week, written as a bare prompt   (timeCostMonths ~0.25-2)
+  standard = months, one line of setting before the choice  (timeCostMonths ~3-12)
+  major    = a life decision, written as a full short scene (timeCostMonths ~12-36)
+Each batch of 5 should mix weights: roughly 2 minor, 2 standard, 1 major. Death
 risk probability must stay at or below 0.05 and belongs only on genuinely
 dangerous choices. Most cards carry no risk at all.
 

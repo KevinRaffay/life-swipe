@@ -43,11 +43,24 @@ export class Deck {
    * @param {number}   [opts.lookahead]    refill when buffer drops below this
    *   (a live batch takes ~20s, so keep this well above one swipe of runway)
    */
-  constructor({ seedScenarios = [], fetchBatch = null, lookahead = 6, onLibrarySlot = null } = {}) {
+  constructor({
+    seedScenarios = [],
+    fetchBatch = null,
+    lookahead = 6,
+    onLibrarySlot = null,
+    seenSeedIds = [],
+    onSeedShown = null,
+    warn = (msg) => console.warn(msg),
+  } = {}) {
     this.seeds = validateBatch(seedScenarios).scenarios.map((s) => ({ ...s, source: 'seed' }));
     this.fetchBatch = fetchBatch;
     // Returns a pattern to brief the storyteller with, or null for free generation.
     this.onLibrarySlot = onLibrarySlot;
+    // Cross-life memory of seed cards already shown. Seeded from the player's
+    // store and appended to as this life runs.
+    this.seenSeedIds = [...seenSeedIds];
+    this.onSeedShown = onSeedShown;
+    this.warn = warn;
     this.lookahead = lookahead;
     this.buffer = [];
     this.recentIds = [];
@@ -55,7 +68,7 @@ export class Deck {
     this.inFlight = null;
     this.lastError = null;
     this.dealt = 0;
-    this.stats = { seed: 0, llm: 0, fallback: 0, fetches: 0, failures: 0, pruned: 0 };
+    this.stats = { seed: 0, llm: 0, fallback: 0, fetches: 0, failures: 0, pruned: 0, seenFilterBypassed: 0 };
   }
 
   eligible(scenario, state) {
@@ -74,6 +87,10 @@ export class Deck {
     });
     if (!compliance.ok) return false;
     const age = ageOf(state);
+    if (Array.isArray(scenario.life_stage) && scenario.life_stage.length === 2) {
+      const [lo, hi] = scenario.life_stage;
+      if (age < lo || age > hi) return false;
+    }
     if (Number.isFinite(scenario.minAge) && age < scenario.minAge) return false;
     if (Number.isFinite(scenario.maxAge) && age > scenario.maxAge) return false;
 
@@ -132,7 +149,25 @@ export class Deck {
     //    nextRandom draws from the run's own seeded RNG, so a given seed still
     //    replays exactly.
     if (!card) {
-      const pool = this.seeds.filter((s) => !this.usedSeedIds.has(s.id) && this.eligible(s, state));
+      const fresh = this.seeds.filter((s) =>
+        !this.usedSeedIds.has(s.id) &&
+        !this.seenSeedIds.includes(s.id) &&
+        this.eligible(s, state));
+
+      // Better to repeat than to have nothing - but say so, because an empty
+      // pool here is what "I keep seeing the same card" actually looks like.
+      let pool = fresh;
+      if (!pool.length) {
+        pool = this.seeds.filter((s) => !this.usedSeedIds.has(s.id) && this.eligible(s, state));
+        if (pool.length) {
+          this.stats.seenFilterBypassed += 1;
+          this.warn(
+            '[deck] seed pool exhausted for age ' + Math.floor(ageOf(state)) +
+            ' / ' + state.contentMode + ' - repeating a previously seen card. ' +
+            'That bucket is too thin: run npm run coverage.',
+          );
+        }
+      }
       if (pool.length) {
         // Some seeds are structural rather than flavour - the college fork sets
         // in_school, the first-job card sets a salary. Ordinary cards shuffle
@@ -151,6 +186,11 @@ export class Deck {
     if (!card) {
       card = makeFallbackScenario(state, { recentIds: this.recentIds, stageId: stageOf(state).id });
       this.stats.fallback++;
+    }
+
+    if (card.source === 'seed' || card.source === 'fallback') {
+      if (!this.seenSeedIds.includes(card.id)) this.seenSeedIds.push(card.id);
+      if (this.onSeedShown) this.onSeedShown(card.id);
     }
 
     this.remember(card.id);

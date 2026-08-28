@@ -81,8 +81,14 @@ function synthesiseLibraryCard(pattern) {
   };
 }
 
-function playOne(seed, contentMode, seenPatterns = []) {
-  const deck = new Deck({ seedScenarios });
+function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = []) {
+  let bypassWarnings = 0;
+  const deck = new Deck({
+    seedScenarios,
+    seenSeedIds,
+    onSeedShown: (id) => { if (!seenSeedIds.includes(id)) seenSeedIds.push(id); },
+    warn: () => { bypassWarnings += 1; },   // counted, not printed, per life
+  });
   let state = createState({ seed, contentMode });
   const libraryFired = [];
   let slotsOffered = 0;
@@ -141,6 +147,8 @@ function playOne(seed, contentMode, seenPatterns = []) {
     darkBudget: state.dark ? state.dark.budget : 0,
     violations,
     libraryFired,
+    bypassWarnings,
+    seedRepeats: deck.stats.seenFilterBypassed,
     slotsOffered,
     slotsUnfilled,
     rejectionReasons,
@@ -288,9 +296,10 @@ for (const mode of MODES_TO_RUN) {
   for (let p = 0; p < players && lifeNo < LIVES; p++) {
     // One player, several lives, one shared memory of what they have been shown.
     const seen = [];
+    const seenSeeds = [];   // cross-life seed memory for this one player
     const firedByLife = [];
     for (let l = 0; l < LIVES_PER_PLAYER && lifeNo < LIVES; l++, lifeNo++) {
-      const run = playOne(`${BASE_SEED}:${mode}:${lifeNo}`, mode, seen);
+      const run = playOne(`${BASE_SEED}:${mode}:${lifeNo}`, mode, seen, seenSeeds);
       run.player = p;
       runs.push(run);
       firedByLife.push(run.libraryFired);

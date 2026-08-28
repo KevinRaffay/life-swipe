@@ -57,3 +57,33 @@ export function markPatternSeen(id) {
 export function resetSeenPatterns() {
   try { window.localStorage.removeItem(SEEN_KEY); } catch { /* ignore */ }
 }
+
+// Seed scenarios this player has been shown, in ANY life. Same store and same
+// rolling-window approach as seen_patterns: the opening of a run is where
+// repetition is most obvious, and that is exactly where seeds are used.
+const SEEN_SEEDS_KEY = 'lifeswipe.seenSeedIds';
+const SEEN_SEEDS_CAP = 120;
+
+export function getSeenSeedIds() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SEEN_SEEDS_KEY) || '[]');
+    return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+export function markSeedSeen(id) {
+  if (!id) return;
+  const seen = getSeenSeedIds();
+  if (seen[seen.length - 1] === id) return;
+  const next = seen.filter((x) => x !== id);
+  next.push(id);
+  try {
+    window.localStorage.setItem(SEEN_SEEDS_KEY, JSON.stringify(next.slice(-SEEN_SEEDS_CAP)));
+  } catch { /* private mode - the life still plays, it just forgets */ }
+}
+
+export function resetSeenSeedIds() {
+  try { window.localStorage.removeItem(SEEN_SEEDS_KEY); } catch { /* ignore */ }
+}

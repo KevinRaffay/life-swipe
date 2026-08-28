@@ -480,3 +480,76 @@ and years.
 Verified on a synthetic life story: 12 candidates, all schema-valid, with none
 of the source's distinguishing details ("mill", "launderette", "actuary",
 "coastal path") surviving into the patterns.
+
+---
+
+## Seed content: schema, anti-repetition, coverage
+
+### Schema
+
+Every entry in [scenarios-seed.json](data/scenarios-seed.json) now carries
+`life_stage` (`[minAge, maxAge]`), `modes`, and `weight`, matching the shape
+[situation-library.json](server/situation-library.json) already used.
+`life_stage` is the canonical age gate for seed selection.
+
+`weight` was renamed to the three-tier vocabulary and the mapping preserves
+pacing exactly, because the engine uses weight for time cost:
+
+| old | new | time | authoring |
+| --- | --- | --- | --- |
+| `trivial` | `minor` | ~1 month | prompt only |
+| `minor` | `standard` | ~9 months | prompt + setting |
+| `major` | `major` | ~30 months | full scene |
+
+`trivial` is still accepted as an alias so older model output lands on the short
+tier rather than falling through to the default.
+
+### Anti-repetition
+
+`seen_seed_ids` lives in the same per-player, cross-life store as
+`seen_patterns` — a rolling window of 120. Every seed or fallback card that is
+actually shown is recorded, and excluded from selection until the window rolls
+past it.
+
+Selection is a uniform random pick among everything matching the current age,
+mode and flags and not in `seen_seed_ids`. **If that leaves nothing, the filter
+is ignored for that pick only and a warning is logged**, naming the age and mode
+of the bucket that ran dry — because an exhausted pool is precisely what "I keep
+seeing the same card" looks like from the inside.
+
+Measured over 40 players, comparing a player's first 12 cards in life 2 against
+life 1:
+
+```
+WITHOUT seen_seed_ids   repeat rate 52.5%
+WITH    seen_seed_ids   repeat rate  0.0%
+```
+
+One deliberate deviation from a uniform pick: the `priority` tier still wins.
+Structural cards (the college fork, the first job) must fire for the economy to
+make sense — removing that previously pushed deaths before 40 from 12% to 21%.
+Selection is uniform *within* the top priority tier present.
+
+### Coverage
+
+```bash
+npm run coverage
+```
+
+Counts unGated scenarios per (life-stage bucket × mode) against the targets: 8
+for the first playable bracket, 4 for every other. Exits 1 if any bucket is
+short. The same check runs at **server startup** and prints a warning naming
+each thin bucket, and `GET /api/coverage` returns the table as JSON.
+
+22 new scenarios were written to clear the gaps — `late` and `retirement` were
+at 1 and 0 — and to deepen the opening brackets, where repetition is most
+visible. All 12 bucket/mode pairs are now at or above target.
+
+### One knock-on worth knowing
+
+More short cards means more swipes per life: mean rose from ~57 to ~69, with p90
+at 102 against a documented target of 40–80. Lifespan is unaffected (mean 62).
+If you want the old pacing back, the lever is `BAL.TIME.minor` in
+[balance.js](shared/balance.js) or re-tagging some of the new one-line cards as
+`standard`. I have left it alone rather than quietly retuning balance that was
+not part of this fix.

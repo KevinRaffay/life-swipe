@@ -237,7 +237,7 @@ export function timeCostMonths(scenario, effects, s) {
   const cap = BAL.TIME.stageCapMonths[stageOf(s).id] ?? 48;
   const proposed = Number.isFinite(effects.timeCostMonths)
     ? effects.timeCostMonths
-    : BAL.TIME[scenario.weight] ?? BAL.TIME.minor;
+    : BAL.TIME[scenario.weight] ?? BAL.TIME.standard;
   return clamp(proposed, lo, Math.min(hi, cap));
 }
 

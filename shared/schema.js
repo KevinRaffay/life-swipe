@@ -8,7 +8,7 @@
 
 import { checkCompliance, MODES } from './content.js';
 
-const WEIGHTS = new Set(['trivial', 'minor', 'major']);
+const WEIGHTS = new Set(['minor', 'standard', 'major', 'trivial']);
 const OUTCOMES = new Set(['death', 'injury', 'windfall']);
 
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -139,7 +139,7 @@ export function validateScenario(raw, index = 0) {
   const rightEffects = validateEffects(raw.rightEffects, `${path}.rightEffects`, errors);
   if (errors.length) return { ok: false, errors };
 
-  const weight = WEIGHTS.has(raw.weight) ? raw.weight : 'minor';
+  const weight = WEIGHTS.has(raw.weight) ? raw.weight : 'standard';
 
   return {
     ok: true,
@@ -151,6 +151,10 @@ export function validateScenario(raw, index = 0) {
       rightLabel: raw.rightLabel.trim().slice(0, 40),
       weight,
       libraryId: isStr(raw.library_id) ? raw.library_id.slice(0, 60) : undefined,
+      life_stage: Array.isArray(raw.life_stage) && raw.life_stage.length === 2
+        && raw.life_stage.every((n) => Number.isFinite(n))
+        ? [raw.life_stage[0], raw.life_stage[1]]
+        : undefined,
       modes: Array.isArray(raw.modes) && raw.modes.some((m) => MODES.includes(m))
         ? raw.modes.filter((m) => MODES.includes(m))
         : ['safe', 'mature'],
