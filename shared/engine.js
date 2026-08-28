@@ -12,6 +12,10 @@ import {
   isMatureScenario, darkArcAllowed,
 } from './content.js';
 import { createLibraryState, notePatternFired } from './library.js';
+import { createNameLedger, hasNameTag, assignName, impliedBirthYear, castKey } from './names.js';
+
+// The tag the seed deck uses for the friend the player starts life with.
+const BEST_FRIEND_TAG = castKey('best friend');
 
 export const STAGES = [
   { id: 'highschool', label: 'High School',         minAge: 16, maxAge: 18 },
@@ -32,7 +36,12 @@ export const hasFlag = (s, f) => s.flags.includes(f);
 
 /* ------------------------------------------------------------------ state */
 
-export function createState({ seed = Date.now(), name = 'You', contentMode = DEFAULT_MODE } = {}) {
+// `region` tilts the starting friend's name the same way it tilts everyone
+// else's. It is read here and NOT stored: it belongs to the session, not to
+// the life, and a saved game should not carry the player's location around.
+export function createState({
+  seed = Date.now(), name = 'You', contentMode = DEFAULT_MODE, region = null,
+} = {}) {
   const state = {
     seed: String(seed),
     rngState: seedFrom(seed),
@@ -45,12 +54,18 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
     career: { title: 'High School Student', salary: 0 },
     education: 'High school (in progress)',
     pension: 0,
+    // Mom and Dad are how you address a parent, not names, so they stay put.
+    // The best friend gets a real name, assigned below once the RNG exists.
     relationships: {
       Mom: { role: 'mother', quality: 72, flags: [] },
       Dad: { role: 'father', quality: 64, flags: [] },
-      Priya: { role: 'best friend', quality: 80, flags: [] },
     },
     kids: [],
+    // Role tag -> the name the engine gave that character, for this life only.
+    // The name itself lives in `relationships` as it always has; this ledger
+    // exists so a "{{new:roommate}}" written eight swipes from now resolves to
+    // the same person, and so two characters cannot collide on one first name.
+    names: createNameLedger(),
     flags: ['lives_with_parents'],
     // Which mode a flag was created under, so later systems can filter on it.
     flagMeta: {},
@@ -71,7 +86,35 @@ export function createState({ seed = Date.now(), name = 'You', contentMode = DEF
   // re-rolled, which is what keeps mature mode from becoming a crime spree.
   state.dark = createDarkState(() => nextRandom(state));
   state.library = createLibraryState(() => nextRandom(state));
+  // The friend you already had at 16. Named here rather than hardcoded, so a
+  // new life does not open on the same person every time - and recorded under
+  // the cast tag the seed deck references, so the card that mentions them by
+  // name three swipes from now means this same friend.
+  const friend = assignName({
+    role: 'best friend',
+    birthYear: impliedBirthYear(ageOf(state), 'best friend'),
+    taken: new Set(Object.keys(state.relationships).map((n) => n.toLowerCase())),
+    rng: () => nextRandom(state),
+    region,
+  });
+  if (friend) {
+    state.relationships[friend.name] = { role: 'best friend', quality: 80, flags: [] };
+    noteAssignedName(state, { key: BEST_FRIEND_TAG, name: friend.name, category: friend.category });
+  }
   return state;
+}
+
+/**
+ * Record a name the engine has just handed out. The deck resolves the tag and
+ * calls this; the write itself stays in here, so "the engine owns state"
+ * remains literally true rather than nearly true.
+ */
+export function noteAssignedName(s, { key, name, category } = {}) {
+  if (!s || !key || !name) return;
+  if (!s.names) s.names = createNameLedger();
+  if (s.names.byTag[key]) return;
+  s.names.byTag[key] = name;
+  if (category) s.names.categories[category] = (s.names.categories[category] || 0) + 1;
 }
 
 // The tier actually in force right now. Age beats mode: a minor gets safe
@@ -209,7 +252,12 @@ export function normalizeEffects(rawEffects, s) {
     out.education = eff.education.trim().slice(0, 60);
   }
 
-  if (eff.relationship && typeof eff.relationship === 'object' && eff.relationship.name) {
+  // An unresolved "{{new:roommate}}" reaching this point means something
+  // upstream skipped resolution. Dropping the whole relationship effect is the
+  // only safe answer: creating a person literally named "{{new:roommate}}"
+  // would key the relationships map off braces for the rest of the life.
+  if (eff.relationship && typeof eff.relationship === 'object'
+      && eff.relationship.name && !hasNameTag(String(eff.relationship.name))) {
     const rel = { name: String(eff.relationship.name).slice(0, 30).trim() };
     if (typeof eff.relationship.role === 'string') rel.role = eff.relationship.role.slice(0, 30);
     if (Number.isFinite(eff.relationship.quality)) rel.quality = clamp(eff.relationship.quality, 0, 100);
@@ -237,7 +285,7 @@ export function timeCostMonths(scenario, effects, s) {
   const cap = BAL.TIME.stageCapMonths[stageOf(s).id] ?? 48;
   const proposed = Number.isFinite(effects.timeCostMonths)
     ? effects.timeCostMonths
-    : BAL.TIME[scenario.weight] ?? BAL.TIME.minor;
+    : BAL.TIME[scenario.weight] ?? BAL.TIME.standard;
   return clamp(proposed, lo, Math.min(hi, cap));
 }
 
@@ -511,6 +559,9 @@ export function stateSummary(s) {
       name, role: r.role, quality: Math.round(r.quality), flags: r.flags,
     })),
     kids: s.kids.map((k) => ({ name: k.name, age: Math.floor(age - k.bornAtAge) })),
+    // Names the engine has already handed out, by role tag. Shown to the model
+    // so a character it introduced two batches ago keeps the same name.
+    assignedNames: { ...((s.names && s.names.byTag) || {}) },
     flags: s.flags,
     annualIncome: Math.round(annualIncome(s)),
     annualExpenses: Math.round(annualExpenses(s)),

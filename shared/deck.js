@@ -5,15 +5,17 @@
 // hand-authored seed, otherwise a procedural fallback - and then quietly kicks
 // off a background fetch. Swiping never waits on the network.
 
-import { stageOf, STAGES, contentTier, canDealDarkCard, ageOf } from './engine.js';
+import { stageOf, STAGES, contentTier, canDealDarkCard, ageOf, noteAssignedName } from './engine.js';
 import { checkCompliance, isMatureScenario } from './content.js';
 import { makeFallbackScenario } from './fallback.js';
 import { validateBatch } from './schema.js';
 import { nextRandom } from './rng.js';
+import { hasNameTag, resolveCardNames, createNameLedger } from './names.js';
 
 // Must stay smaller than the smallest per-stage pool, or every candidate ends
 // up "recent" and the deck is forced to repeat itself.
 const RECENT_MEMORY = 10;
+
 
 const stageIndex = (id) => STAGES.findIndex((s) => s.id === id);
 
@@ -43,11 +45,35 @@ export class Deck {
    * @param {number}   [opts.lookahead]    refill when buffer drops below this
    *   (a live batch takes ~20s, so keep this well above one swipe of runway)
    */
-  constructor({ seedScenarios = [], fetchBatch = null, lookahead = 6, onLibrarySlot = null } = {}) {
+  constructor({
+    seedScenarios = [],
+    fetchBatch = null,
+    lookahead = 6,
+    onLibrarySlot = null,
+    seenSeedIds = [],
+    onSeedShown = null,
+    warn = (msg) => console.warn(msg),
+    region = null,
+  } = {}) {
     this.seeds = validateBatch(seedScenarios).scenarios.map((s) => ({ ...s, source: 'seed' }));
     this.fetchBatch = fetchBatch;
     // Returns a pattern to brief the storyteller with, or null for free generation.
     this.onLibrarySlot = onLibrarySlot;
+    // Cross-life memory of seed cards already shown. Seeded from the player's
+    // store and appended to as this life runs.
+    // The caller decides what counts as recently seen (a lookback in LIVES,
+    // not cards). The deck only adds to it as this life runs.
+    this.seenSeedIds = [...seenSeedIds];
+    this.onSeedShown = onSeedShown;
+    // The player's region, which tilts name selection. A property of the
+    // SESSION, deliberately not of game state: it describes who is playing,
+    // not who the character is, so a story that moves them to another state
+    // does not change it - and it stays out of the serialised save.
+    this.region = region;
+    this.warn = warn;
+    // One warning per age band and mode per life. An exhausted bucket is worth
+    // saying once; saying it on every draw is just noise that gets ignored.
+    this.warned = new Set();
     this.lookahead = lookahead;
     this.buffer = [];
     this.recentIds = [];
@@ -55,7 +81,7 @@ export class Deck {
     this.inFlight = null;
     this.lastError = null;
     this.dealt = 0;
-    this.stats = { seed: 0, llm: 0, fallback: 0, fetches: 0, failures: 0, pruned: 0 };
+    this.stats = { seed: 0, llm: 0, fallback: 0, fetches: 0, failures: 0, pruned: 0, seenFilterBypassed: 0 };
   }
 
   eligible(scenario, state) {
@@ -74,6 +100,10 @@ export class Deck {
     });
     if (!compliance.ok) return false;
     const age = ageOf(state);
+    if (Array.isArray(scenario.life_stage) && scenario.life_stage.length === 2) {
+      const [lo, hi] = scenario.life_stage;
+      if (age < lo || age > hi) return false;
+    }
     if (Number.isFinite(scenario.minAge) && age < scenario.minAge) return false;
     if (Number.isFinite(scenario.maxAge) && age > scenario.maxAge) return false;
 
@@ -132,7 +162,32 @@ export class Deck {
     //    nextRandom draws from the run's own seeded RNG, so a given seed still
     //    replays exactly.
     if (!card) {
-      const pool = this.seeds.filter((s) => !this.usedSeedIds.has(s.id) && this.eligible(s, state));
+      const fresh = this.seeds.filter((s) =>
+        !this.usedSeedIds.has(s.id) &&
+        !this.seenSeedIds.includes(s.id) &&
+        this.eligible(s, state));
+
+      // Better to repeat than to have nothing - but say so, because an empty
+      // pool here is what "I keep seeing the same card" actually looks like.
+      let pool = fresh;
+      if (!pool.length) {
+        pool = this.seeds.filter((s) => !this.usedSeedIds.has(s.id) && this.eligible(s, state));
+        if (pool.length) {
+          this.stats.seenFilterBypassed += 1;
+          const band = Math.floor(ageOf(state) / 5) * 5;
+          const key = band + ':' + state.contentMode;
+          if (!this.warned.has(key)) {
+            this.warned.add(key);
+            this.warn(
+              '[deck] every seed card for age ' + band + '-' + (band + 4) + ' / ' +
+              state.contentMode + ' has been shown recently, so one is being ' +
+              'repeated. ' + pool.length + ' card(s) exist here. Normal deep into a long life; if it happens in the ' +
+              'first few swipes of a fresh run, that bucket really is thin ' +
+              '(npm run coverage).',
+            );
+          }
+        }
+      }
       if (pool.length) {
         // Some seeds are structural rather than flavour - the college fork sets
         // in_school, the first-job card sets a salary. Ordinary cards shuffle
@@ -153,11 +208,43 @@ export class Deck {
       this.stats.fallback++;
     }
 
+    if (card.source === 'seed' || card.source === 'fallback') {
+      if (!this.seenSeedIds.includes(card.id)) this.seenSeedIds.push(card.id);
+      if (this.onSeedShown) this.onSeedShown(card.id);
+    }
+
+    // The storyteller writes "{{new:roommate}}"; the engine decides who that
+    // is, HERE, at the moment the card is dealt. Not when the batch arrived: a
+    // buffered card can sit for a dozen swipes, and the name has to be chosen
+    // against the state the player is actually in.
+    card = this.resolveNames(card, state);
+
     this.remember(card.id);
     this.maybeRefill(state);
     // uid is per-deal; id is per-scenario. The card stack keys off uid so a
     // repeated scenario still counts as a new card.
     return { ...card, uid: ++this.dealt };
+  }
+
+  // Synchronous, and cannot fail - draw() promises both (invariant 4). Draws
+  // from the run's own RNG, so a seeded life still names its cast identically
+  // on replay (invariant 6). The ledger write goes through the engine.
+  resolveNames(card, state) {
+    const tagged = ['setting', 'beat', 'dialogue', 'prompt', 'scenario'].some((f) => hasNameTag(card[f]))
+      || ['leftEffects', 'rightEffects'].some((side) =>
+        card[side] && card[side].relationship && hasNameTag(card[side].relationship.name));
+    if (!tagged) return card;
+
+    const { card: resolved, assigned } = resolveCardNames(card, {
+      ledger: state.names || createNameLedger(),
+      relationships: state.relationships,
+      kids: state.kids,
+      age: ageOf(state),
+      rng: () => nextRandom(state),
+      region: this.region,
+    });
+    for (const entry of assigned) noteAssignedName(state, entry);
+    return resolved;
   }
 
   remember(id) {
@@ -182,6 +269,9 @@ export class Deck {
         const { scenarios } = validateBatch(raw || [], {
           tier: contentTier(state),
           age: ageOf(state),
+          // Name drift is screened server-side too. Two independent passes,
+          // same posture as the content gates: this one sees the live map.
+          relationships: state.relationships,
         });
         const stage = stageOf(state).id;
         for (const s of scenarios) {

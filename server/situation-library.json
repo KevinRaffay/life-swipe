@@ -261,5 +261,293 @@
     "typical_effects": "Modest income, meaningful happiness increase. Set flag redemption. The choice is being honest about the past in the work versus building the new thing on a quiet omission.",
     "rarity": "uncommon",
     "note": "Modest is the point. This is not a second fortune."
+  },
+  {
+    "id": "early_career_toxic_mentor",
+    "pattern": "A young professional enters a high-status industry and is immediately inducted into a culture of excess by a charismatic senior figure who frames self-enrichment as the only real goal.",
+    "category": "career",
+    "life_stage": [
+      18,
+      28
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "early_career_toxic_mentor"
+    ],
+    "typical_effects": "Sets a branch point: player adopts the culture and gains fast advancement at the cost of integrity flags, or resists and faces slower but cleaner career growth. Creates pending_event for later ethical reckoning.",
+    "rarity": "uncommon",
+    "note": "Fire early in a career arc; the senior figure need not reappear but their influence should echo forward."
+  },
+  {
+    "id": "market_crash_job_loss",
+    "pattern": "A systemic financial collapse wipes out a promising early-career position, forcing an abrupt pivot to a lower-status but more permissive environment where the player discovers unexpected talent.",
+    "category": "career",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "market_crash_job_loss"
+    ],
+    "typical_effects": "Immediate career setback balanced by discovery of a niche skill or aggressive style that pays well in the new context. Creates a fork: exploit the niche or seek more conventional recovery.",
+    "rarity": "uncommon",
+    "note": "The crash is systemic, not personal failure — important for player morale framing."
+  },
+  {
+    "id": "neighbor_becomes_business_partner",
+    "pattern": "A casual friendship with a neighbour or acquaintance rapidly escalates into a formal business partnership, blurring the line between personal loyalty and professional judgement.",
+    "category": "career",
+    "life_stage": [
+      22,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "neighbor_becomes_business_partner"
+    ],
+    "typical_effects": "Short-term synergy boost; creates a persistent loyalty flag that later conflicts with rational decision-making. The partner's recklessness or indiscretion should become a pending_event.",
+    "rarity": "common"
+  },
+  {
+    "id": "infamy_as_unexpected_recruitment_tool",
+    "pattern": "A negative or scandalous profile in a prominent outlet, intended to damage a venture, instead attracts a flood of ambitious recruits who find the notoriety appealing.",
+    "category": "career",
+    "life_stage": [
+      25,
+      45
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "infamy_as_unexpected_recruitment_tool"
+    ],
+    "typical_effects": "Rapid organisational growth that outpaces internal controls, creating future chaos events. Player must decide whether to embrace the outlaw brand or attempt to rehabilitate the image.",
+    "rarity": "rare",
+    "note": "Works best when the venture is already ethically ambiguous; the growth makes later legal exposure worse."
+  },
+  {
+    "id": "wealth_fuels_decadent_spiral",
+    "pattern": "Sudden and extreme financial success accelerates substance use and reckless personal behaviour, with each escalation feeling justified by continued professional wins.",
+    "category": "health",
+    "life_stage": [
+      25,
+      45
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [
+      "high_wealth"
+    ],
+    "excludes": [
+      "wealth_fuels_decadent_spiral"
+    ],
+    "typical_effects": "Progressive health and relationship penalties that compound slowly, then catastrophically. Creates multiple pending_events: health crisis, relationship breakdown, legal exposure. Branch point when a near-miss occurs.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "affair_replaces_marriage",
+    "pattern": "An extramarital affair with someone from a glamorous adjacent world leads to the dissolution of a first marriage and a rapid remarriage that feels like an upgrade but carries its own instabilities.",
+    "category": "romance",
+    "life_stage": [
+      25,
+      45
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "married"
+    ],
+    "excludes": [
+      "affair_replaces_marriage"
+    ],
+    "typical_effects": "Ends first marriage with associated guilt and financial cost; new relationship begins with a happiness boost that decays as lifestyle pressures mount. Creates a pending_event for second marriage strain.",
+    "rarity": "common"
+  },
+  {
+    "id": "regulatory_investigation_slow_burn",
+    "pattern": "A regulatory or law-enforcement investigation begins quietly in the background of apparent success, escalating in stages over several years before becoming impossible to ignore.",
+    "category": "chaos",
+    "life_stage": [
+      25,
+      55
+    ],
+    "modes": [
+      "mature",
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "regulatory_investigation_slow_burn"
+    ],
+    "typical_effects": "Should fire as a series of escalating pending_events rather than a single crisis. Each stage offers a branch: cooperate, deflect, or double down. Doubling down increases both reward and eventual penalty.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "offshore_account_hidden_under_proxy",
+    "pattern": "Wealth accumulated through questionable means is concealed in foreign accounts registered under a trusted third party's identity, creating a fragile arrangement that depends entirely on that person remaining available and compliant.",
+    "category": "money",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "mature",
+      "safe"
+    ],
+    "requires": [
+      "high_wealth"
+    ],
+    "excludes": [
+      "offshore_account_hidden_under_proxy"
+    ],
+    "typical_effects": "Creates a latent chaos event tied to the proxy's health, loyalty, or legal exposure. When the proxy dies, defects, or is arrested, the arrangement collapses suddenly. Branch point: come clean or attempt to cover up.",
+    "rarity": "rare"
+  },
+  {
+    "id": "loyal_associate_public_recklessness",
+    "pattern": "A close associate whose loyalty is unquestioned repeatedly creates serious legal exposure through impulsive or reckless behaviour in public, threatening the entire enterprise.",
+    "category": "chaos",
+    "life_stage": [
+      25,
+      50
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "loyal_associate_public_recklessness"
+    ],
+    "typical_effects": "Recurring chaos events sourced from the associate rather than the player. Player must choose between cutting the associate loose or protecting them at personal cost. Loyalty flag makes the rational choice emotionally costly.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "near_miss_as_ignored_warning",
+    "pattern": "A dramatic physical near-miss — accident, medical episode, or natural disaster — is interpreted at the time as a sign to change course, but the resolution fades and old patterns resume.",
+    "category": "chaos",
+    "life_stage": [
+      25,
+      60
+    ],
+    "modes": [
+      "mature",
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [],
+    "typical_effects": "Offers a genuine branch: genuine behavioural change with long-term health and stability gains, or a brief pause followed by relapse that worsens the eventual crisis. Should not repeat within two years of game time.",
+    "rarity": "uncommon",
+    "note": "The near-miss can be any domain; the pattern is the false turning point."
+  },
+  {
+    "id": "farewell_speech_self_talked_out",
+    "pattern": "Faced with a clear and rational opportunity to exit a dangerous situation, a person delivers what amounts to a farewell but is drawn back in by the emotional pull of the group and their own identity investment.",
+    "category": "career",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "farewell_speech_self_talked_out_of_exit"
+    ],
+    "typical_effects": "Hard branch point: exit now for safety at cost of identity and belonging, or stay and receive a short-term loyalty and morale boost with a significant increase in future legal and personal risk.",
+    "rarity": "uncommon",
+    "note": "The crowd's relief and the father-figure's dismay are structural elements worth preserving as NPC reactions."
+  },
+  {
+    "id": "inner_circle_member_flips_under",
+    "pattern": "A trusted member of a close-knit professional circle, facing their own legal jeopardy, cooperates with authorities and provides information that triggers the collapse of the wider enterprise.",
+    "category": "chaos",
+    "life_stage": [
+      30,
+      60
+    ],
+    "modes": [
+      "mature",
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "inner_circle_member_flips_under_pressure"
+    ],
+    "typical_effects": "Sudden revelation that reframes earlier events. Player must decide whether to cooperate in turn, fight, or flee. Each path has distinct consequence chains. Creates cascading pending_events for all remaining associates.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "cooperation_deal_breached_sentence_reduc",
+    "pattern": "A person agrees to cooperate with authorities against former associates, partially violates the agreement, yet still receives a meaningfully reduced sentence due to the value of what they provided.",
+    "category": "chaos",
+    "life_stage": [
+      30,
+      60
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "cooperation_deal_breached_sentence_reduced"
+    ],
+    "typical_effects": "Resolution event for a legal arc. Outcome is better than feared but worse than promised, with lasting reputation damage and the social cost of having informed on former allies. Creates a post-release identity reconstruction arc.",
+    "rarity": "rare"
+  },
+  {
+    "id": "post_prison_pivot_to_legitimate",
+    "pattern": "After release from a period of incarceration, a person leverages the same skills that led to their downfall — persuasion, salesmanship, charisma — in a legitimate advisory or educational capacity.",
+    "category": "career",
+    "life_stage": [
+      35,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [
+      "served_prison_sentence"
+    ],
+    "excludes": [
+      "post_prison_pivot_to_legitimate_teaching"
+    ],
+    "typical_effects": "Offers a rehabilitation arc with moderate income and a reputational slow rebuild. Tension between authenticity and exploitation of a criminal past for personal brand. Branch: lean into the notoriety or downplay it.",
+    "rarity": "uncommon"
+  },
+  {
+    "id": "crisis_sobriety_attempt_amid_compounding",
+    "pattern": "A cascade of simultaneous personal and legal crises — relationship breakdown, arrest of close associates, near-physical disaster — finally creates genuine motivation to address a long-standing addiction.",
+    "category": "health",
+    "life_stage": [
+      28,
+      55
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "crisis_sobriety_attempt_amid_compounding_losses"
+    ],
+    "typical_effects": "Major branch point: successful sobriety attempt unlocks health recovery and partial relationship repair but requires sustained effort checks; relapse deepens all existing penalties and accelerates legal exposure.",
+    "rarity": "uncommon"
   }
 ]

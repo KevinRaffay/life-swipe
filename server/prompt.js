@@ -30,10 +30,13 @@ markdown fences, no trailing commentary:
 
 [
   {
-    "scenario": "string, 1-3 sentences, second person",
+    "setting": "string, omit for minor",
+    "beat": "string, standard and major only",
+    "dialogue": "string, major only, one exchange",
+    "prompt": "string, the decision itself, second person, always present",
     "leftLabel": "string, 1-4 words",
     "rightLabel": "string, 1-4 words",
-    "weight": "trivial" | "minor" | "major",
+    "weight": "minor" | "standard" | "major",
     "leftEffects": { ... },
     "rightEffects": { ... }
   }
@@ -48,16 +51,68 @@ EFFECTS OBJECT (every field optional):
   "risk": { "probability": 0-0.25, "outcome": "death"|"injury"|"windfall", "description": "one sentence" }
   "career": { "title": "string", "salary": number }   only when the job actually changes
   "education": "string"   only when schooling changes
-  "relationship": { "name": "Sam", "role": "spouse", "qualityDelta": -20, "flags": ["heavy_drinker"], "remove": false }
+  "relationship": { "name": "Sam" or "{{new:roommate}}", "role": "spouse", "qualityDelta": -20, "flags": ["heavy_drinker"], "remove": false }
   "kid": true             a child is born
   "retire": true          they retire
   "timeCostMonths": number  how much time this choice consumes
 
+SCENARIO SHAPE - a card is written in fields, not one blob:
+
+  "weight":   "minor" | "standard" | "major"
+  "setting":  one line grounding place and time. Omit entirely for minor.
+  "beat":     one line of action or context. Standard and major only.
+  "dialogue": one line of spoken dialogue, ONE exchange at most. Major only.
+  "prompt":   the actual decision the player is swiping on. ALWAYS present.
+
+TIER RULES, strictly:
+  minor    -> prompt ONLY. No setting, no beat, no dialogue. Most cards are
+              minor: they keep the swipe rhythm quick.
+  standard -> setting + prompt. About two lines in total.
+  major    -> setting + beat + dialogue + prompt, 60-90 words ALL IN. Count
+              them. Under 60 reads thin; over 90 stops being a swipe.
+
+GROUNDING:
+Every setting names a concrete place and time - "A Tuesday in April, the garden
+centre car park", not "somewhere, later". Use the player's own places: their
+city, their workplace, the rooms already named in their history.
+
+VOICE CONSISTENCY:
+Named people keep their voices between cards. If the mother has been dry and
+indirect, she stays dry and indirect. Read the recent decisions before writing
+dialogue for anyone already named there.
+
+NAMES - YOU DO NOT CHOOSE THEM:
+The engine names every character. This is not a style note; a name you invent
+is a bug, because the game keys a person's whole history off their name.
+
+  Someone NEW, with no name yet -> write the role tag "{{new:role}}" wherever
+  the name would go, in prose AND in "relationship". So:
+      "prompt": "{{new:roommate}} has labelled the milk.",
+      "leftEffects": { "relationship": { "name": "{{new:roommate}}", "role": "roommate" } }
+  Use the same tag every time you mean the same person, inside a card and
+  across the batch. Two different new people in one batch need two different
+  tags - "{{new:coworker}}" and "{{new:landlord}}", not one tag twice. For a
+  second person in a role that already has one, number it: "{{new:friend#2}}".
+
+  Someone ALREADY NAMED - anyone listed under "people" or "already named"
+  below - is called by that exact name, spelled exactly that way, forever. Do
+  not rename them, shorten them, add a surname, or reach for a nickname you
+  invented. A spouse called Nadia is never Nads, never Natalia, never Sarah.
+  A card that renames somebody is thrown away before the player sees it.
+
+The engine swaps every tag for a real name before the card is dealt, so write
+the sentence as if the name were already there and it will read correctly.
+
+NEVER:
+No screenplay slugging - no INT./EXT., no FADE IN, no CUT TO, no camera or
+angle directions. No character names in capitals followed by a colon. Dialogue
+is a line someone says inside prose, not a script.
+
 WEIGHT AND TIME:
-  trivial = a moment or a week   (timeCostMonths ~0.25-2)
-  minor   = months               (timeCostMonths ~3-12)
-  major   = a life decision      (timeCostMonths ~12-36)
-Each batch of 5 should mix weights: roughly 2 trivial, 2 minor, 1 major. Death
+  minor    = a moment or a week, written as a bare prompt   (timeCostMonths ~0.25-2)
+  standard = months, one line of setting before the choice  (timeCostMonths ~3-12)
+  major    = a life decision, written as a full short scene (timeCostMonths ~12-36)
+Each batch of 5 should mix weights: roughly 2 minor, 2 standard, 1 major. Death
 risk probability must stay at or below 0.05 and belongs only on genuinely
 dangerous choices. Most cards carry no risk at all.
 
@@ -155,6 +210,18 @@ export function buildUserPrompt({ summary, recent, count = 5, librarySlot = null
         .map((r) => `${r.name} (${r.role}, closeness ${r.quality}${r.flags.length ? ', flags: ' + r.flags.join('/') : ''})`)
         .join('; ')
     : '(nobody close)';
+  // Tags this life has already spent. Without this the model reissues
+  // "{{new:roommate}}" for somebody it named eight swipes ago, and while the
+  // engine would resolve it back to the same person anyway, the model writes
+  // them better when it knows what they are called.
+  // Authored cast ("cast:sam") are filtered out: they are already in the
+  // people list under their name, and the model has no business writing a tag
+  // form only the seed deck uses.
+  const spentTags = Object.entries(summary.assignedNames || {})
+    .filter(([tag]) => !tag.startsWith('cast:'));
+  const assigned = spentTags.length
+    ? spentTags.map(([tag, name]) => `{{new:${tag}}} = ${name}`).join('; ')
+    : null;
   const kidLine = summary.kids.length
     ? summary.kids.map((k) => `${k.name}, age ${k.age}`).join('; ')
     : 'none';
@@ -187,6 +254,13 @@ STATE (owned by the engine, shown to you for context only):
   income ${dollars(summary.annualIncome)}/yr vs expenses ${dollars(summary.annualExpenses)}/yr
   children: ${kidLine}
   people: ${relLine}
+
+NAMES:
+Everyone under "people" above is already named. Use those spellings verbatim
+and never rename them.${assigned ? '\nTags already spent in this life: ' + assigned + ' - reuse the tag or the name, either resolves to the same person.' : ''}
+Anyone else who appears in your cards is NEW and gets a "{{new:role}}" tag
+where their name would go, in the prose and in "relationship". Never invent a
+name yourself; the engine assigns it.
 
 FULL FLAG LIST (mine these for callbacks):
   ${flagLine}

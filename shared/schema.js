@@ -7,8 +7,10 @@
 // job (engine.js -> normalizeEffects), because that depends on live game state.
 
 import { checkCompliance, MODES } from './content.js';
+import { TIERS, normalizeNarrative, displayText } from './scenario-format.js';
+import { checkNameDrift } from './names.js';
 
-const WEIGHTS = new Set(['trivial', 'minor', 'major']);
+const WEIGHTS = new Set([...TIERS, 'trivial']);
 const OUTCOMES = new Set(['death', 'injury', 'windfall']);
 
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
@@ -127,7 +129,10 @@ export function validateScenario(raw, index = 0) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return { ok: false, errors: [`${path}: not an object`] };
   }
-  if (!isStr(raw.scenario)) errors.push(`${path}.scenario: required non-empty string`);
+  // Either shape is accepted: the tiered fields, or the older single block.
+  if (!isStr(raw.prompt) && !isStr(raw.scenario)) {
+    errors.push(`${path}: requires a prompt (or a legacy scenario string)`);
+  }
   if (!isStr(raw.leftLabel)) errors.push(`${path}.leftLabel: required non-empty string`);
   if (!isStr(raw.rightLabel)) errors.push(`${path}.rightLabel: required non-empty string`);
   if (isStr(raw.leftLabel) && isStr(raw.rightLabel) &&
@@ -139,18 +144,29 @@ export function validateScenario(raw, index = 0) {
   const rightEffects = validateEffects(raw.rightEffects, `${path}.rightEffects`, errors);
   if (errors.length) return { ok: false, errors };
 
-  const weight = WEIGHTS.has(raw.weight) ? raw.weight : 'minor';
+  const weight = WEIGHTS.has(raw.weight) ? raw.weight : 'standard';
+  const narrative = normalizeNarrative(raw, weight === 'trivial' ? 'minor' : weight);
+  if (!narrative.prompt) {
+    return { ok: false, errors: [`${path}: prompt is empty after cleaning`] };
+  }
 
   return {
     ok: true,
     errors: [],
     scenario: {
-      id: isStr(raw.id) ? raw.id.slice(0, 60) : `gen_${index}_${Math.abs(hash(raw.scenario))}`,
-      scenario: raw.scenario.trim().slice(0, 400),
+      id: isStr(raw.id) ? raw.id.slice(0, 60) : `gen_${index}_${Math.abs(hash(narrative.prompt))}`,
+      ...narrative,
+      // Derived, never authored: one flat string for history, obituaries and
+      // the content backstop, so nothing downstream needs to know about tiers.
+      scenario: displayText(narrative).slice(0, 700),
       leftLabel: raw.leftLabel.trim().slice(0, 40),
       rightLabel: raw.rightLabel.trim().slice(0, 40),
       weight,
       libraryId: isStr(raw.library_id) ? raw.library_id.slice(0, 60) : undefined,
+      life_stage: Array.isArray(raw.life_stage) && raw.life_stage.length === 2
+        && raw.life_stage.every((n) => Number.isFinite(n))
+        ? [raw.life_stage[0], raw.life_stage[1]]
+        : undefined,
       modes: Array.isArray(raw.modes) && raw.modes.some((m) => MODES.includes(m))
         ? raw.modes.filter((m) => MODES.includes(m))
         : ['safe', 'mature'],
@@ -181,8 +197,10 @@ export function validateScenario(raw, index = 0) {
  * @param {number}  [opts.minValid]  reject the batch below this many survivors
  * @param {string}  [opts.tier]      'safe' | 'mature' - screen content against it
  * @param {number}  [opts.age]       character age, for the under-18 rule
+ * @param {object|Array} [opts.relationships]  the live cast, for the name-drift
+ *   check. Either the state map or the summary array.
  */
-export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {}) {
+export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relationships = null } = {}) {
   if (typeof raw === 'string') {
     try {
       raw = JSON.parse(raw);
@@ -197,6 +215,7 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {})
   const scenarios = [];
   const errors = [];
   let rejectedForMode = 0;
+  let rejectedForNameDrift = 0;
   raw.forEach((item, i) => {
     const res = validateScenario(item, i);
     if (!res.ok) {
@@ -213,10 +232,23 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99 } = {})
         return;
       }
     }
+    // Name-drift backstop. The engine, not the storyteller, owns who anyone
+    // is; a card that renames somebody already in the cast would fork them
+    // into a second relationship with its own closeness score, because the
+    // map is keyed by name. Same treatment as a mode violation: drop the one
+    // card, keep its neighbours, let the caller retry if too few survive.
+    if (relationships) {
+      const drift = checkNameDrift(res.scenario, relationships);
+      if (drift.length) {
+        rejectedForNameDrift += 1;
+        errors.push(`scenario[${i}]: name drift (${drift.join('; ')})`);
+        return;
+      }
+    }
     scenarios.push(res.scenario);
   });
 
-  return { ok: scenarios.length >= minValid, scenarios, errors, rejectedForMode };
+  return { ok: scenarios.length >= minValid, scenarios, errors, rejectedForMode, rejectedForNameDrift };
 }
 
 function hash(str) {

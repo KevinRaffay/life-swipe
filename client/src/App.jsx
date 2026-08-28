@@ -8,8 +8,11 @@ import {
 } from '@shared/engine.js';
 import { nextRandom } from '@shared/rng.js';
 
-import { fetchScenarios, getConfig } from './api.js';
-import { getSeenPatterns, markPatternSeen } from './prefs.js';
+import { fetchScenarios, getConfig, fetchRegion } from './api.js';
+import {
+  getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen, beginLife,
+  getActiveRegion, getDetectedRegion, setDetectedRegion,
+} from './prefs.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import CardStack from './components/CardStack.jsx';
 import Hud from './components/Hud.jsx';
@@ -36,12 +39,30 @@ export default function App() {
 
   useEffect(() => { getConfig().then(setConfig); }, []);
 
+  // Ask the server where this player probably is, once, and only if we have
+  // not already been told. The answer is a suggested default that the settings
+  // dropdown overrides; a failure leaves it null and names fall back to
+  // era-only selection. Nothing here blocks the game starting.
+  useEffect(() => {
+    if (getDetectedRegion()) return;
+    let cancelled = false;
+    fetchRegion().then((code) => {
+      if (!cancelled && code) setDetectedRegion(code);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   // The deck's fetcher is the only place the client talks to the storyteller.
   // It is called in the background by Deck.maybeRefill and its failures are
   // absorbed there, so a dead API never blocks a swipe.
-  const makeDeck = useCallback(() => new Deck({
+  // Read at deck construction, i.e. once per life, so changing the setting
+  // takes effect on the next life rather than mid-story.
+  const makeDeck = useCallback((region) => new Deck({
     seedScenarios,
     lookahead: 6,
+    seenSeedIds: getSeenSeedIds(),
+    onSeedShown: markSeedSeen,
+    region,
     // Selection happens here, not on the server: it needs the run's RNG (so a
     // seeded life replays identically) and the cross-life seen list.
     onLibrarySlot: (gameState) => {
@@ -61,9 +82,12 @@ export default function App() {
   // Mode is fixed at birth and never changes mid-life: switching would orphan
   // in-flight arcs and the flags they planted.
   const start = useCallback((contentMode = 'safe') => {
-    const deck = makeDeck();
+    // Advances the per-player life counter that the seen-window is measured in.
+    beginLife();
+    const region = getActiveRegion();
+    const deck = makeDeck(region);
     deckRef.current = deck;
-    const fresh = createState({ seed: `${Date.now()}-${Math.random()}`, contentMode });
+    const fresh = createState({ seed: `${Date.now()}-${Math.random()}`, contentMode, region });
     const first = deck.draw(fresh);
     const second = deck.draw(fresh);
     setState(fresh);

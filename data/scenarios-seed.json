@@ -4,8 +4,16 @@
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
-    "scenario": "The light on Harlow turns yellow. Left gets you home in nine minutes. Right is the long way, past the reservoir, where nothing has ever happened to anybody.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The light on Harlow turns yellow. Left gets you home in nine minutes. Right is the long way, past the reservoir, where nothing has ever happened to anybody.",
     "leftLabel": "Beat the light",
     "rightLabel": "Take the long way",
     "leftEffects": {
@@ -19,19 +27,23 @@
     "rightEffects": {
       "happiness": 1,
       "health": 1
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_party",
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
-    "scenario": "Dev's parents are in Sedona. There will be a bathtub of something blue in it. Priya says she will go if you go.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{cast:dev}}'s parents are in Sedona. There will be a bathtub of something blue in it. {{cast:best friend}} says they will go if you go.",
     "leftLabel": "Go to the party",
     "rightLabel": "Stay in, sleep",
     "leftEffects": {
@@ -42,7 +54,7 @@
         "party_kid"
       ],
       "relationship": {
-        "name": "Priya",
+        "name": "{{cast:best friend}}",
         "role": "best friend",
         "qualityDelta": 8
       },
@@ -58,19 +70,24 @@
       "flags": [
         "studious"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_job",
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
-    "scenario": "The garden center is hiring. Eleven dollars an hour to water things and watch a man named Rick describe his divorce.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Thursday in April, the garden centre car park.",
+    "prompt": "The garden center is hiring. Eleven dollars an hour to water things and watch a man named Rick describe his divorce.",
     "leftLabel": "Take the job",
     "rightLabel": "Keep your afternoons",
     "leftEffects": {
@@ -89,19 +106,24 @@
       "flags": [
         "unhurried"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_sat",
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
-    "scenario": "Six Saturdays of test prep, or six Saturdays of the marching band, which you are told will matter to you forever and which you will remember in flashes.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Registration week, the guidance office corridor.",
+    "prompt": "Six Saturdays of test prep, or six Saturdays of the marching band, which you are told will matter to you forever and which you will remember in flashes.",
     "leftLabel": "Test prep",
     "rightLabel": "Marching band",
     "leftEffects": {
@@ -117,25 +139,29 @@
       "flags": [
         "band_kid"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_crush",
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
-    "scenario": "Casey has been leaving a very specific amount of space next to them at lunch for three weeks.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{cast:casey}} has been leaving a very specific amount of space next to them at lunch for three weeks.",
     "leftLabel": "Say something",
     "rightLabel": "Say nothing",
     "leftEffects": {
       "happiness": 10,
       "relationship": {
-        "name": "Casey",
+        "name": "{{cast:casey}}",
         "role": "first love",
         "quality": 78
       },
@@ -148,19 +174,24 @@
       "flags": [
         "avoidant"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_car",
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
-    "scenario": "A 1998 Corolla, $1,600, described by its owner as 'basically immortal.' It is the color of an old bandage.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Saturday morning, a driveway two streets over.",
+    "prompt": "A 1998 Corolla, $1,600, described by its owner as 'basically immortal.' It is the color of an old bandage.",
     "leftLabel": "Buy the Corolla",
     "rightLabel": "Keep the money",
     "leftEffects": {
@@ -175,19 +206,23 @@
       "flags": [
         "saver"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_cheat",
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
-    "scenario": "The chemistry final is tomorrow and someone has a photograph of it. You did not ask for the photograph. It is simply on your phone now.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The chemistry final is tomorrow and someone has a photograph of it. You did not ask for the photograph. It is simply on your phone now.",
     "leftLabel": "Look at it",
     "rightLabel": "Delete it",
     "leftEffects": {
@@ -206,19 +241,24 @@
       "flags": [
         "principled"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_football",
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
-    "scenario": "Varsity tryouts. Coach Bell says you have the frame for it. Coach Bell says this to everyone with a frame.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The last week of August, the field behind the school.",
+    "prompt": "Varsity tryouts. Coach Bell says you have the frame for it. Coach Bell says this to everyone with a frame.",
     "leftLabel": "Try out",
     "rightLabel": "Skip it",
     "leftEffects": {
@@ -235,19 +275,23 @@
     },
     "rightEffects": {
       "happiness": 1
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_smoke",
     "stages": [
       "highschool"
     ],
-    "weight": "trivial",
-    "scenario": "Behind the auditorium, someone holds out a cigarette like it is a small, glowing invitation to a different personality.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Behind the auditorium, someone holds out a cigarette like it is a small, glowing invitation to a different personality.",
     "leftLabel": "Take one",
     "rightLabel": "Pass",
     "leftEffects": {
@@ -259,19 +303,24 @@
     },
     "rightEffects": {
       "happiness": -1
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "hs_summer",
     "stages": [
       "highschool"
     ],
-    "weight": "minor",
-    "scenario": "Last summer before everything gets scheduled forever. There is a hospital volunteer program, and there is the reservoir.",
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The final day of term, everyone signing everything.",
+    "prompt": "Last summer before everything gets scheduled forever. There is a hospital volunteer program, and there is the reservoir.",
     "leftLabel": "Volunteer program",
     "rightLabel": "The reservoir",
     "leftEffects": {
@@ -287,19 +336,27 @@
       "flags": [
         "good_summer"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_choice",
     "stages": [
       "college"
     ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "Two envelopes. Brackwood College, private, $58,000 a year, ivy grown deliberately. State, $11,000 a year, and a parking problem.",
+    "priority": 3,
+    "setting": "Late March, the kitchen table, two envelopes already opened.",
+    "beat": "Your mother has read both of them twice and put them back exactly as they were, squared to the edge of the table, the way she does with things that frighten her.",
+    "dialogue": "\"Whichever one,\" she says, \"don't pick it because of us.\"",
+    "prompt": "Two envelopes. Brackwood College, private, $58,000 a year, ivy grown deliberately. State, $11,000 a year, and a parking problem.",
     "leftLabel": "Brackwood (loans)",
     "rightLabel": "State school",
     "leftEffects": {
@@ -328,20 +385,27 @@
         "lives_with_parents"
       ],
       "timeCostMonths": 18
-    },
-    "priority": 3,
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_major",
     "stages": [
       "college"
     ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "Declare a major. Computer science, which pays, or philosophy, which explains why that matters and then does not help.",
+    "priority": 2,
+    "setting": "Registration deadline, Thursday, the form open on a library computer.",
+    "beat": "Two boxes, one submit button, a queue building behind you, and a decision that will follow you into rooms you cannot picture yet.",
+    "dialogue": "\"You can change it later,\" says the girl waiting. Nobody changes it later.",
+    "prompt": "Declare a major. Computer science, which pays, or philosophy, which explains why that matters and then does not help.",
     "leftLabel": "Computer science",
     "rightLabel": "Philosophy",
     "leftEffects": {
@@ -361,21 +425,25 @@
       ],
       "education": "B.A. Philosophy",
       "timeCostMonths": 24
-    },
-    "priority": 2,
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_sam",
     "stages": [
       "college"
     ],
-    "weight": "minor",
-    "scenario": "Your roommate Sam has opinions about music, a fake ID, and a bottle of gin they refer to as 'the emergency.' Sam wants to be friends.",
-    "leftLabel": "Be friends with Sam",
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Move-in day, a room with two of everything.",
+    "prompt": "Your roommate {{cast:sam}} has opinions about music, a fake ID, and a bottle of gin they refer to as 'the emergency.' {{cast:sam}} wants to be friends.",
+    "leftLabel": "Be friends with {{cast:sam}}",
     "rightLabel": "Keep it polite",
     "leftEffects": {
       "happiness": 11,
@@ -384,7 +452,7 @@
         "knows_sam"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "close friend",
         "quality": 82,
         "flags": [
@@ -395,26 +463,31 @@
     "rightEffects": {
       "happiness": -2,
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "roommate",
         "quality": 40,
         "flags": [
           "heavy_drinker"
         ]
       }
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_abroad",
     "stages": [
       "college"
     ],
-    "weight": "minor",
-    "scenario": "A semester in Lisbon. It costs $9,000 you would have to borrow and it is, everyone agrees, the sort of thing you only get to do now.",
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "November, the study-abroad noticeboard outside the library.",
+    "prompt": "A semester in Lisbon. It costs $9,000 you would have to borrow and it is, everyone agrees, the sort of thing you only get to do now.",
     "leftLabel": "Borrow and go",
     "rightLabel": "Stay",
     "leftEffects": {
@@ -429,19 +502,24 @@
     "rightEffects": {
       "happiness": -4,
       "timeCostMonths": 6
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_internship",
     "stages": [
       "college"
     ],
-    "weight": "minor",
-    "scenario": "An unpaid internship at a firm whose name opens doors, or $19/hour at a warehouse whose name opens a loading bay.",
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Careers fair, third hour, the free pens long gone.",
+    "prompt": "An unpaid internship at a firm whose name opens doors, or $19/hour at a warehouse whose name opens a loading bay.",
     "leftLabel": "Unpaid, prestigious",
     "rightLabel": "Paid, forgettable",
     "leftEffects": {
@@ -456,19 +534,26 @@
       "money": 6800,
       "happiness": -4,
       "timeCostMonths": 4
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_dropout",
     "stages": [
       "college"
     ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "Two friends want you to drop out for a company that makes an app for splitting restaurant bills. They have a deck. The deck has a hockey stick on it.",
+    "setting": "A borrowed office above a barber's, three chairs and a whiteboard.",
+    "beat": "They have already put your name on the deck, under a title you did not agree to.",
+    "dialogue": "\"We can't do it without you,\" one of them says, meaning it entirely.",
+    "prompt": "Two friends want you to drop out for a company that makes an app for splitting restaurant bills. They have a deck. The deck has a hockey stick on it.",
     "leftLabel": "Drop out, join them",
     "rightLabel": "Finish the degree",
     "leftEffects": {
@@ -500,11 +585,7 @@
         "in_school"
       ],
       "timeCostMonths": 24
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_crypto",
@@ -512,8 +593,17 @@
       "college",
       "early"
     ],
-    "weight": "minor",
-    "scenario": "A guy from your dorm has moved $4,000 into a coin named after a frog. He is extremely calm about it, which is the frightening part.",
+    "life_stage": [
+      18,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Two in the morning, somebody's floor, four laptops open.",
+    "prompt": "A guy from your dorm has moved $4,000 into a coin named after a frog. He is extremely calm about it, which is the frightening part.",
     "leftLabel": "Put in what you have",
     "rightLabel": "Watch from a distance",
     "leftEffects": {
@@ -533,11 +623,7 @@
       "flags": [
         "cautious_investor"
       ]
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "col_sam_serious",
@@ -545,11 +631,20 @@
       "college",
       "early"
     ],
+    "life_stage": [
+      18,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
     "requiresFlags": [
       "knows_sam"
     ],
-    "weight": "minor",
-    "scenario": "Sam kisses you on a fire escape in March and asks, without much preamble, whether this is a thing now.",
+    "setting": "March, a fire escape, the party audible below.",
+    "prompt": "{{cast:sam}} kisses you on a fire escape in March and asks, without much preamble, whether this is a thing now.",
     "leftLabel": "It's a thing",
     "rightLabel": "It's not",
     "leftEffects": {
@@ -558,7 +653,7 @@
         "dating_sam"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "partner",
         "qualityDelta": 12
       }
@@ -566,15 +661,11 @@
     "rightEffects": {
       "happiness": -8,
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "former friend",
         "qualityDelta": -30
       }
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_firstjob",
@@ -582,8 +673,20 @@
       "college",
       "early"
     ],
+    "life_stage": [
+      18,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "Two offers. Ninety-four thousand at an insurance company with a wellness room. Sixty-one thousand at a startup that pays partly in a number on a spreadsheet.",
+    "priority": 2,
+    "setting": "A Friday, two offer letters, both expiring Monday.",
+    "beat": "You have read them enough times to have them by heart, which has not helped.",
+    "dialogue": "\"Take the money,\" says your father. \"Take the money,\" says everyone.",
+    "prompt": "Two offers. Ninety-four thousand at an insurance company with a wellness room. Sixty-one thousand at a startup that pays partly in a number on a spreadsheet.",
     "leftLabel": "Insurance, $94k",
     "rightLabel": "Startup, $61k + equity",
     "leftEffects": {
@@ -621,20 +724,26 @@
         "description": "The spreadsheet number becomes a real number. Not a life-changing one. A car-changing one."
       },
       "timeCostMonths": 18
-    },
-    "priority": 2,
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_move",
     "stages": [
       "early"
     ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "A job in a city where you know one person. Rent doubles. So does everything else, including, allegedly, you.",
+    "setting": "September, a city you have visited once, for a weekend, in the rain.",
+    "beat": "The lease needs signing by Thursday, your mother has stopped asking about it, and the box room here has started to feel like a decision you already made.",
+    "dialogue": "\"It's four hours,\" she says. \"That's nothing.\" It is not nothing.",
+    "prompt": "A job in a city where you know one person. Rent doubles. So does everything else, including, allegedly, you.",
     "leftLabel": "Move",
     "rightLabel": "Stay near home",
     "leftEffects": {
@@ -662,11 +771,7 @@
         "qualityDelta": 8
       },
       "timeCostMonths": 24
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_marry_sam",
@@ -674,15 +779,26 @@
       "early",
       "family"
     ],
+    "life_stage": [
+      22,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
     "requiresFlags": [
       "dating_sam"
     ],
     "forbidsFlags": [
       "married"
     ],
-    "weight": "major",
-    "scenario": "Sam proposes in a parking garage, which Sam insists is romantic because of the acoustics. Sam has been drinking, but Sam has been drinking for eleven years, so this tells you nothing.",
-    "leftLabel": "Marry Sam",
+    "setting": "A parking garage on the fourth level, eleven at night.",
+    "beat": "{{cast:sam}} has been holding the ring since the restaurant and has clearly rehearsed this badly.",
+    "dialogue": "\"The acoustics are incredible up here,\" {{cast:sam}} says, kneeling anyway.",
+    "prompt": "{{cast:sam}} proposes in a parking garage, which {{cast:sam}} insists is romantic because of the acoustics. {{cast:sam}} has been drinking, but {{cast:sam}} has been drinking for eleven years, so this tells you nothing.",
+    "leftLabel": "Marry {{cast:sam}}",
     "rightLabel": "Not yet",
     "leftEffects": {
       "money": -14000,
@@ -693,7 +809,7 @@
         "sam_heavy_drinker"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "role": "spouse",
         "quality": 88,
         "flags": [
@@ -708,15 +824,11 @@
         "cold_feet"
       ],
       "relationship": {
-        "name": "Sam",
+        "name": "{{cast:sam}}",
         "qualityDelta": -22
       },
       "timeCostMonths": 12
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_401k",
@@ -724,8 +836,17 @@
       "early",
       "family"
     ],
-    "weight": "minor",
-    "scenario": "HR needs your retirement allocation by Friday. There is a slider. Nobody will ever explain the slider to you.",
+    "life_stage": [
+      22,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Onboarding week, a laminated folder you will never open again.",
+    "prompt": "HR needs your retirement allocation by Friday. There is a slider. Nobody will ever explain the slider to you.",
     "leftLabel": "All equities",
     "rightLabel": "Bonds, safely",
     "leftEffects": {
@@ -745,11 +866,7 @@
         "conservative_portfolio"
       ],
       "happiness": 1
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_gym",
@@ -758,8 +875,16 @@
       "family",
       "late"
     ],
-    "weight": "trivial",
-    "scenario": "The gym is $54 a month and eleven minutes away. You have driven past it 400 times.",
+    "life_stage": [
+      22,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The gym is $54 a month and eleven minutes away. You have driven past it 400 times.",
     "leftLabel": "Actually go",
     "rightLabel": "Next month",
     "leftEffects": {
@@ -773,11 +898,7 @@
     "rightEffects": {
       "health": -3,
       "happiness": 1
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_kid",
@@ -785,11 +906,22 @@
       "early",
       "family"
     ],
+    "life_stage": [
+      22,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
     "requiresFlags": [
       "married"
     ],
-    "weight": "major",
-    "scenario": "The conversation you have both been circling for two years arrives at the table on a Tuesday, uninvited, between the salad and the check.",
+    "setting": "A Tuesday, the good restaurant, between the salad and the check.",
+    "beat": "The conversation you have both been circling for two years arrives uninvited, between the salad and the check, in a restaurant chosen for being loud.",
+    "dialogue": "\"We keep saying next year,\" they say. \"I've stopped believing us.\"",
+    "prompt": "The conversation you have both been circling for two years arrives at the table on a Tuesday, uninvited, between the salad and the check.",
     "leftLabel": "Have a kid",
     "rightLabel": "Keep the apartment quiet",
     "leftEffects": {
@@ -809,11 +941,7 @@
         "child_free"
       ],
       "timeCostMonths": 24
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_house",
@@ -821,8 +949,19 @@
       "early",
       "family"
     ],
+    "life_stage": [
+      22,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "A house with a cracked driveway and a kitchen from 1987. The mortgage is a number you will say out loud to people for thirty years.",
+    "setting": "A second viewing, Saturday, the agent waiting in the car.",
+    "beat": "You have already worked out where the table would go, which is how they get you.",
+    "dialogue": "\"There's interest,\" the agent says, from the doorway, to nobody.",
+    "prompt": "A house with a cracked driveway and a kitchen from 1987. The mortgage is a number you will say out loud to people for thirty years.",
     "leftLabel": "Buy it",
     "rightLabel": "Keep renting",
     "leftEffects": {
@@ -840,11 +979,7 @@
         "renter"
       ],
       "timeCostMonths": 18
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "ec_sideproject",
@@ -852,8 +987,17 @@
       "early",
       "family"
     ],
-    "weight": "minor",
-    "scenario": "You could build the thing on nights and weekends. Sleep is, statistically, optional for about four months.",
+    "life_stage": [
+      22,
+      50
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Sunday night, the kitchen table, everything else cleared off.",
+    "prompt": "You could build the thing on nights and weekends. Sleep is, statistically, optional for about four months.",
     "leftLabel": "Build it",
     "rightLabel": "Sleep",
     "leftEffects": {
@@ -871,24 +1015,25 @@
     "rightEffects": {
       "health": 5,
       "happiness": 2
-    },
-    "modes": [
-      "safe",
-      "mature"
-    ]
+    }
   },
   {
     "id": "mt_pills",
-    "modes": [
-      "mature"
-    ],
     "stages": [
       "early",
       "family"
     ],
+    "life_stage": [
+      24,
+      50
+    ],
     "minAge": 24,
-    "weight": "minor",
-    "scenario": "The knee surgery left you with a bottle of thirty and a refill you did not ask for. There are nine left and it is Tuesday, which you know because you have started noticing which day it is.",
+    "modes": [
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Six weeks after the surgery, the bathroom cabinet.",
+    "prompt": "The knee surgery left you with a bottle of thirty and a refill you did not ask for. There are nine left and it is Tuesday, which you know because you have started noticing which day it is.",
     "leftLabel": "Flush them",
     "rightLabel": "Keep the refill",
     "leftEffects": {
@@ -913,20 +1058,27 @@
   },
   {
     "id": "mt_intervention",
-    "modes": [
-      "mature"
-    ],
-    "requiresFlags": [
-      "opioid_dependence"
-    ],
     "stages": [
       "early",
       "family",
       "late"
     ],
+    "life_stage": [
+      26,
+      65
+    ],
     "minAge": 26,
+    "modes": [
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "Everyone is in the living room at 6pm on a Sunday, which has never once happened by accident. Your sister has printed something out.",
+    "requiresFlags": [
+      "opioid_dependence"
+    ],
+    "setting": "Six on a Sunday, the living room, everyone already seated.",
+    "beat": "Your sister has printed something and is holding it face down on her knee, and nobody has taken their coat off, which tells you how long they intend to stay.",
+    "dialogue": "\"We're not leaving,\" she says. \"That's the whole plan, that's it.\"",
+    "prompt": "Everyone is in the living room at 6pm on a Sunday, which has never once happened by accident. Your sister has printed something out.",
     "leftLabel": "Go to treatment",
     "rightLabel": "Walk out",
     "leftEffects": {
@@ -952,20 +1104,25 @@
   },
   {
     "id": "mt_recovery_year",
-    "modes": [
-      "mature"
-    ],
-    "requiresFlags": [
-      "in_recovery"
-    ],
     "stages": [
       "family",
       "late",
       "retirement"
     ],
+    "life_stage": [
+      30,
+      110
+    ],
     "minAge": 28,
-    "weight": "minor",
-    "scenario": "Fourteen months. Somebody at the meeting asks if you would speak next week, and you notice you have opinions about what you would say.",
+    "modes": [
+      "mature"
+    ],
+    "weight": "standard",
+    "requiresFlags": [
+      "in_recovery"
+    ],
+    "setting": "A church hall on a Wednesday, the good coffee for once.",
+    "prompt": "Fourteen months. Somebody at the meeting asks if you would speak next week, and you notice you have opinions about what you would say.",
     "leftLabel": "Speak",
     "rightLabel": "Just listen",
     "leftEffects": {
@@ -982,16 +1139,23 @@
   },
   {
     "id": "mt_expenses",
-    "modes": [
-      "mature"
-    ],
     "stages": [
       "early",
       "family"
     ],
+    "life_stage": [
+      25,
+      50
+    ],
     "minAge": 25,
+    "modes": [
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "The expense system has a gap in it you found by accident eleven months ago, and you have been walking through the gap ever since. It is now $34,000 wide. Audit season starts Monday.",
+    "setting": "The Friday before audit season, your desk, everyone else gone.",
+    "beat": "Eleven months of a gap you found by accident, now thirty-four thousand wide.",
+    "dialogue": "\"Monday, then,\" the auditor had said on the phone, pleasantly.",
+    "prompt": "The expense system has a gap in it you found by accident eleven months ago, and you have been walking through the gap ever since. It is now $34,000 wide. Audit season starts Monday.",
     "leftLabel": "Self-report",
     "rightLabel": "Cover it over",
     "leftEffects": {
@@ -1021,19 +1185,26 @@
   },
   {
     "id": "mt_sentencing",
-    "modes": [
-      "mature"
-    ],
-    "requiresFlags": [
-      "embezzlement_unreported"
-    ],
     "stages": [
       "family",
       "late"
     ],
+    "life_stage": [
+      30,
+      65
+    ],
     "minAge": 30,
+    "modes": [
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "Your lawyer says eighteen months is the offer and that the alternative is a jury who will be shown a spreadsheet. He says it the way people say things they have said many times.",
+    "requiresFlags": [
+      "embezzlement_unreported"
+    ],
+    "setting": "A conference room with one window, your lawyer's third coffee.",
+    "beat": "Eighteen months is the offer, and he says it the way he has said it many times.",
+    "dialogue": "\"A jury gets shown the spreadsheet,\" he says. \"Juries hate spreadsheets.\"",
+    "prompt": "Your lawyer says eighteen months is the offer and that the alternative is a jury who will be shown a spreadsheet. He says it the way people say things they have said many times.",
     "leftLabel": "Take the plea",
     "rightLabel": "Go to trial",
     "leftEffects": {
@@ -1066,19 +1237,26 @@
   },
   {
     "id": "mt_reentry",
-    "modes": [
-      "mature"
-    ],
-    "requiresFlags": [
-      "felony_record"
-    ],
     "stages": [
       "family",
       "late"
     ],
+    "life_stage": [
+      33,
+      65
+    ],
     "minAge": 33,
+    "modes": [
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "The box on the application is a checkbox and the checkbox is not optional. A man from a reentry program says there is a contractor in Bayonne who does not ask, and a facilities job in Newark where you would have to say it out loud in an interview.",
+    "requiresFlags": [
+      "felony_record"
+    ],
+    "setting": "A reentry office above a laundrette, two chairs and a kettle.",
+    "beat": "Two jobs on the desk between you, and one of them has a box on the form.",
+    "dialogue": "\"Bayonne won't ask,\" he says. \"Newark will. That's the whole difference.\"",
+    "prompt": "The box on the application is a checkbox and the checkbox is not optional. A man from a reentry program says there is a contractor in Bayonne who does not ask, and a facilities job in Newark where you would have to say it out loud in an interview.",
     "leftLabel": "Say it out loud",
     "rightLabel": "Take the job that won't ask",
     "leftEffects": {
@@ -1108,17 +1286,22 @@
   },
   {
     "id": "mt_sportsbook",
-    "modes": [
-      "mature"
-    ],
     "stages": [
       "early",
       "family",
       "late"
     ],
+    "life_stage": [
+      24,
+      65
+    ],
     "minAge": 24,
-    "weight": "minor",
-    "scenario": "The sportsbook app gave you $200 free and you turned it into $1,400 in a weekend, which felt less like luck than like a skill nobody had told you about.",
+    "modes": [
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Sunday afternoon, the phone face-up on the arm of the sofa.",
+    "prompt": "The sportsbook app gave you $200 free and you turned it into $1,400 in a weekend, which felt less like luck than like a skill nobody had told you about.",
     "leftLabel": "Cash out, delete it",
     "rightLabel": "Let it ride",
     "leftEffects": {
@@ -1143,19 +1326,26 @@
   },
   {
     "id": "mt_bookie",
-    "modes": [
-      "mature"
-    ],
-    "requiresFlags": [
-      "gambling_habit"
-    ],
     "stages": [
       "family",
       "late"
     ],
+    "life_stage": [
+      30,
+      65
+    ],
     "minAge": 28,
+    "modes": [
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "You are $61,000 down across four apps and one man named Terrence who does not use apps. Terrence is polite. Terrence has been polite for three weeks now.",
+    "requiresFlags": [
+      "gambling_habit"
+    ],
+    "setting": "Thursday, three weeks in, a phone you have stopped answering.",
+    "beat": "Sixty-one thousand across four apps and one man who does not use apps.",
+    "dialogue": "\"I'm not in a rush,\" Terrence says, which is the part that frightens you.",
+    "prompt": "You are $61,000 down across four apps and one man named Terrence who does not use apps. Terrence is polite. Terrence has been polite for three weeks now.",
     "leftLabel": "Tell your family",
     "rightLabel": "Borrow to cover it",
     "leftEffects": {
@@ -1187,17 +1377,24 @@
   },
   {
     "id": "mt_dui",
-    "modes": [
-      "mature"
-    ],
     "stages": [
       "early",
       "family",
       "late"
     ],
+    "life_stage": [
+      23,
+      65
+    ],
     "minAge": 23,
+    "modes": [
+      "mature"
+    ],
     "weight": "major",
-    "scenario": "You are four drinks in and the car is right there and the drive is eleven minutes on roads you could do asleep, which is a thought you notice having.",
+    "setting": "Half eleven, the pub car park, keys already in your hand.",
+    "beat": "Four drinks and eleven minutes of road you could drive in your sleep.",
+    "dialogue": "\"Leave it,\" someone says from the doorway. \"Get it in the morning.\"",
+    "prompt": "You are four drinks in and the car is right there and the drive is eleven minutes on roads you could do asleep, which is a thought you notice having.",
     "leftLabel": "Leave the car",
     "rightLabel": "Drive it",
     "leftEffects": {
@@ -1218,5 +1415,714 @@
         "description": "The stop is routine until it is not, and the phrase 'driving while intoxicated' enters your record, your insurance, and every background check for the next decade."
       }
     }
+  },
+  {
+    "id": "hs_locker",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Someone has written something about you on the inside of a locker door, and three people have already told you about it kindly.",
+    "leftLabel": "Find out who",
+    "rightLabel": "Never mention it",
+    "leftEffects": {
+      "happiness": -6,
+      "flags": [
+        "keeps_score"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "flags": [
+        "lets_it_go"
+      ]
+    }
+  },
+  {
+    "id": "hs_teacher_recommends",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Last period Friday, the classroom emptying out.",
+    "prompt": "Ms. Okafor keeps you after class to say she has recommended you for something without asking first. It is four Saturdays and a bus ride, and she has clearly already told people you will do it.",
+    "leftLabel": "Do it",
+    "rightLabel": "Tell her no",
+    "leftEffects": {
+      "happiness": -2,
+      "health": -1,
+      "flags": [
+        "mentored"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "flags": [
+        "said_no_early"
+      ]
+    }
+  },
+  {
+    "id": "hs_brother_car",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your cousin wants to borrow the car for two hours and has been vague about which two hours.",
+    "leftLabel": "Hand over the keys",
+    "rightLabel": "Make an excuse",
+    "leftEffects": {
+      "happiness": 3,
+      "risk": {
+        "probability": 0.14,
+        "outcome": "injury",
+        "description": "The car comes back with a story attached and a dent that does not match the story."
+      }
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "{{cast:dev}}",
+        "role": "cousin",
+        "qualityDelta": -10
+      }
+    }
+  },
+  {
+    "id": "hs_shift_or_game",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Wednesday, the group chat already deciding without you.",
+    "prompt": "The Friday shift pays time and a half. The game is the last one anybody will care about, and everyone you know will be at it, and you will hear about it either way.",
+    "leftLabel": "Take the shift",
+    "rightLabel": "Go to the game",
+    "leftEffects": {
+      "money": 180,
+      "happiness": -6,
+      "flags": [
+        "worked_young"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 9,
+      "flags": [
+        "was_there"
+      ]
+    }
+  },
+  {
+    "id": "hs_dad_shed",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Dad has been in the shed since seven and the light is still on, and he has not asked for help, which is how he asks for help.",
+    "leftLabel": "Go out there",
+    "rightLabel": "Leave him to it",
+    "leftEffects": {
+      "happiness": 7,
+      "relationship": {
+        "name": "Dad",
+        "qualityDelta": 12
+      }
+    },
+    "rightEffects": {
+      "happiness": -2
+    }
+  },
+  {
+    "id": "col_laundry_money",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "You are down to $14 and eleven days, and the bus fare home for the weekend is $31.",
+    "leftLabel": "Ask your mother",
+    "rightLabel": "Stay put, eat rice",
+    "leftEffects": {
+      "money": 120,
+      "happiness": -5,
+      "relationship": {
+        "name": "Mom",
+        "qualityDelta": 4
+      }
+    },
+    "rightEffects": {
+      "health": -3,
+      "happiness": -2,
+      "flags": [
+        "too_proud_to_ask"
+      ]
+    }
+  },
+  {
+    "id": "col_group_project",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Eleven at night, the twenty-four-hour floor of the library.",
+    "prompt": "Two of the four names on the project have contributed nothing and one of them has a genuinely difficult year happening. The submission box closes at midnight and your name is on it too.",
+    "leftLabel": "Carry them",
+    "rightLabel": "Tell the tutor",
+    "leftEffects": {
+      "health": -4,
+      "happiness": -3,
+      "flags": [
+        "carries_others"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "flags": [
+        "reports_it"
+      ]
+    }
+  },
+  {
+    "id": "col_summer_abroad_cheap",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Late April, exams done, everyone making plans loudly.",
+    "prompt": "A friend has a spare room in another country for the summer and wants $400 for the whole thing. It is almost certainly a bad idea and it is almost certainly the last summer this is possible.",
+    "leftLabel": "Go",
+    "rightLabel": "Work the summer",
+    "leftEffects": {
+      "money": -1400,
+      "happiness": 16,
+      "health": 2,
+      "flags": [
+        "went_away"
+      ]
+    },
+    "rightEffects": {
+      "money": 3800,
+      "happiness": -4
+    }
+  },
+  {
+    "id": "ec_landlord_deposit",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your old landlord is keeping $900 of the deposit for damage that was there when you moved in, and you have a photograph proving it somewhere.",
+    "leftLabel": "Fight it",
+    "rightLabel": "Write it off",
+    "leftEffects": {
+      "money": 700,
+      "happiness": -5,
+      "health": -2,
+      "flags": [
+        "stands_ground"
+      ]
+    },
+    "rightEffects": {
+      "money": -900,
+      "happiness": -2
+    }
+  },
+  {
+    "id": "ec_wedding_season",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "February, the fourth save-the-date on the fridge.",
+    "prompt": "The fourth wedding this year is in another country and you are in the photographs of all of them. The flights, the suit, the gift and the two nights come to more than your rent.",
+    "leftLabel": "Go to all of them",
+    "rightLabel": "Send regrets to one",
+    "leftEffects": {
+      "money": -3200,
+      "happiness": 8,
+      "flags": [
+        "shows_up"
+      ]
+    },
+    "rightEffects": {
+      "money": -900,
+      "happiness": -6,
+      "flags": [
+        "missed_it"
+      ]
+    }
+  },
+  {
+    "id": "ec_promotion_of_friend",
+    "stages": [
+      "early",
+      "family"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Tuesday morning, the all-staff email still open.",
+    "prompt": "The job you wanted went to the person you eat lunch with, who found out an hour before you did and has been avoiding the kitchen ever since.",
+    "leftLabel": "Congratulate them properly",
+    "rightLabel": "Keep it professional",
+    "leftEffects": {
+      "happiness": 4,
+      "flags": [
+        "gracious"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -7,
+      "flags": [
+        "went_cold"
+      ]
+    }
+  },
+  {
+    "id": "lt_younger_boss",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The reorganisation announced at nine, effective immediately.",
+    "prompt": "Your new manager is thirty-one and keeps using the phrase 'legacy approach' in a tone that is not quite an insult. She is also, annoyingly, right about two of the four things.",
+    "leftLabel": "Teach her the rest",
+    "rightLabel": "Let her find out",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "mentored_up"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "flags": [
+        "went_quiet_at_work"
+      ]
+    }
+  },
+  {
+    "id": "lt_parents_house",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "The house you grew up in, emptied into the hall in labelled boxes.",
+    "beat": "Three weekends, forty years, and a piano nobody has played since 1998.",
+    "dialogue": "\"You were always the organised one,\" your sister says, not helping.",
+    "prompt": "The house you grew up in has to be emptied in three weekends. There are forty years in it and your siblings have opinions about the piano, the photographs, and who did more.",
+    "leftLabel": "Handle it yourself",
+    "rightLabel": "Split it evenly",
+    "leftEffects": {
+      "money": 14000,
+      "health": -6,
+      "happiness": -8,
+      "flags": [
+        "did_it_alone"
+      ]
+    },
+    "rightEffects": {
+      "money": 6000,
+      "happiness": 2,
+      "flags": [
+        "shared_the_load"
+      ]
+    },
+    "timeCostMonths": 6
+  },
+  {
+    "id": "lt_knee",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The consulting room, the scan already on the screen.",
+    "prompt": "The knee has been going for two years and the surgeon says now is better than later, which is what they said about the other one.",
+    "leftLabel": "Have it done",
+    "rightLabel": "Put it off again",
+    "leftEffects": {
+      "money": -9000,
+      "health": 12,
+      "happiness": -3
+    },
+    "rightEffects": {
+      "health": -8,
+      "happiness": -2,
+      "flags": [
+        "deferred_surgery"
+      ]
+    }
+  },
+  {
+    "id": "lt_adult_child_moves_back",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Sunday, a car in the drive with the back seat full.",
+    "prompt": "One of your children is coming home for what everyone is carefully calling a few months, with a car full of boxes and a job that ended in a way nobody has explained.",
+    "leftLabel": "Give them the room",
+    "rightLabel": "Set a date",
+    "leftEffects": {
+      "money": -7000,
+      "happiness": 6,
+      "flags": [
+        "open_door"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "set_boundaries"
+      ]
+    }
+  },
+  {
+    "id": "lt_severance_or_stay",
+    "stages": [
+      "late"
+    ],
+    "life_stage": [
+      50,
+      65
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "A town hall on Teams, the package explained in eleven slides.",
+    "beat": "Anyone over fifty-five may volunteer, which is how they avoid choosing.",
+    "dialogue": "\"Purely voluntary,\" says the slide, and then again, out loud.",
+    "prompt": "They are offering a package to anyone over fifty-five who volunteers, which is how they avoid choosing. The number is eleven months of salary and the alternative is finding out whether they would have chosen you.",
+    "leftLabel": "Volunteer",
+    "rightLabel": "Make them decide",
+    "leftEffects": {
+      "money": 62000,
+      "happiness": -4,
+      "career": {
+        "title": "Between things",
+        "salary": 0
+      },
+      "flags": [
+        "took_the_package"
+      ],
+      "timeCostMonths": 18
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "health": -4,
+      "flags": [
+        "stayed_to_the_end"
+      ],
+      "timeCostMonths": 24
+    }
+  },
+  {
+    "id": "rt_driving_licence",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The supermarket car park, her keys already in her hand.",
+    "prompt": "Your daughter has started offering to drive whenever you are going anywhere further than the shops, and she has started offering before you have said where you are going.",
+    "leftLabel": "Hand over the keys",
+    "rightLabel": "Keep driving",
+    "leftEffects": {
+      "money": 4000,
+      "happiness": -9,
+      "flags": [
+        "stopped_driving"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "risk": {
+        "probability": 0.12,
+        "outcome": "injury",
+        "description": "A junction you have used for thirty years arranges itself differently for a moment, and the other driver is fine."
+      }
+    }
+  },
+  {
+    "id": "rt_old_colleague_funeral",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The third funeral this year is two hours away and you would know perhaps four people there.",
+    "leftLabel": "Go anyway",
+    "rightLabel": "Send flowers",
+    "leftEffects": {
+      "money": -180,
+      "happiness": 6,
+      "health": -1,
+      "flags": [
+        "still_shows_up"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -4
+    }
+  },
+  {
+    "id": "rt_grandchild_loan",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Sunday lunch, after the plates have gone through.",
+    "prompt": "A grandchild needs eleven thousand for a deposit and has asked in the specific way people ask when they have rehearsed it in the car outside.",
+    "leftLabel": "Give it to them",
+    "rightLabel": "Explain why not",
+    "leftEffects": {
+      "money": -11000,
+      "happiness": 10,
+      "flags": [
+        "helped_the_young"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -8,
+      "flags": [
+        "said_no_to_family"
+      ]
+    }
+  },
+  {
+    "id": "rt_hearing",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "You have started saying 'what?' as a reflex before people have finished, and someone has started repeating themselves before you ask.",
+    "leftLabel": "Get them fitted",
+    "rightLabel": "Manage without",
+    "leftEffects": {
+      "money": -3200,
+      "happiness": 7,
+      "health": 3,
+      "flags": [
+        "hearing_aids"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -6,
+      "flags": [
+        "withdrawing"
+      ]
+    }
+  },
+  {
+    "id": "rt_allotment",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "There is a plot available on the site behind the church, and a waiting list of nine people who have each been waiting four years.",
+    "leftLabel": "Take the plot",
+    "rightLabel": "Let it go to someone else",
+    "leftEffects": {
+      "money": -140,
+      "health": 8,
+      "happiness": 9,
+      "flags": [
+        "grows_things"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -2
+    }
+  },
+  {
+    "id": "rt_will_conversation",
+    "stages": [
+      "retirement"
+    ],
+    "life_stage": [
+      65,
+      110
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "The solicitor's office, a form with more blank space than you expected.",
+    "beat": "One of your children is named as executor and both of them will read this.",
+    "dialogue": "\"Equal shares?\" she asks, pen down, entirely without opinion.",
+    "prompt": "The solicitor wants to know what happens to everything, and the honest answer involves saying out loud which of your children you trust with it. They will read this document one day and know what you decided.",
+    "leftLabel": "Split it evenly",
+    "rightLabel": "Split it honestly",
+    "leftEffects": {
+      "happiness": 3,
+      "flags": [
+        "kept_the_peace"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "said_what_they_meant"
+      ]
+    },
+    "timeCostMonths": 6
   }
 ]

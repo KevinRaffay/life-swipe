@@ -28,6 +28,41 @@ export function confirmAge() {
   write(AGE_KEY, 'yes');
 }
 
+/* ------------------------------------------------------------- region ---- */
+
+// The player's region, used only to weight which names the engine hands out.
+//
+// PRIVACY: what is stored here is a region CODE and nothing else - "US-MN", or
+// a bare country like "DE". Never an IP address, never coordinates, never a
+// city. The server derives the code offline from the request IP and discards
+// the address (server/geo.js); this is where the result comes to rest.
+//
+// Two keys, on purpose. CHOICE_KEY is what the player picked and is the
+// authority: 'auto' to accept detection, 'none' to switch weighting off, or a
+// region code to pin it. DETECTED_KEY only caches what the server guessed, so
+// a returning player does not re-ask on every load. IP geolocation is wrong
+// for anyone on a VPN, a mobile carrier or a corporate network, which is why
+// the override exists and why it always wins.
+const REGION_CHOICE_KEY = 'lifeswipe.regionChoice';
+const REGION_DETECTED_KEY = 'lifeswipe.regionDetected';
+
+export const getRegionChoice = () => read(REGION_CHOICE_KEY) || 'auto';
+export const setRegionChoice = (value) => write(REGION_CHOICE_KEY, String(value || 'auto'));
+export const getDetectedRegion = () => read(REGION_DETECTED_KEY) || null;
+export const setDetectedRegion = (code) => write(REGION_DETECTED_KEY, String(code || ''));
+
+/**
+ * The region actually in force: the player's pin, or the detected default, or
+ * null. Null is a complete answer - names simply fall back to era-only
+ * selection, which is how the game worked before regions existed.
+ */
+export function getActiveRegion() {
+  const choice = getRegionChoice();
+  if (choice === 'none') return null;
+  if (choice !== 'auto') return choice;
+  return getDetectedRegion() || null;
+}
+
 /* -------------------------------------------------- cross-life memory ---- */
 
 // Library patterns this player has already been shown, in ANY life. Kept out
@@ -56,4 +91,67 @@ export function markPatternSeen(id) {
 
 export function resetSeenPatterns() {
   try { window.localStorage.removeItem(SEEN_KEY); } catch { /* ignore */ }
+}
+
+// Seed scenarios this player has been shown, remembered PER LIFE.
+//
+// The window is measured in lives, not cards, and that distinction is the whole
+// fix. Two earlier attempts both failed on it:
+//   - a fixed 120-card window never rolled (larger than the 57-card corpus), so
+//     every card ended up permanently excluded and the deck spent each life
+//     repeating cards and warning about it;
+//   - a corpus-derived 23-card window rolled far too fast, because a life draws
+//     ~50 cards, so the opening of the previous life was always forgiven and
+//     the repeat rate went straight back to 50%.
+// Counting lives is immune to both corpus size and life length.
+const SEED_STORE_KEY = 'lifeswipe.seenSeeds';
+export const LOOKBACK_LIVES = 2;
+
+function readSeedStore() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SEED_STORE_KEY) || '{}');
+    if (!parsed || typeof parsed !== 'object' || typeof parsed.ids !== 'object') {
+      return { life: 0, ids: {} };
+    }
+    return { life: Number(parsed.life) || 0, ids: parsed.ids || {} };
+  } catch {
+    return { life: 0, ids: {} };
+  }
+}
+
+function writeSeedStore(store) {
+  try { window.localStorage.setItem(SEED_STORE_KEY, JSON.stringify(store)); } catch { /* private mode */ }
+}
+
+/** Call once when a life starts. Returns the new life index. */
+export function beginLife() {
+  const store = readSeedStore();
+  store.life += 1;
+  // Forget anything older than the lookback so the store cannot grow forever.
+  const cutoff = store.life - LOOKBACK_LIVES;
+  for (const [id, seenAt] of Object.entries(store.ids)) {
+    if (seenAt < cutoff) delete store.ids[id];
+  }
+  writeSeedStore(store);
+  return store.life;
+}
+
+/** Ids shown within the last LOOKBACK_LIVES lives. */
+export function getSeenSeedIds() {
+  const store = readSeedStore();
+  const cutoff = store.life - LOOKBACK_LIVES;
+  return Object.entries(store.ids)
+    .filter(([, seenAt]) => seenAt > cutoff)
+    .map(([id]) => id);
+}
+
+export function markSeedSeen(id) {
+  if (!id) return;
+  const store = readSeedStore();
+  store.ids[id] = store.life;
+  writeSeedStore(store);
+}
+
+export function resetSeenSeedIds() {
+  try { window.localStorage.removeItem(SEED_STORE_KEY); } catch { /* ignore */ }
 }

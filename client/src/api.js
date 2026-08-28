@@ -29,6 +29,23 @@ export async function getConfig() {
   }
 }
 
+/**
+ * Ask the server which region this player appears to be in. Best-effort in the
+ * strongest sense: any failure returns null and the game runs with no regional
+ * name weighting at all. Only a region code ever comes back - the server does
+ * the IP lookup offline and discards the address (server/geo.js).
+ */
+export async function fetchRegion() {
+  try {
+    const res = await fetch('/api/region');
+    if (!res.ok) throw new Error('region unavailable');
+    const data = await res.json();
+    return typeof data.region === 'string' ? data.region : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchScenarios({ summary, recent, count = 5, librarySlot = null }) {
   const data = await jsonPost('/api/scenarios', { summary, recent, count, librarySlot });
   return data.scenarios || [];

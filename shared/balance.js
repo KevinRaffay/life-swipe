@@ -11,6 +11,30 @@ export const BAL = {
 
   MAX_AGE: 106,
 
+  // The calendar year a life is assumed to BEGIN in, at age 16. Used only to
+  // work out roughly when a new character was born, so the name pool can be
+  // filtered for era plausibility. It is a constant rather than a clock read
+  // because invariant 6 says a given seed replays identically - forever, not
+  // just this year. Bumping it shifts which names read as plausible by a few
+  // years and moves nothing else.
+  PRESENT_YEAR: 2026,
+
+  NAMES: {
+    // How hard the player's region tilts name selection. The pool stores a
+    // location quotient - 25 means "twenty-five times more common in this
+    // state than nationally" - and applying that raw would hand a Minnesota
+    // player the same four names forever. The exponent damps it: at 0.5 a 25x
+    // name is 5x likelier, a 3x name is 1.7x likelier, and a name with no
+    // regional data sits at exactly 1.0 and is untouched.
+    //   0   = regional weighting off, era-only selection
+    //   0.5 = noticeable but not deterministic          <- shipped
+    //   1   = raw location quotient, far too strong
+    regionPower: 0.5,
+    // No single name may end up more than this much likelier than a
+    // neutral one, however extreme its regional signal.
+    regionCeiling: 6,
+  },
+
   // You are not 'broke' the moment you are in the red - you are broke when the
   // debt exceeds what anyone would plausibly lend you. Student loans get their
   // own grace, because being 60k down at 22 is normal, not a game over.
@@ -38,9 +62,11 @@ export const BAL = {
 
   // Default months advanced per swipe, by declared weight.
   TIME: {
-    trivial: 1,
-    minor: 9,
-    major: 30,
+    minor: 1,      // a moment or a week   (was "trivial")
+    standard: 9,   // months               (was "minor")
+    major: 30,     // a life decision
+    trivial: 1,    // alias for older content and model output
+
     stageCapMonths: {
       highschool: 12,
       college: 18,
