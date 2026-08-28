@@ -14,6 +14,7 @@ import {
   getActiveRegion, getDetectedRegion, setDetectedRegion,
 } from './prefs.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
+import { classifyConsequence } from './severity.js';
 import CardStack from './components/CardStack.jsx';
 import Hud from './components/Hud.jsx';
 import EventToast from './components/EventToast.jsx';
@@ -25,6 +26,7 @@ export default function App() {
   const [state, setState] = useState(null);
   const [cards, setCards] = useState([]);            // [current, peek]
   const [events, setEvents] = useState([]);
+  const [severity, setSeverity] = useState('standard');
   const [config, setConfig] = useState({ llmEnabled: false, model: null });
   const deckRef = useRef(null);
 
@@ -93,6 +95,7 @@ export default function App() {
     setState(fresh);
     setCards([first, second]);
     setEvents([]);
+    setSeverity('standard');
     setPhase('playing');
   }, [makeDeck]);
 
@@ -105,7 +108,12 @@ export default function App() {
 
     if (card.libraryId) markPatternSeen(card.libraryId);
     const result = applyChoice(state, card, side);
+    const newFlags = result.state.flags.filter((f) => !state.flags.includes(f));
+    const lastDelta = result.state.history.length
+      ? result.state.history[result.state.history.length - 1].delta
+      : null;
     setEvents(result.events.filter((e) => e.text));
+    setSeverity(classifyConsequence({ events: result.events, newFlags, delta: lastDelta }));
 
     if (result.ended) {
       setState(result.state);
@@ -167,7 +175,7 @@ export default function App() {
         <span className="stage-banner__rule" />
       </div>
 
-      <EventToast events={events} deltas={deltas} />
+      <EventToast events={events} deltas={deltas} severity={severity} />
 
       <CardStack
         card={cards[0]}

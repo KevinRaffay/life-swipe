@@ -137,7 +137,9 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `client/src/components/CardStack.jsx` | the swipe gesture (pointer events) and tiered card rendering. |
 | `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. |
 | `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice. |
-| `client/src/components/EventToast.jsx` | the transient toast of what the engine did to the player after the last swipe. |
+| `client/src/severity.js` | classifies a turn's consequences as `major` or `standard` for EventToast - the one place the toast/modal threshold is tuned. |
+| `client/src/components/EventToast.jsx` | the toast of what the engine did to the player after the last swipe: fixed ~3-4s duration, paused while a pointer is down, tap to dismiss early. Routes `major` turns to `ConsequenceModal` instead. |
+| `client/src/components/ConsequenceModal.jsx` | the dismissible dialog for major-tier consequences (a pending event resolving, a significant new flag, a large stat swing). Same centered-dialog pattern as `admin/src/components/Modal.jsx`, reimplemented client-side since admin never ships to players. |
 | `client/src/components/Obituary.jsx` | the end-of-life screen; fetches the obituary and falls back to a locally written one. |
 
 ---
@@ -367,6 +369,7 @@ dev    ← integration branch, work lands here
 | Admin edit forms open in a modal dialog | shipped | on `dev` — library, seed and draft-review forms open in a centered dialog (`admin/src/components/Modal.jsx`) instead of inline below the grid; Esc/backdrop-click/Cancel discard and unmount. The cross-reference warnings panel stays above the grid, not in the dialog. Draft review gained a row-level quick "Approve" alongside "Edit & approve". No data logic, validation or API changes |
 | Extraction content dedup check | shipped | on `dev` — `duplicateWarnings` flags likely repeat patterns by word overlap; see the admin module section below |
 | Major-tier exemplar prompt + craft warnings | shipped | on `dev` — worked exemplar and per-field word budgets in the system prompt; log-only `validationWarnings` through `validateBatch` → `finalizeLog` → Logs tab; 5 weakest major seeds rewritten (`col_major`, `col_dropout`, `ec_move`, `ec_kid`, `lt_severance_or_stay`) |
+| EventToast timing fix + consequence modal | shipped | on `dev` — toast duration fixed at ~3.8s (was a flat 4.2s regardless of read time), paused while a pointer is down anywhere on screen, tap-to-dismiss-early. `client/src/severity.js` classifies each turn's events/new-flags/stat-delta as `major` or `standard`; `major` (a resolved pending event, a significant new flag, or a ±15+ health/happiness swing - all tunable in that one file) routes through `ConsequenceModal` (explicit tap to close) instead of the toast. Presentation-only: no engine/effect changes. |
 | Off-screen relationship reintroduction | shipped | on `dev` — a named relationship absent from the recent-history window is marked `[OFF-SCREEN lately]` in the prompt's people line (which already carries role/flags), and the storyteller is asked to reintroduce it by role on first mention ("Dmitri, the guy from your study group") rather than a bare name. Log-only backstop `checkReintroductions` (`shared/names.js`) fires through `validateBatch` → `validationWarnings` → Logs tab across all tiers, best-effort string match. No tier budgets, structure or effect/engine changes; no question-mark/either-or rule added |
 
 ---

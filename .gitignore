@@ -7,3 +7,6 @@ dist-admin/
 situation-library.draft.rejected.json
 *.bak
 server/logs/
+*.vsidx
+CopilotIndices/
+.vs/

@@ -168,7 +168,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .deltas {
   display: none;
 }
-.toast { animation: toast-in 340ms cubic-bezier(.2, 1, .3, 1); padding: 0 6px; }
+.toast { animation: toast-in 340ms cubic-bezier(.2, 1, .3, 1); padding: 0 6px; cursor: pointer; }
 .toast__line { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--muted); }
 .toast__line--death,
 .toast__line--injury   { color: var(--left); font-weight: 600; }
@@ -178,6 +178,41 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .toast__line--career   { color: var(--right); font-weight: 600; }
 
 @keyframes toast-in { from { opacity: 0; transform: translateY(-7px); } to { opacity: 1; transform: none; } }
+
+/* --------------------------------------------------- consequence modal */
+
+.consequence-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(8, 6, 16, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: toast-in 220ms cubic-bezier(.2, 1, .3, 1);
+}
+.consequence-modal {
+  width: 100%; max-width: min(360px, var(--shell));
+  padding: 24px 22px 20px;
+  border-radius: var(--radius);
+  background: var(--bg-1);
+  border: 1px solid var(--stroke);
+  box-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.6);
+  text-align: center;
+}
+.consequence-modal__line {
+  margin: 0 0 8px;
+  font-size: 15px; font-weight: 600; line-height: 1.5;
+  color: var(--text);
+}
+.consequence-modal__line:last-of-type { margin-bottom: 20px; }
+.consequence-modal__line--death,
+.consequence-modal__line--injury   { color: var(--left); }
+.consequence-modal__line--windfall { color: var(--gold); }
+.consequence-modal__line--kid,
+.consequence-modal__line--retire,
+.consequence-modal__line--resolved,
+.consequence-modal__line--career   { color: var(--right); }
+.consequence-modal__close { width: 100%; }
 
 /* ----------------------------------------------------------- card stack */
 
