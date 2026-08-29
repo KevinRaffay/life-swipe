@@ -507,8 +507,18 @@ out loud, in your final message on that branch — all three:
 1. CLAUDE.md's Feature Status table includes this feature.
 2. Any changed invariant, architecture-map entry, or file-structure
    entry is updated to match.
-3. The verification commands (npm run simulate / coverage / names)
-   still exit 0.
+3. Verification, scaled to what changed:
+   - PRESENTATION-ONLY (the diff touches only client/src/components,
+     client/src/styles.css, admin/src/components, admin/src/*.css —
+     no changes to shared/, server/, any *.json data file, or any API
+     route/contract): run the build (`npm run build`) and confirm it
+     exits 0. The simulate/coverage/names suite is optional.
+   - ANYTHING ELSE (touches shared/, server/, engine logic, content
+     data, name pool, balance.js, or any API contract): the full
+     verification commands (npm run simulate / coverage / names) must
+     exit 0, as before.
+   State which category applied and why in the final message — the
+   classification should be visible, not assumed silently.
 If any of these fail, the feature is not done — fix it in the same
 session, not as a follow-up. Do not report a feature as finished
 without stating you checked all three.
