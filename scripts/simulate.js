@@ -89,13 +89,43 @@ const NEW_CHARACTER_ROLES = [
   'roommate', 'coworker', 'friend', 'neighbour', 'boss', 'rival', 'landlord', 'sibling',
 ];
 
-function synthesiseNamedCard(state, role, stageId) {
+/**
+ * A card that makes the engine name somebody.
+ *
+ * Two shapes, and the second one exists for a specific reason. The ordinary
+ * shape tags the prose AND the left label. The `labelOnly` shape tags NOTHING
+ * BUT the label - no prose tag, no tagged relationship - which is the only
+ * card that can tell whether `Deck.resolveNames`'s "is there anything to do"
+ * pre-check reads the labels. Without it, reverting that pre-check alone still
+ * passes every assertion here, because every other tagged card trips the gate
+ * through its prose and gets its labels resolved on the way past.
+ */
+function synthesiseNamedCard(state, role, stageId, { labelOnly = false } = {}) {
   const tag = '{{new:' + role + '}}';
+  if (labelOnly) {
+    return {
+      id: 'namelabel_' + role + '_' + state.turn,
+      prompt: 'Somebody from the neighbourhood wants to split the cost of a van.',
+      scenario: 'Somebody from the neighbourhood wants to split the cost of a van.',
+      leftLabel: `Split it with ${tag}`,
+      rightLabel: 'Pass',
+      weight: 'minor',
+      stages: [stageId],
+      modes: ['safe', 'mature'],
+      leftEffects: { happiness: 2, money: -40 },
+      rightEffects: { happiness: -1 },
+      source: 'llm',
+    };
+  }
   return {
     id: 'name_' + role + '_' + state.turn,
     prompt: `${tag} turns up with an opinion. ${tag} is not going to let it go.`,
     scenario: `${tag} turns up with an opinion. ${tag} is not going to let it go.`,
-    leftLabel: 'Hear them out',
+    // The left label names them ON PURPOSE. A card is allowed to put a
+    // person on a button ("Marry {{cast:sam}}", in the seed deck), and the
+    // labels went unresolved for a long time precisely because nothing here
+    // ever put a tag in one - so the check below had nothing to catch.
+    leftLabel: `Hear ${tag} out`,
     rightLabel: 'Walk away',
     weight: 'minor',
     stages: [stageId],
@@ -107,6 +137,10 @@ function synthesiseNamedCard(state, role, stageId) {
 }
 
 const firstNameOf = (n) => String(n || '').trim().split(/\s+/)[0].toLowerCase();
+
+// Everything a dealt card puts in front of a player. Deliberately a superset of
+// the narrative fields: the choice labels are the half that was being missed.
+const PLAYER_VISIBLE_FIELDS = ['scenario', 'setting', 'beat', 'dialogue', 'prompt', 'leftLabel', 'rightLabel'];
 
 function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedStore = null) {
   let bypassWarnings = 0;
@@ -142,7 +176,12 @@ function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedSto
     // a real batch does it at.
     if (state.turn % 6 === 3) {
       const role = NEW_CHARACTER_ROLES[state.turn % NEW_CHARACTER_ROLES.length];
-      deck.buffer.push(synthesiseNamedCard(state, role, stageOf(state).id));
+      // Every other injection is the label-only shape, so both halves of the
+      // naming gate - the resolver's field list and the deck's pre-check -
+      // are exercised on every run rather than only the first.
+      deck.buffer.push(synthesiseNamedCard(state, role, stageOf(state).id, {
+        labelOnly: state.turn % 12 === 9,
+      }));
     }
     if (librarySlotDue(state)) {
       slotsOffered += 1;
@@ -178,10 +217,16 @@ function playOne(seed, contentMode, seenPatterns = [], seenSeedIds = [], seedSto
     }
 
     // A tag that survives to the player is the naming feature failing loudly.
-    if (String(card.scenario || '').includes('{{') || String(card.prompt || '').includes('{{')) {
+    //
+    // Every field a player can READ, not only the two the card is written
+    // around. This used to check `scenario` and `prompt` alone, which is why
+    // "Be friends with {{cast:sam}}" sat on a live choice button through
+    // several passes of this file: the assertion could not see the buttons.
+    const unresolved = PLAYER_VISIBLE_FIELDS.filter((f) => String(card[f] || '').includes('{{'));
+    if (unresolved.length) {
       noteNameViolation({
         kind: 'unresolved-name-tag', age: Math.floor(ageAtDeal), id: card.id,
-        text: String(card.scenario || card.prompt).slice(0, 80),
+        text: `${unresolved.join('/')}: ${String(card[unresolved[0]]).slice(0, 70)}`,
       });
     }
 
@@ -426,7 +471,7 @@ if (repeatOffences.length === 0) {
 console.log('\n=== NAME ASSERTIONS ===');
 console.log(`  ${totalNamesAssigned} names assigned by the engine across all lives`);
 if (allNameViolations.length === 0) {
-  console.log('  PASS  no unresolved "{{new:role}}" tag reached a player');
+  console.log('  PASS  no unresolved "{{new:role}}" tag reached a player (prose or choice label)');
   console.log('  PASS  no two characters shared a first name in one life');
 } else {
   const byKind = new Map();

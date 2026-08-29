@@ -54,9 +54,12 @@ Breaking any of these is a bug regardless of what the tests say.
 8. **The engine names the cast.** Nobody in a life is named in advance except
    Mom and Dad. The storyteller emits `{{new:roommate}}` and the seed deck
    writes `{{cast:sam}}`; `shared/names.js` picks the name and `Deck.draw`
-   resolves it at deal time. The model never invents a name and never renames
-   anyone — `state.relationships` is keyed by name, so a rename silently forks
-   a person in two. Assigned names live in the relationships map as before;
+   resolves it at deal time, across every field a player can read — the
+   narrative fields, a relationship's name, **and the two choice labels**
+   (`NAMED_FIELDS`, which `Deck.resolveNames` imports rather than restating).
+   The model never invents a name and never renames anyone —
+   `state.relationships` is keyed by name, so a rename silently forks a person
+   in two. Assigned names live in the relationships map as before;
    `state.names.byTag` only remembers which tag meant whom.
 9. **Content gates are defence in depth.** Three independent gates stand between
    a player and content they didn't choose: tier visibility, the dark-arc
@@ -274,7 +277,8 @@ The assertions are:
 - no mature content in a safe-mode life
 - no mature content dealt to a character under 18, in either mode
 - no library pattern fires twice for the same player
-- no unresolved `{{new:role}}` tag reaches a player
+- no unresolved `{{new:role}}` tag reaches a player, in prose **or on a
+  choice button**
 - no two characters in one life share a first name
 
 The naming assertions only mean something because the simulator injects
@@ -297,6 +301,15 @@ running a number, not by reading code:
 - The fix for that (23-card window) sent the opening repeat rate straight back
   to 50.6%, because a life draws ~50 cards. **Zero warnings looked like success
   and was actually the system giving up.**
+- The unresolved-tag assertion read `scenario` and `prompt` and was described
+  as "no tag reached a player". It had never read the choice labels, so two
+  seed cards shipped a literal `{{cast:sam}}` on a button, under a prompt that
+  named the same person correctly. **An assertion is only as wide as the fields
+  it actually looks at, whatever its message claims.** Widening it was not
+  enough on its own either: reverting only `Deck.resolveNames`'s duplicate field
+  list still passed, because every card in the sim that tagged a label also
+  tagged its prose and got dragged through the resolver anyway — so the sim now
+  injects a label-only card too.
 - The regional check first asserted, by hand, that California should favour
   Armenian and Filipino names. It failed — while the weighting was working
   perfectly. Both *are* elevated in California (3.4× and 1.7×), but Vietnamese
@@ -385,6 +398,7 @@ dev    ← integration branch, work lands here
 | Career/education continuity | shipped | on `dev` — same class of bug as off-screen relationship reintroduction, different mechanism: `stateSummary()` in `shared/engine.js` now derives a `careerBackground` object (current occupation, current education, and any of `CAREER_BACKGROUND_FLAGS` = `college_degree`/`trade_cert`/`white_collar_experience` the life has earned), computed fresh every call so it can never scroll out of the trimmed recent-history window. Surfaced in every generation prompt as its own STATE line, plus a new CAREER BACKGROUND FLAGS / CAREER PLAUSIBILITY block in the system prompt instructing the model that a white-collar offer needs a bridging event without a qualifying flag already on record. Four career-category situation-library patterns that previously fired with `requires: []` despite presupposing white-collar standing (`early_career_toxic_mentor`, `early_career_toxic_mentorship`, `market_crash_job_loss`, `market_crash_job_loss_2`) now require `college_degree`; the seed deck's `col_major` (declaring a CS/philosophy major) sets it. No engine/effect-resolution changes - purely context completeness and library gating |
 | Off-screen relationship reintroduction | shipped | on `dev` — a named relationship absent from the recent-history window is marked `[OFF-SCREEN lately]` in the prompt's people line (which already carries role/flags), and the storyteller is asked to reintroduce it by role on first mention ("Dmitri, the guy from your study group") rather than a bare name. Log-only backstop `checkReintroductions` (`shared/names.js`) fires through `validateBatch` → `validationWarnings` → Logs tab across all tiers, best-effort string match. No tier budgets, structure or effect/engine changes; no question-mark/either-or rule added |
 | Bulk seed-scenario generation | shipped | on `bulk-seed-generation` — `server/seed-generation.js` drafts candidates for whichever bucket/mode pairs `npm run coverage` flags short, down the real `server/prompt.js` templates and `shared/schema.js`/`shared/content.js` validators against a generic per-bucket sample state (built from the real engine's `createState`, trimmed to Mom/Dad only so no card can hardcode one throwaway life's assigned names). Weight-tier mix biased toward minor (`tierQuotas`); roughly 1-in-4-5 candidates ground in an eligible situation-library pattern via `shared/library.js`'s own `filterPatterns`. `npm run generate-seeds -- --mode=both --target=15` (CLI) and the admin's "Generate seeds" tab (`POST /api/generate-seeds`) share this core. Draft-only: writes `scenarios-seed.draft.json`, never `data/scenarios-seed.json`. Draft review generalises the existing pattern-draft approve/reject/edit routes (`server/admin/index.js`'s `draftRoutes`) and UI (`admin/src/components/DraftQueue.jsx`, extracted from `Extraction.jsx`) to a second draft/target pair rather than duplicating them. `force` (CLI `--force`, admin checkbox) generates for every bucket/mode pair regardless of current coverage, not only short ones - the common case once the deck is healthy is that a plain run has nothing to do. No live generation path, engine or validator changes |
+| Name tags resolved in choice labels | shipped | on `resolve-names-in-choice-labels` — `resolveCardNames` walked `setting/beat/dialogue/prompt/scenario` and a relationship's name, but not `leftLabel`/`rightLabel`, so `col_sam` and `ec_marry_sam` put a literal `{{cast:sam}}` on a live choice button while the prompt above it read a resolved name. The field list is now `NAMED_FIELDS` in `shared/names.js` and is EXPORTED, because `Deck.resolveNames` kept a second hardcoded copy as its "is there anything to do" gate — a card whose only tag sat in a label never reached the resolver at all, and two lists that had to agree were the reason one went stale. Labels are deliberately not re-capped after resolution (see the comment on `NAMED_FIELDS`). The simulator's unresolved-tag assertion now reads every player-visible field rather than `scenario`/`prompt` alone, and `synthesiseNamedCard` gained a `labelOnly` shape — without it, reverting the deck's pre-check alone still passed, because every other tagged card trips the gate through its prose. Both reverts were confirmed to fail before the fix was trusted. No engine, effect-resolution, referee or content changes. |
 
 ---
 

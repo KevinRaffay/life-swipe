@@ -10,7 +10,7 @@ import { checkCompliance, isMatureScenario } from './content.js';
 import { makeFallbackScenario } from './fallback.js';
 import { validateBatch } from './schema.js';
 import { nextRandom } from './rng.js';
-import { hasNameTag, resolveCardNames, createNameLedger } from './names.js';
+import { hasNameTag, resolveCardNames, createNameLedger, NAMED_FIELDS } from './names.js';
 
 // Must stay smaller than the smallest per-stage pool, or every candidate ends
 // up "recent" and the deck is forced to repeat itself.
@@ -230,7 +230,13 @@ export class Deck {
   // from the run's own RNG, so a seeded life still names its cast identically
   // on replay (invariant 6). The ledger write goes through the engine.
   resolveNames(card, state) {
-    const tagged = ['setting', 'beat', 'dialogue', 'prompt', 'scenario'].some((f) => hasNameTag(card[f]))
+    // A cheap "is there anything to do" gate. A field missing from it is a
+    // field that never reaches the resolver at all - which is how the choice
+    // labels stayed unresolved even though naming somebody on a button is
+    // legal and two seed cards do it. It used to be a second hardcoded copy
+    // of the resolver's field list; it imports the one list now, so the two
+    // cannot drift apart again.
+    const tagged = NAMED_FIELDS.some((f) => hasNameTag(card[f]))
       || ['leftEffects', 'rightEffects'].some((side) =>
         card[side] && card[side].relationship && hasNameTag(card[side].relationship.name));
     if (!tagged) return card;
