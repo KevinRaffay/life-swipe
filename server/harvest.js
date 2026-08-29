@@ -256,12 +256,17 @@ export function depersonalise(scenario, tagMap) {
   const card = { ...scenario };
   const used = [];
 
-  // Two substitutions, because the two places a name can sit are resolved
-  // differently downstream. A narrative field gets the TAG, which
-  // shared/names.js swaps for a fresh name at deal time. A choice label gets
-  // the ROLE IN PLAIN WORDS, because `resolveCardNames` does not walk the
-  // labels - a tag written into one would reach the player as literal braces.
-  // ("Ask Nadia" therefore becomes "Ask your spouse", not "Ask {{new:spouse}}".)
+  // Two substitutions, because the two places a name can sit want different
+  // things. A narrative field gets the TAG, which shared/names.js swaps for a
+  // fresh name at deal time. A choice label gets the ROLE IN PLAIN WORDS:
+  // "Ask Nadia" becomes "Ask your spouse", not "Ask {{new:spouse}}".
+  //
+  // That started as a workaround - resolveCardNames did not walk the labels at
+  // all, so a tag written into one reached the player as literal braces. It
+  // does walk them now (shared/names.js's NAMED_FIELDS). The plain role stays
+  // anyway: a label can name somebody the prose never mentions, and a tag
+  // there would spend a whole named character on a button that only needs to
+  // say which kind of person it means.
   const replaceEach = (text, render) => {
     if (typeof text !== 'string' || !text) return text;
     let out = text;

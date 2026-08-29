@@ -54,9 +54,12 @@ Breaking any of these is a bug regardless of what the tests say.
 8. **The engine names the cast.** Nobody in a life is named in advance except
    Mom and Dad. The storyteller emits `{{new:roommate}}` and the seed deck
    writes `{{cast:sam}}`; `shared/names.js` picks the name and `Deck.draw`
-   resolves it at deal time. The model never invents a name and never renames
-   anyone — `state.relationships` is keyed by name, so a rename silently forks
-   a person in two. Assigned names live in the relationships map as before;
+   resolves it at deal time, across every field a player can read — the
+   narrative fields, a relationship's name, **and the two choice labels**
+   (`NAMED_FIELDS`, which `Deck.resolveNames` imports rather than restating).
+   The model never invents a name and never renames anyone —
+   `state.relationships` is keyed by name, so a rename silently forks a person
+   in two. Assigned names live in the relationships map as before;
    `state.names.byTag` only remembers which tag meant whom.
 9. **Content gates are defence in depth.** Three independent gates stand between
    a player and content they didn't choose: tier visibility, the dark-arc
@@ -292,7 +295,8 @@ The assertions are:
 - no mature content in a safe-mode life
 - no mature content dealt to a character under 18, in either mode
 - no library pattern fires twice for the same player
-- no unresolved `{{new:role}}` tag reaches a player
+- no unresolved `{{new:role}}` tag reaches a player, in prose **or on a
+  choice button**
 - no two characters in one life share a first name
 
 The naming assertions only mean something because the simulator injects
@@ -315,6 +319,15 @@ running a number, not by reading code:
 - The fix for that (23-card window) sent the opening repeat rate straight back
   to 50.6%, because a life draws ~50 cards. **Zero warnings looked like success
   and was actually the system giving up.**
+- The unresolved-tag assertion read `scenario` and `prompt` and was described
+  as "no tag reached a player". It had never read the choice labels, so two
+  seed cards shipped a literal `{{cast:sam}}` on a button, under a prompt that
+  named the same person correctly. **An assertion is only as wide as the fields
+  it actually looks at, whatever its message claims.** Widening it was not
+  enough on its own either: reverting only `Deck.resolveNames`'s duplicate field
+  list still passed, because every card in the sim that tagged a label also
+  tagged its prose and got dragged through the resolver anyway — so the sim now
+  injects a label-only card too.
 - The regional check first asserted, by hand, that California should favour
   Armenian and Filipino names. It failed — while the weighting was working
   perfectly. Both *are* elevated in California (3.4× and 1.7×), but Vietnamese
@@ -403,7 +416,8 @@ dev    ← integration branch, work lands here
 | Career/education continuity | shipped | on `dev` — same class of bug as off-screen relationship reintroduction, different mechanism: `stateSummary()` in `shared/engine.js` now derives a `careerBackground` object (current occupation, current education, and any of `CAREER_BACKGROUND_FLAGS` = `college_degree`/`trade_cert`/`white_collar_experience` the life has earned), computed fresh every call so it can never scroll out of the trimmed recent-history window. Surfaced in every generation prompt as its own STATE line, plus a new CAREER BACKGROUND FLAGS / CAREER PLAUSIBILITY block in the system prompt instructing the model that a white-collar offer needs a bridging event without a qualifying flag already on record. Four career-category situation-library patterns that previously fired with `requires: []` despite presupposing white-collar standing (`early_career_toxic_mentor`, `early_career_toxic_mentorship`, `market_crash_job_loss`, `market_crash_job_loss_2`) now require `college_degree`; the seed deck's `col_major` (declaring a CS/philosophy major) sets it. No engine/effect-resolution changes - purely context completeness and library gating |
 | Off-screen relationship reintroduction | shipped | on `dev` — a named relationship absent from the recent-history window is marked `[OFF-SCREEN lately]` in the prompt's people line (which already carries role/flags), and the storyteller is asked to reintroduce it by role on first mention ("Dmitri, the guy from your study group") rather than a bare name. Log-only backstop `checkReintroductions` (`shared/names.js`) fires through `validateBatch` → `validationWarnings` → Logs tab across all tiers, best-effort string match. No tier budgets, structure or effect/engine changes; no question-mark/either-or rule added |
 | Bulk seed-scenario generation | shipped | on `bulk-seed-generation` — `server/seed-generation.js` drafts candidates for whichever bucket/mode pairs `npm run coverage` flags short, down the real `server/prompt.js` templates and `shared/schema.js`/`shared/content.js` validators against a generic per-bucket sample state (built from the real engine's `createState`, trimmed to Mom/Dad only so no card can hardcode one throwaway life's assigned names). Weight-tier mix biased toward minor (`tierQuotas`); roughly 1-in-4-5 candidates ground in an eligible situation-library pattern via `shared/library.js`'s own `filterPatterns`. `npm run generate-seeds -- --mode=both --target=15` (CLI) and the admin's "Generate seeds" tab (`POST /api/generate-seeds`) share this core. Draft-only: writes `scenarios-seed.draft.json`, never `data/scenarios-seed.json`. Draft review generalises the existing pattern-draft approve/reject/edit routes (`server/admin/index.js`'s `draftRoutes`) and UI (`admin/src/components/DraftQueue.jsx`, extracted from `Extraction.jsx`) to a second draft/target pair rather than duplicating them. `force` (CLI `--force`, admin checkbox) generates for every bucket/mode pair regardless of current coverage, not only short ones - the common case once the deck is healthy is that a plain run has nothing to do. No live generation path, engine or validator changes |
-| Content harvesting pipeline | shipped | on `content-harvesting-pipeline` — `server/harvest.js` mines `server/logs/llm-requests.jsonl` for live generations worth keeping and routes them into the two existing draft queues. Eligibility: `keySource === "server"` (a NEW log field, `server/llm.js` ← `meta.keySource`, declared by `server/index.js`'s generation call; there is no BYOK path in the codebase, and an UNDECLARED key source records null and is ineligible, so nothing logged before this feature can be harvested and a future BYOK path that forgets to declare itself is excluded by default rather than swept in), `validationResult === "passed"`, and per-CARD craft warnings at or below a configurable threshold (default 0 — `validateBatch` indexes each warning by raw-array position, so one over-budget major does not disqualify its neighbours). Seed path → `scenarios-seed.draft.json`: the card as written, de-personalised by reading the cast back out of the logged prompt and reversing `shared/names.js`'s resolution (narrative fields get the tag; choice LABELS get the role in plain words, since `resolveCardNames` does not walk labels and a tag there would reach the player as braces), screened against story-memory flag callbacks and explicit back-references to a decision this player already made, gated with `requiresFlags: ["married"]`/`["has_kids"]` where the dependency can be carried instead of disqualifying, and de-duplicated by extraction's own Jaccard scoring (`duplicatesBy`, refactored out of `duplicateWarnings`) against the deck, the queue and the batch. Library path → `situation-library.draft.json`: major-tier only, fed to the EXISTING `extractPatterns` prompt as its "source text" rather than a new prompt, whole batch as one document, skipped below 3 majors; output through the existing `duplicateWarnings`/`idCollisions`/`identityWarnings`. Trigger is the admin's "Harvest" tab (`POST /api/harvest`, NDJSON-streamed like `/api/generate-seeds`) — on demand only, no scheduler. Provenance: `shared/provenance.js` (`hand-authored`/`extracted`/`generated`/`harvested`) stamped by every writing path, surviving approval into the live files, with the harvested share on the Stats tab as a diversity signal nothing enforces. Never auto-merges; no generation, engine, effect-resolution or referee changes. |
+| Content harvesting pipeline | shipped | on `dev` — `server/harvest.js` mines `server/logs/llm-requests.jsonl` for live generations worth keeping and routes them into the two existing draft queues. Eligibility: `keySource === "server"` (a NEW log field, `server/llm.js` ← `meta.keySource`, declared by `server/index.js`'s generation call; there is no BYOK path in the codebase, and an UNDECLARED key source records null and is ineligible, so nothing logged before this feature can be harvested and a future BYOK path that forgets to declare itself is excluded by default rather than swept in), `validationResult === "passed"`, and per-CARD craft warnings at or below a configurable threshold (default 0 — `validateBatch` indexes each warning by raw-array position, so one over-budget major does not disqualify its neighbours). Seed path → `scenarios-seed.draft.json`: the card as written, de-personalised by reading the cast back out of the logged prompt and reversing `shared/names.js`'s resolution (narrative fields get the tag; choice LABELS get the role in plain words, so a person named only on a button does not cost a fresh name), screened against story-memory flag callbacks and explicit back-references to a decision this player already made, gated with `requiresFlags: ["married"]`/`["has_kids"]` where the dependency can be carried instead of disqualifying, and de-duplicated by extraction's own Jaccard scoring (`duplicatesBy`, refactored out of `duplicateWarnings`) against the deck, the queue and the batch. Library path → `situation-library.draft.json`: major-tier only, fed to the EXISTING `extractPatterns` prompt as its "source text" rather than a new prompt, whole batch as one document, skipped below 3 majors; output through the existing `duplicateWarnings`/`idCollisions`/`identityWarnings`. Trigger is the admin's "Harvest" tab (`POST /api/harvest`, NDJSON-streamed like `/api/generate-seeds`) — on demand only, no scheduler. Provenance: `shared/provenance.js` (`hand-authored`/`extracted`/`generated`/`harvested`) stamped by every writing path, surviving approval into the live files, with the harvested share on the Stats tab as a diversity signal nothing enforces. Never auto-merges; no generation, engine, effect-resolution or referee changes. |
+| Name tags resolved in choice labels | shipped | on `dev` — `resolveCardNames` walked `setting/beat/dialogue/prompt/scenario` and a relationship's name, but not `leftLabel`/`rightLabel`, so `col_sam` and `ec_marry_sam` put a literal `{{cast:sam}}` on a live choice button while the prompt above it read a resolved name. The field list is now `NAMED_FIELDS` in `shared/names.js` and is EXPORTED, because `Deck.resolveNames` kept a second hardcoded copy as its "is there anything to do" gate — a card whose only tag sat in a label never reached the resolver at all, and two lists that had to agree were the reason one went stale. Labels are deliberately not re-capped after resolution (see the comment on `NAMED_FIELDS`). The simulator's unresolved-tag assertion now reads every player-visible field rather than `scenario`/`prompt` alone, and `synthesiseNamedCard` gained a `labelOnly` shape — without it, reverting the deck's pre-check alone still passed, because every other tagged card trips the gate through its prose. Both reverts were confirmed to fail before the fix was trusted. No engine, effect-resolution, referee or content changes. |
 
 ---
 
@@ -553,8 +567,11 @@ written, with three things done to it:
   `children:` line, and the "Tags already spent in this life" line, which gives an
   exact tag→name mapping), and every name goes back to a tag. Narrative fields get
   the tag; **choice labels get the role in plain words** ("Ask Nadia" → "Ask your
-  spouse"), because `resolveCardNames` does not walk the labels and a tag written
-  into one would reach the player as literal braces. Mom and Dad are left alone —
+  spouse"). This began as a workaround for labels never being name-resolved at
+  all, which was true when the harvester was written and is not any more. It
+  stays because a label can name somebody the prose never mentions, and a tag
+  there would spend a fresh name on a button that only needs to say which kind
+  of person it means. Mom and Dad are left alone —
   address forms, not names (invariant 8). A card with a cast name still in it
   afterwards is dropped, not shipped.
 - **Screened for generalisability.** A proxy, not a rule, in the same spirit as a
@@ -620,14 +637,6 @@ hands out. The rules, in short, with `server/geo.js` holding the long version:
   grows.
 - **Mature-mode lives run short** — mean 39.6 swipes, p10 19, against a 40–80
   target, because the mature seed deck is financially brutal. Pre-existing.
-- **Choice labels are never name-resolved.** `resolveCardNames`'s `TEXT_FIELDS`
-  covers `setting/beat/dialogue/prompt/scenario` and a relationship's name, but
-  not `leftLabel`/`rightLabel` — so the seed deck's `col_sam` and `ec_marry_sam`
-  reach the player reading "Be friends with {{cast:sam}}". Pre-existing, found
-  while writing the harvester's residual-name check; the harvester works around
-  it by writing the plain role phrase into labels instead of a tag. Fixing it
-  properly means adding the two fields to `TEXT_FIELDS`, which is a change to
-  the deal-time naming path and wants its own branch.
 - **`MINOR_SUBSTANCES_BLOCKED` is `false`** in `content.js`. The spec's stricter
   reading is `true`; it ships `false` so the coming-of-age deck keeps its
   peer-pressure cards. Hard drugs, crime, prison, gambling and sexual content
