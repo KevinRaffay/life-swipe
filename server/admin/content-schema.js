@@ -9,11 +9,22 @@
 // Nothing here modifies the player-facing validator; it only calls it.
 
 import { validateScenario } from '../../shared/schema.js';
+import { SOURCES, isSource } from '../../shared/provenance.js';
 import { CATEGORIES, RARITIES, validatePattern } from '../extraction.js';
 
 export const PATTERN_CATEGORIES = [...CATEGORIES];
 export const PATTERN_RARITIES = [...RARITIES];
 export const MODES = ['safe', 'mature'];
+export const CONTENT_SOURCES = [...SOURCES];
+
+// Authoring provenance is optional - every record written before it existed
+// has none, and shared/provenance.js reads that absence as 'hand-authored'.
+// What is not optional is that a value, when present, is one of the four:
+// a typo here would quietly split the harvested-share number in two.
+const sourceProblems = (record) =>
+  (record?.source === undefined || isSource(record.source))
+    ? []
+    : [`source "${record.source}" is not one of ${SOURCES.join(', ')}`];
 
 const isFlagList = (v) => !v || (Array.isArray(v) && v.every((f) => typeof f === 'string' && /^[a-z0-9_]+$/.test(f)));
 
@@ -42,6 +53,7 @@ export function validateLibraryPattern(pattern, siblings = []) {
   }
   if (!isFlagList(pattern?.requires)) problems.push('requires must be snake_case flag strings');
   if (!isFlagList(pattern?.excludes)) problems.push('excludes must be snake_case flag strings');
+  problems.push(...sourceProblems(pattern));
   return problems;
 }
 
@@ -55,6 +67,7 @@ export function validateSeedScenario(card, siblings = []) {
   if (typeof card?.id === 'string' && siblings.some((s) => s.id === card.id)) {
     problems.push(`id "${card.id}" is already used by another scenario`);
   }
+  problems.push(...sourceProblems(card));
   return { ok: result.ok && !problems.length, problems, normalised: result.scenario || null };
 }
 

@@ -20,6 +20,10 @@ import { appendLog } from './log-store.js';
 
 export { AnthropicError };
 
+// The only two answers to "whose key was this". Anything else - including the
+// absence of an answer - is recorded as null; see `keySource` below.
+const KEY_SOURCES = new Set(['server', 'byok']);
+
 function assemblePromptText(system, user, prefill) {
   const parts = [`--- SYSTEM ---\n${system || ''}`, `--- USER ---\n${user || ''}`];
   if (prefill) parts.push(`--- PREFILL ---\n${prefill}`);
@@ -29,8 +33,9 @@ function assemblePromptText(system, user, prefill) {
 /**
  * Same contract as anthropic.js's `complete`, plus `meta` describing why this
  * call happened (age, contentMode, triggeredBy, librarySlotUsed, threadBeat,
- * playerId - all optional). Never throws: an API error comes back as `.error`
- * so the caller's existing retry/fallback logic doesn't have to change shape.
+ * playerId, keySource - all optional). Never throws: an API error comes back as
+ * `.error` so the caller's existing retry/fallback logic doesn't have to change
+ * shape.
  *
  * @returns {{ text, usage, stopReason, error, finalizeLog }}
  */
@@ -59,6 +64,20 @@ export async function callLLM({
     triggeredBy: meta.triggeredBy ?? null,
     librarySlotUsed: meta.librarySlotUsed ?? null,
     threadBeat: meta.threadBeat ?? null,
+    // WHOSE KEY PAID FOR THIS CALL. Today there is exactly one key path -
+    // anthropic.js reads process.env.ANTHROPIC_API_KEY and nothing else - so
+    // every live call declares 'server'. The field exists because the content
+    // harvester (server/harvest.js) may only ever mine generations paid for by
+    // the server's own key: a player's BYOK session is their content, not the
+    // project's, and harvesting it would be taking something that was not
+    // offered.
+    //
+    // Undeclared is deliberately NOT 'server'. A caller that does not say
+    // records null, and null is ineligible for harvesting - so if a BYOK path
+    // is ever added and forgets to declare itself here, its calls are excluded
+    // by default rather than silently swept into the seed deck. Every entry
+    // written before this field existed is null for the same reason.
+    keySource: KEY_SOURCES.has(meta.keySource) ? meta.keySource : null,
     assembledPrompt: assemblePromptText(system, user, prefill),
     rawResponse: result ? result.text : null,
     tokenUsage: result?.usage

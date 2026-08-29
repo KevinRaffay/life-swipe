@@ -232,14 +232,33 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   margin: auto;
   width: 100%;
   max-height: 600px;
-  padding: 30px 26px 26px;
+  /* The bottom padding clears .card__hint, which is absolutely positioned at
+     bottom:20px and would otherwise have the last line of the prompt running
+     underneath it. */
+  padding: 30px 26px 46px;
   border-radius: var(--radius);
   background: linear-gradient(158deg, var(--card) 0%, var(--card-2) 100%);
   color: var(--card-ink);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow: auto;
+  /* NEVER a scrollbar. A card is a thing you swipe, not a thing you scroll -
+     a scroll gesture on it fights the swipe gesture for the same pointer.
+     Long cards are handled by shrinking the type to fit (--fit below), and
+     this is the backstop for the case the shrink cannot fully solve. */
+  /* Two declarations, not one: `clip` also removes PROGRAMMATIC scrolling,
+     which `hidden` leaves in place - a card with overflow:hidden still moves
+     if anything sets scrollTop on it, and then the text is silently offset
+     with nothing on screen to explain why. Engines too old for `clip` ignore
+     the second line and keep `hidden`, which is the weaker but still
+     scrollbar-free behaviour. */
+  overflow: hidden;
+  overflow: clip;
+  /* Set by useFitToCard in CardStack.jsx: 1 when the card fits at its natural
+     size, down to FIT_MIN when it does not. Every font size and gap inside the
+     card is expressed as a multiple of it, so one number rescales the whole
+     card proportionally instead of squashing one field. */
+  --fit: 1;
   will-change: transform;
   box-shadow:
     0 26px 64px -14px rgba(124, 92, 255, 0.55),
@@ -270,7 +289,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 .card__text {
   margin: 0;
-  font-size: clamp(20px, 5.4vw, 25px);
+  font-size: calc(clamp(20px, 5.4vw, 25px) * var(--fit, 1));
   font-weight: 550;
   line-height: 1.34;
   letter-spacing: -0.017em;
@@ -594,13 +613,13 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 /* ------------------------------------------------------- scenario tiers */
 
-.scene { display: flex; flex-direction: column; gap: 11px; }
+.scene { display: flex; flex-direction: column; gap: calc(11px * var(--fit, 1)); }
 
 /* Setting is an overline: present, dateline-ish, never competing with the
    decision itself. */
 .scene__setting {
   margin: 0;
-  font-size: 11px;
+  font-size: calc(11px * var(--fit, 1));
   font-weight: 700;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -610,7 +629,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 .scene__beat {
   margin: 0;
-  font-size: clamp(14px, 3.6vw, 15.5px);
+  font-size: calc(clamp(14px, 3.6vw, 15.5px) * var(--fit, 1));
   font-weight: 450;
   line-height: 1.45;
   color: rgba(21, 18, 31, 0.68);
@@ -619,9 +638,9 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 /* Dialogue reads as someone speaking: italic, indented behind a rule. */
 .scene__dialogue {
   margin: 0;
-  padding-left: 13px;
+  padding-left: calc(13px * var(--fit, 1));
   border-left: 2.5px solid var(--left);
-  font-size: clamp(14px, 3.8vw, 16px);
+  font-size: calc(clamp(14px, 3.8vw, 16px) * var(--fit, 1));
   font-style: italic;
   line-height: 1.45;
   color: rgba(21, 18, 31, 0.82);

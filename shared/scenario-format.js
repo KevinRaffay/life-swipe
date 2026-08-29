@@ -45,6 +45,68 @@ const CAPS_NAME = /\b[A-Z]{2,}(?:\s+[A-Z]{2,})*\s*:\s*/;
 
 const isStr = (v) => typeof v === 'string' && v.trim().length > 0;
 
+// Where a sentence ends: terminal punctuation, any closing quote or bracket
+// riding on it, and then whitespace or the end of the string.
+const SENTENCE_END = /[.!?]["'’”)\]]*(?=\s|$)/g;
+
+// Words that end in a period without ending a sentence. Short list on
+// purpose - it only has to cover what this game's register actually writes,
+// and a miss degrades to a word-boundary cut rather than to anything wrong.
+const ABBREVIATIONS = new Set([
+  'mr', 'mrs', 'ms', 'dr', 'prof', 'st', 'jr', 'sr', 'vs', 'etc', 'inc', 'no',
+  'approx', 'dept', 'est', 'min', 'max', 'oz', 'lb', 'ft', 'hr', 'a.m', 'p.m',
+]);
+
+// How much of the budget a sentence-boundary cut must keep to be worth it.
+// Below this, ending on the last full sentence throws away more than it
+// saves, and a marked word-boundary cut reads better than half a card.
+const MIN_SENTENCE_KEEP = 0.6;
+
+/**
+ * Cut over-long narrative text without leaving a broken word.
+ *
+ * The old behaviour was a bare slice at the limit, which produced "The super
+ * is not answering. Someone n" on a live card. Roughly one generated card in
+ * twelve overruns a field, and two thirds of those landed mid-word, so this
+ * was not a rare edge.
+ *
+ * Preference order:
+ *   1. End on the last COMPLETE SENTENCE inside the budget. A setting that
+ *      stops at a full stop reads as written rather than as damaged, and this
+ *      is what the overrunning cards actually want - they are one good
+ *      sentence plus the start of another.
+ *   2. Failing that (one long sentence, or a boundary so early that obeying
+ *      it would gut the text), stop at a word boundary and end with an
+ *      ellipsis, so the elision is visible instead of looking like a typo.
+ *
+ * The result never exceeds `limit`, ellipsis included.
+ */
+export function truncateNarrative(text, limit) {
+  if (typeof text !== 'string' || text.length <= limit) return text;
+
+  const head = text.slice(0, limit);
+
+  let lastEnd = -1;
+  SENTENCE_END.lastIndex = 0;
+  let match;
+  while ((match = SENTENCE_END.exec(head)) !== null) {
+    // "...flagged AP Chemistry" must not end a sentence at "AP.", and
+    // "Dr. Okonkwo" must not end one at "Dr.".
+    const before = head.slice(0, match.index);
+    const word = (before.match(/(\S+)$/) || ['', ''])[1].toLowerCase();
+    const isInitial = /^[a-z]$/.test(word);
+    if (ABBREVIATIONS.has(word) || isInitial) continue;
+    lastEnd = match.index + match[0].length;
+  }
+  if (lastEnd >= limit * MIN_SENTENCE_KEEP) return head.slice(0, lastEnd).trim();
+
+  // Leave room for the ellipsis so the cap is still honoured.
+  const room = head.slice(0, limit - 1);
+  const lastSpace = room.lastIndexOf(' ');
+  const body = lastSpace > limit * MIN_SENTENCE_KEEP ? room.slice(0, lastSpace) : room;
+  // A trailing comma or dash before an ellipsis reads as a mistake.
+  return body.trimEnd().replace(/[,;:–—-]+$/, '').trimEnd() + '…';
+}
 /** Strip screenplay habits the house style does not use. */
 export function cleanNarrative(value, field) {
   if (!isStr(value)) return undefined;
@@ -56,7 +118,7 @@ export function cleanNarrative(value, field) {
     const parts = text.split(/(?<=[."'!?])\s+(?=[A-Z"'])/);
     text = parts.slice(0, 2).join(' ');
   }
-  text = text.trim().slice(0, FIELD_LIMITS[field] || 300);
+  text = truncateNarrative(text.trim(), FIELD_LIMITS[field] || 300);
   return text || undefined;
 }
 

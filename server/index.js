@@ -127,6 +127,10 @@ app.post('/api/scenarios', async (req, res) => {
         contentMode: summary.contentMode,
         triggeredBy: attempt === 0 ? 'batch_generation' : 'validator_retry',
         librarySlotUsed: librarySlot ? librarySlot.id : null,
+        // Paid for by the server's own ANTHROPIC_API_KEY - anthropic.js has no
+        // other key path. Stated rather than assumed because the harvester
+        // treats an undeclared call as ineligible (see server/llm.js).
+        keySource: 'server',
       },
     });
     calls.push(call);

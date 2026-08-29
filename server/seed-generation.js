@@ -25,8 +25,10 @@ import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
 import { validateBatch } from '../shared/schema.js';
 import { checkCompliance, effectiveTier } from '../shared/content.js';
 import { narrativeWarnings } from '../shared/scenario-format.js';
+import { NAME_TAG } from '../shared/names.js';
 import { createState, stateSummary } from '../shared/engine.js';
 import { filterPatterns, RARITY_WEIGHT } from '../shared/library.js';
+import { GENERATED } from '../shared/provenance.js';
 import { BUCKETS, coverage } from '../scripts/coverage.js';
 
 export { BUCKETS };
@@ -153,7 +155,13 @@ function pickLibrarySlot(library, sampledAge, tier, flags, patternUse) {
 /* --------------------------------------------------------- id + shape ---- */
 
 function uniqueId(scenario, bucket, usedIds) {
-  const base = (bucket.id + '_' + (scenario.prompt || 'card'))
+  // Name tags out first. A prompt that opens "{{new:roommate}} has labelled
+  // the milk" would otherwise produce the id "college_new_roommate_has" -
+  // the markup, not the card. Harvested candidates lead with a tag far more
+  // often than generated ones, since a live card is written around a cast
+  // the player already has.
+  const promptText = String(scenario.prompt || 'card').replace(NAME_TAG, ' ').trim() || 'card';
+  const base = (bucket.id + '_' + promptText)
     .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '')
     .split('_').slice(0, 6).join('_').slice(0, 40) || (bucket.id + '_card');
   let id = base;
@@ -165,8 +173,14 @@ function uniqueId(scenario, bucket, usedIds) {
 /**
  * Turn one validated scenario into a seed-deck-shaped record, matching the
  * fields hand-authored entries in data/scenarios-seed.json carry.
+ *
+ * Exported because the content harvester (server/harvest.js) shapes its
+ * candidates identically - a harvested row and a generated row land in the
+ * same queue and are approved by the same route, so they had better be the
+ * same kind of object. `source` is the one thing that differs, and it is a
+ * parameter for exactly that reason.
  */
-function shapeSeedRecord(scenario, { bucket, tier, sampledAge, usedIds }) {
+export function shapeSeedRecord(scenario, { bucket, tier, sampledAge, usedIds, source = GENERATED }) {
   const id = uniqueId(scenario, bucket, usedIds);
   // Content generated under the safe tier is always fine in a mature life too
   // (mature is a superset); content generated under the mature tier only
@@ -182,6 +196,7 @@ function shapeSeedRecord(scenario, { bucket, tier, sampledAge, usedIds }) {
     life_stage: [...bucket.range],
     modes,
     weight,
+    source,
   };
   for (const field of ['setting', 'beat', 'dialogue', 'prompt']) {
     if (scenario[field]) record[field] = scenario[field];

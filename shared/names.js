@@ -343,10 +343,27 @@ export const createNameLedger = () => ({ byTag: {}, categories: {} });
 
 /* ------------------------------------------------------------- resolving */
 
-const TEXT_FIELDS = ['setting', 'beat', 'dialogue', 'prompt', 'scenario'];
+// Every field a name can appear in - which is not the same list as "the
+// narrative fields". The two CHOICE LABELS are on it because a card is
+// allowed to name somebody on a button ("Marry {{cast:sam}}"), and for a
+// long time they were left off: the prompt read "Your roommate Zsofia has
+// opinions" while the button underneath it still said
+// "Be friends with {{cast:sam}}". Two seed cards shipped that way.
+//
+// Labels are NOT re-capped after resolution. validateScenario caps them at 40
+// characters, and it runs before this does - so the tag was already counted
+// against that budget. The longest name in the pool is 10 characters and the
+// shortest possible tag is 9 ("{{new:x}}"), so resolving can grow a label by
+// about a character per tag and no more. Slicing here to win that character
+// back would cut somebody's name in half, which is a worse thing to put on a
+// button than a slightly long label.
+export const NAMED_FIELDS = ['setting', 'beat', 'dialogue', 'prompt', 'scenario', 'leftLabel', 'rightLabel'];
 
 /**
  * Replace every "{{new:role}}" in a card with a real name.
+ *
+ * Over every field a name can sit in (NAMED_FIELDS, including the two choice
+ * labels) plus a relationship's name inside either effects object.
  *
  * Deliberately does NOT write to the ledger it is given: it returns what it
  * assigned and lets the engine record it, so "only the engine writes state"
@@ -419,7 +436,7 @@ export function resolveCardNames(card, {
     : text);
 
   const out = { ...card };
-  for (const field of TEXT_FIELDS) {
+  for (const field of NAMED_FIELDS) {
     if (typeof out[field] === 'string') out[field] = swap(out[field]);
   }
   for (const side of ['leftEffects', 'rightEffects']) {
