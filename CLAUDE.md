@@ -426,21 +426,20 @@ confirm it fails before trusting it.
 
 ## Branch workflow
 
-New work goes on a branch off `dev`. Always create that branch before starting
-a new feature — never commit a new feature straight to `dev`. Name it short
-and `kebab-case`, describing the feature (`request-response-logging`, not
-`fix` or `feature/thing` or `request_response_logging`). **The user merges to
-`main` themselves** after testing; do not merge to `main` unless explicitly
-asked.
+New work goes on a branch off `dev`. Always create that branch before
+starting a new feature — never commit a new feature straight to `dev`.
+Name it short and `kebab-case`.
 
-```
+When the Definition of done is satisfied, Claude Code stops and reports
+the branch as ready to merge — it does not attempt the merge into `dev`
+itself. Claude Code's Auto Mode permission classifier blocks pushes/
+merges to shared branches by design (a repo-file instruction doesn't
+count as live consent), so this isn't optional. Both feature → dev and
+dev → main merges are the user's call.
+
 main   ← user merges, after testing dev
-dev    ← integration branch, work lands here
+dev    ← user merges, once Definition of done is satisfied
 <feature branches off dev, short kebab-case name>
-
-Claude Code merges its own feature branch into dev once the Definition
-of done above is satisfied — this is not reserved for the user. dev →
-main stays exclusively the user's call, after testing, as before.
 
 ```
 
