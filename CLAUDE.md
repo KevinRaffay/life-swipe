@@ -421,7 +421,25 @@ asked.
 main   ← user merges, after testing dev
 dev    ← integration branch, work lands here
 <feature branches off dev, short kebab-case name>
+
+Claude Code merges its own feature branch into dev once the Definition
+of done above is satisfied — this is not reserved for the user. dev →
+main stays exclusively the user's call, after testing, as before.
+
 ```
+
+## Definition of done
+
+Before a feature branch is considered ready to merge into dev, verify —
+out loud, in your final message on that branch — all three:
+1. CLAUDE.md's Feature Status table includes this feature.
+2. Any changed invariant, architecture-map entry, or file-structure
+   entry is updated to match.
+3. The verification commands (npm run simulate / coverage / names)
+   still exit 0.
+If any of these fail, the feature is not done — fix it in the same
+session, not as a follow-up. Do not report a feature as finished
+without stating you checked all three.
 
 ---
 
