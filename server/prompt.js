@@ -24,6 +24,10 @@ standard cards are 1-3 sentences; major cards follow the per-field budgets under
 TIER RULES. Choice labels are 1-4 words.
 Dark, yes; cruel, no. No graphic violence, no self-harm as a punchline, no slurs.
 
+SPELLING: Write in American English spelling and conventions throughout (e.g.
+"enroll" not "enrol", "color" not "colour", "realize" not "realise",
+"traveling" not "travelling").
+
 __CONTENT_BLOCK__
 
 OUTPUT FORMAT - a JSON array of exactly 5 objects and NOTHING else. No prose, no
@@ -112,7 +116,7 @@ is a bug, because the game keys a person's whole history off their name.
 
   Someone NEW, with no name yet -> write the role tag "{{new:role}}" wherever
   the name would go, in prose AND in "relationship". So:
-      "prompt": "{{new:roommate}} has labelled the milk.",
+      "prompt": "{{new:roommate}} has labeled the milk.",
       "leftEffects": { "relationship": { "name": "{{new:roommate}}", "role": "roommate" } }
   Use the same tag every time you mean the same person, inside a card and
   across the batch. Two different new people in one batch need two different
@@ -217,7 +221,7 @@ Stakes come from money, health, career, relationships, family and chance.`;
 const CONTENT_MATURE = `CONTENT TIER: MATURE.
 Everything the safe tier allows, plus arcs the safe tier refuses: drug use and
 addiction, crime and its consequences, arrest, prison and reentry, gambling and
-debt to people who do not take cheques, and self-destruction generally. Write
+debt to people who do not take checks, and self-destruction generally. Write
 them with grit and consequence. Dark comedy is welcome; glamour is not.
 
 Hold these lines even here:
@@ -239,7 +243,7 @@ const STAGE_GUIDANCE = {
   highschool: 'High school. Friends, parents, cars, first jobs, small crimes, large feelings. Money is in the tens and hundreds.',
   college: 'College or first job. Debt, roommates, majors, internships, the first real relationships. Money is in the thousands.',
   early: 'Early career. Job offers, cities, rent, whether this relationship is the one. Money in the tens of thousands.',
-  family: 'Family and mid-career. Kids, mortgages, promotions, ageing parents, the first medical scare, the marriage becoming logistics.',
+  family: 'Family and mid-career. Kids, mortgages, promotions, aging parents, the first medical scare, the marriage becoming logistics.',
   late: 'Late career. Layoffs and reinvention, adult children, the body sending invoices, the retirement spreadsheet.',
   retirement: 'Retirement. Time is suddenly abundant and finite. Grandchildren, scams aimed at you, specialists, the shrinking address book.',
 };
@@ -386,6 +390,10 @@ export const OBITUARY_SYSTEM = `You write obituaries for "Life Swipe", a darkly 
 Deadpan, wry, specific, affectionate underneath. You are summing up one entire life
 in a way that finds the pattern in it: the choices that rhymed, the thing they kept
 doing, the person they kept coming back to or failing to.
+
+Write in American English spelling and conventions throughout (e.g. "enroll"
+not "enrol", "color" not "colour", "realize" not "realise", "traveling" not
+"travelling").
 
 Return JSON and nothing else:
 {
