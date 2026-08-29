@@ -675,6 +675,15 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   animation: pulse 1.6s ease-in-out infinite;
 }
 
+.intro__framing {
+  margin: 0 0 12px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--dim);
+}
+
 /* -------------------------------------------------------------- region */
 
 .region { width: 100%; max-width: 340px; text-align: left; }

@@ -7,7 +7,7 @@ import {
   createState, applyChoice, stageOf, finalStats, stateSummary, recentDecisions, contentTier,
 } from '@shared/engine.js';
 import { nextRandom } from '@shared/rng.js';
-import { buildIdentityCard, fallbackGroundingBeat, INTRO_CARD_ORDER } from '@shared/intro.js';
+import { buildIdentityCard, fallbackGroundingBeat, INTRO_CARD_ORDER, pickFramingLine } from '@shared/intro.js';
 
 import { fetchScenarios, getConfig, fetchRegion, fetchIntroBeat } from './api.js';
 import {
@@ -37,6 +37,7 @@ export default function App() {
   const [introCards, setIntroCards] = useState([]);
   const [introStep, setIntroStep] = useState(0);
   const [introBeat, setIntroBeat] = useState(null);
+  const [introFraming, setIntroFraming] = useState(null);
   const deckRef = useRef(null);
 
   // decide() is handed to CardStack and fired from a timer, so it must always
@@ -106,11 +107,14 @@ export default function App() {
     const deck = makeDeck(region);
     deckRef.current = deck;
     const fresh = createState({ seed: `${Date.now()}-${Math.random()}`, contentMode, region });
-    const identityCards = INTRO_CARD_ORDER.map((kind) => buildIdentityCard(kind, () => nextRandom(fresh)));
+    const rng = () => nextRandom(fresh);
+    const identityCards = INTRO_CARD_ORDER.map((kind) => buildIdentityCard(kind, rng));
+    const framing = pickFramingLine(rng);
     setState(fresh);
     setIntroCards(identityCards);
     setIntroStep(0);
     setIntroBeat(null);
+    setIntroFraming(framing);
     setEvents([]);
     setSeverity('standard');
     setPhase('intro');
@@ -222,6 +226,7 @@ export default function App() {
           step={introStep}
           cards={introCards}
           beat={introBeat}
+          framing={introFraming}
           onDecide={decideIntro}
           onContinue={completeIntro}
         />

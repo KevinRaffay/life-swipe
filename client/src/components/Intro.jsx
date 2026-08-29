@@ -13,12 +13,13 @@ import GroundingBeat from './GroundingBeat.jsx';
  * tap teaches them the one mechanic they need for the whole life. No new UI
  * pattern is introduced until the beat, which has no choice to make at all.
  */
-export default function Intro({ step, cards, beat, onDecide, onContinue }) {
+export default function Intro({ step, cards, beat, framing, onDecide, onContinue }) {
   if (step < cards.length) {
     const card = cards[step];
     const peek = cards[step + 1] || null;
     return (
       <>
+        {framing && <p className="intro__framing">{framing}</p>}
         <CardStack card={card} peek={peek} onDecide={onDecide} disabled={false} />
         <div className="choices">
           <button className="choice choice--left" onClick={() => onDecide('left')}>

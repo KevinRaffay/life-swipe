@@ -31,6 +31,13 @@ const PERSONALITY_VARIANTS = [
   { prompt: 'Quiet and heads-down, or loud and out with everyone?', leftLabel: 'Quiet, heads-down', rightLabel: 'Loud, out with everyone' },
 ];
 
+const INTRO_FRAMING_LINES = [
+  "First, a few quick things about you.",
+  "Before we start — a couple of quick questions.",
+  "Quick setup, then we're off.",
+  "Let's figure out who you are.",
+];
+
 // left = modest/bookish, right = comfortable/social, held fixed across every
 // phrasing variant so the wording can vary without the effects drifting.
 const CARD_DEFS = {
@@ -55,6 +62,15 @@ const CARD_DEFS = {
 };
 
 export const INTRO_CARD_ORDER = ['financialTier', 'personality'];
+
+/**
+ * Pick one framing line for the intro sequence, using the run's RNG.
+ * Same pattern as the identity card variants - a small pool, one per life,
+ * no cross-life tracking needed.
+ */
+export function pickFramingLine(rng) {
+  return INTRO_FRAMING_LINES[Math.floor(rng() * INTRO_FRAMING_LINES.length)] || INTRO_FRAMING_LINES[0];
+}
 
 /**
  * Build one authored identity card, ready for applyChoice. `rng` is the run's
