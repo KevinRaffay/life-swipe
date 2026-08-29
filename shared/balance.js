@@ -128,6 +128,17 @@ export const BAL = {
     solvencyBonus: 2500,
     survivalBonus: 40,
   },
+
+  // The two authored identity choices at the start of every life
+  // (shared/intro.js). A starting-money nudge, not a fresh balance pass - both
+  // stay well under moneyCap(s) at age 16 (~$3,500), so they clamp the same as
+  // any other card's proposed effect would.
+  INTRO: {
+    financialTierModifiers: {
+      modest: -350,
+      comfortable: 700,
+    },
+  },
 };
 
 export default BAL;

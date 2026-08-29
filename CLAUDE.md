@@ -76,12 +76,15 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/schema.js` | structural validation + mode compliance. Runs server-side *and* client-side. |
 | `shared/content.js` | content-mode policy, the minor rule, keyword detection, dark-arc budget. |
 | `shared/scenario-format.js` | weight tiers and which narrative fields each carries. |
-| `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check. |
+| `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check, pool-wide activation filtering. |
 | `shared/regions.js` | region codes and labels, shared by the server resolver and the settings dropdown. |
-| `server/name-pool.json` | 187 names across 49 origins, with era, gender and per-region frequency. Data only. |
+| `server/name-pool.json` | 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. Data only. |
+| `server/name-pool-controls.json` | pool-wide deactivation lists (category / region / gender_assoc), each entry carrying a required reason and timestamp. Data only. |
+| `server/name-pool-health.js` | pool-health measurements (spread, era gaps, zero-candidate combinations) shared by `npm run names` and the admin's Name Pool health panel. |
 | `server/geo.js` | offline IP → region. Holds the privacy contract; read it before touching location. |
 | `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
+| `shared/intro.js` | the two authored identity choices shown at the start of every life, and the offline fallback text for the grounding beat that follows them. Not generated content: excluded from seen_patterns/seen_seed_ids and from LLM request logging. |
 | `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
 | `shared/fallback.js` | procedural templates so offline play never runs dry. |
 | `server/index.js` | serves `dist/`, proxies Anthropic, resolves the content tier. |
@@ -114,22 +117,24 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 
 | file | owns |
 | --- | --- |
-| `server/index.js` | the HTTP server: serves `dist/`, the `/api/*` endpoints (`scenarios`, `obituary`, `region`, `coverage`, seed/library/name-pool reads), resolves the content tier, and mounts the admin when bound to loopback. |
+| `server/index.js` | the HTTP server: serves `dist/`, the `/api/*` endpoints (`scenarios`, `intro`, `obituary`, `region`, `coverage`, seed/library/name-pool reads), resolves the content tier, and mounts the admin when bound to loopback. |
 | `server/anthropic.js` | the Messages API client, hand-rolled (no SDK). Holds the API key check, `MODEL`, `complete`, `extractJson`. |
-| `server/llm.js` | wraps the `anthropic.js` call for `/api/scenarios` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. |
-| `server/prompt.js` | builds the system + user storyteller prompts and the obituary prompt. (The spec calls this `llm.js`.) |
+| `server/llm.js` | wraps the `anthropic.js` call for `/api/scenarios` and `/api/intro` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. |
+| `server/prompt.js` | builds the system + user storyteller prompts, the intro grounding-beat prompt, and the obituary prompt. (The spec calls this `llm.js`.) |
 | `server/log-store.js` | the LLM log file: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
 | `server/harvest.js` | the content harvester: reads `server/logs/llm-requests.jsonl`, filters it to server-key calls that passed validation, puts the cast's name tags back into the cards, drops the ones that only make sense inside one life, and proposes seed-deck and situation-library drafts. Never writes a content file - the admin route does the appending. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
-| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender and per-region frequency. |
+| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. |
+| `server/name-pool-controls.json` | data only: pool-wide deactivation lists for category / region / gender_assoc, each entry requiring a reason. |
+| `server/name-pool-health.js` | pool-health measurements (category spread, era gaps, zero-eligible-candidate warnings), shared by `npm run names` and the admin's health panel. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
 | `server/admin/index.js` | the admin API router; mounted at `/admin`, loopback-only, no auth. Every route can rewrite content files. |
 | `server/admin/store.js` | the ONLY writer of content files: `.bak` backup, temp-file atomic write, content-hash version check. |
 | `server/admin/preview.js` | live preview: runs the real generation path against fresh in-memory sample state and returns raw + validated output, including the cards `/api/scenarios` would have dropped. |
 | `server/admin/cross-reference.js` | best-effort reachability check: which library `requires` flags nothing in the game ever sets. Advisory, never a save blocker. |
-| `server/admin/content-schema.js` | field-level validation for the two editable content types, reusing the extraction checks and the game's own `validateScenario`. |
+| `server/admin/content-schema.js` | field-level validation for the editable content types (library, seeds, name-pool entries, name-pool group controls), reusing the extraction checks and the game's own `validateScenario`. |
 
 **`client/`** — the player app (React, built by Vite to `dist/`).
 
@@ -137,13 +142,15 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | --- | --- |
 | `client/index.html` | the Vite HTML entry. |
 | `client/src/main.jsx` | mounts the React root. |
-| `client/src/App.jsx` | the root component: the game loop, the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`) and which screen is showing. |
-| `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently. |
+| `client/src/App.jsx` | the root component: the game loop (title → intro → playing → ended), the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`) and which screen is showing. |
+| `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently, including the intro grounding beat (`fetchIntroBeat`). |
 | `client/src/prefs.js` | per-player cross-life memory in `localStorage` (content mode, age gate, region choice, `seen_patterns`/`seen_seed_ids`), every access wrapped. |
 | `client/src/styles.css` | all styles. |
 | `client/src/components/CardStack.jsx` | the swipe gesture (pointer events), tiered card rendering, and `useFitToCard` — the measure-and-shrink pass that keeps a long card inside its box so it never scrolls. |
 | `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. |
 | `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice. |
+| `client/src/components/Intro.jsx` | the opening sequence between StartScreen and the first `deck.draw()` card: two authored identity choices (`shared/intro.js`) rendered through the same `CardStack`, then the grounding beat. Presentational only - `App.jsx` owns the state and the `applyChoice` calls. |
+| `client/src/components/GroundingBeat.jsx` | the intro's one non-interactive screen: a generated (or, on failure/timeout, authored-fallback) establishing scene, shown once, reusing the major-tier card's `.scene__setting`/`.scene__beat` visual treatment. Tap or swipe (via `pointerup`, not `click`, so a drag still registers) to continue - there is no choice to make. |
 | `client/src/severity.js` | classifies a turn's consequences as `major` or `standard` for EventToast - the one place the toast/modal threshold is tuned. |
 | `client/src/components/EventToast.jsx` | the toast of what the engine did to the player after the last swipe: fixed ~3-4s duration, paused while a pointer is down, tap to dismiss early. Routes `major` turns to `ConsequenceModal` instead. |
 | `client/src/components/ConsequenceModal.jsx` | the dismissible dialog for major-tier consequences (a pending event resolving, a significant new flag, a large stat swing). Same centered-dialog pattern as `admin/src/components/Modal.jsx`, reimplemented client-side since admin never ships to players. |
@@ -223,6 +230,22 @@ coverage target" checkbox (admin) generates for every bucket/mode pair
 regardless, since the bare target is a floor, not a ceiling on how much
 variety a bucket is worth having.
 
+**Spelling convention** — house style is American English throughout. The
+generation system prompt, the obituary prompt and the extraction prompt
+(`server/prompt.js`, `server/extraction.js`) each carry an explicit instruction
+to write American spelling regardless of source-text conventions, since
+`server/seed-generation.js` and admin preview share `buildSystemPrompt` and
+would otherwise inherit whatever the base prompt says. `shared/scenario-format.js`
+exports `BRITISH_SPELLINGS` (an explicit-inflected-form reference list, not
+stems — see the "embezzl" lesson below) and `britishSpellingWarnings`, wired
+into `validateBatch` (`shared/schema.js`) as a log-only `validationWarnings`
+entry across every tier, same pattern as the major-tier craft warnings. It is a
+style-consistency signal, never a rejection. A one-off audit against the live
+content (`server/situation-library.json`, `data/scenarios-seed.json`) run
+2026-08-28 flagged 15 of 91 library patterns and 18 of 239 seed scenarios —
+mostly "neighbour"/"behaviour"/"centre"/"programme"/"grey" — left for the
+normal admin edit flow to correct rather than auto-rewritten.
+
 **Content provenance** — every library pattern and seed scenario records where
 it came from, in a `source` field: `hand-authored` (a person, in the admin forms
 or the JSON directly), `extracted` (`server/extraction.js`, from pasted external
@@ -245,6 +268,27 @@ plus a per-role age offset) and then samples **category first**, weighted
 `1/(1+used)^1.5` against origins this life has already spent — a uniform draw
 over the whole pool would just hand out names in proportion to how many of each
 origin the file happens to contain.
+
+**Activation controls** sit ahead of all of that. Every entry carries an
+`active` flag (default true), and `server/name-pool-controls.json` adds three
+pool-wide exclusion lists — deactivated categories, gender_assocs and regions —
+each entry requiring a `reason`, since these are high-impact and should leave
+a visible trail of why. Category and gender_assoc deactivation exclude every
+matching name from selection outright, applied in `assignName` before era
+filtering and before any random draw, regardless of a name's own `active`
+flag. Region deactivation is different in kind: it never excludes a name, it
+only makes that region behave like the existing no-signal case (see Regional
+weighting below) — region is a weight, never a filter, so there is nothing
+else for a region control to remove. If deactivation ever leaves a role with
+no untaken, era/gender-matching candidate, `assignName` relaxes era and
+gender-want exactly as before, then — new — falls back to reusing a name
+already in play among the still-eligible names, logging a warning each time;
+only if literally no active, non-deactivated name exists at all does it return
+null, which `resolveCardNames` covers with the capitalised role word. All of
+this is edited from the admin's Name Pool tab (`npm run dev:admin`), including
+a bulk "select all matching the current filter" action against the individual
+`active` flag — how an ad-hoc grouping (an era range, a search match) is
+deactivated without a persistent control of its own.
 
 Two tag forms, resolved identically; what differs is who writes them.
 `{{new:roommate}}` is the storyteller introducing somebody, where the role is
@@ -284,6 +328,52 @@ Three rules hold the design together, and all three are the same rule:
 Region belongs to the **session**, not the life: it says who is playing, not
 who the character is, so a story that moves them to another state does not
 change it, and it never enters saved game state.
+
+---
+
+## The opening intro sequence
+
+Between `StartScreen` (content mode, age confirmation, region) and the first
+`deck.draw()` card, every life runs three fixed steps, tracked by `App.jsx` as
+`phase === 'intro'` and never persisted across lives:
+
+1. **Two authored identity choices** (`shared/intro.js`) - a financial-tier
+   binary and a bookish/social binary, each picked from a small pool of 3-4
+   hand-written phrasing variants (no cross-life seen-tracking; the pool is
+   too small to need it). Rendered through the exact same `CardStack` swipe
+   gesture as any real card, and applied through the exact same
+   `applyChoice`/`normalizeEffects` path (invariant 1) - `shared/intro.js`
+   only builds the scenario shape, via `validateScenario`, same as a
+   hand-authored seed. The financial card sets a starting-money nudge
+   (`BAL.INTRO.financialTierModifiers`, `shared/balance.js`) and a
+   `modest_upbringing`/`comfortable_upbringing` flag; the personality card
+   sets `bookish`/`social` with no mechanical effect. Both are excluded from
+   `seen_patterns`/`seen_seed_ids` and from LLM request logging entirely -
+   they never touch `Deck.draw` and never call the model, so there is nothing
+   here for `server/harvest.js` to ever see.
+2. **One non-interactive grounding beat** (`client/src/components/GroundingBeat.jsx`),
+   generated by `POST /api/intro` (`server/prompt.js`'s `INTRO_SYSTEM`/
+   `buildIntroPrompt`, inputs: `PRESENT_YEAR`, the resolved region, and the two
+   flags just set) and logged through `server/llm.js` like any generation
+   call, tagged `triggeredBy: "intro_generation"` - a value
+   `server/harvest.js`'s eligibility check excludes on purpose (see "Content
+   harvesting" below), since this is a fixed line with no decision, not a
+   scenario a life could repeat. Validated with a lightweight length-only
+   schema check (`server/index.js`'s `validateIntroBeat`), deliberately NOT
+   `validateScenario`'s prompt/decision-shape rules, since this content has no
+   decision by design. Same "cannot fail" guarantee as `deck.draw`: a failed
+   or slow (15s timeout) call falls back to one of `shared/intro.js`'s two
+   authored beats, keyed by the financial-tier flag only. Reuses the
+   major-tier card's `.scene__setting`/`.scene__beat` visual weight, since
+   this is the first thing a player reads; tap or swipe (via `pointerup`) to
+   continue - there is no choice.
+3. **Hand-off**: `App.jsx`'s `completeIntro` draws the first two real cards
+   from the already-constructed `Deck` and switches to `phase === 'playing'`,
+   exactly what `start()` used to do directly before this sequence existed.
+
+`deck.draw`, the situation library, seed selection and every existing card's
+effect-resolution logic are all unchanged - this is a pre-game sequence that
+terminates into the existing game loop, not a new game mode.
 
 ---
 
@@ -385,19 +475,36 @@ confirm it fails before trusting it.
 
 ## Branch workflow
 
-New work goes on a branch off `dev`. Always create that branch before starting
-a new feature — never commit a new feature straight to `dev`. Name it short
-and `kebab-case`, describing the feature (`request-response-logging`, not
-`fix` or `feature/thing` or `request_response_logging`). **The user merges to
-`main` themselves** after testing; do not merge to `main` unless explicitly
-asked.
+New work goes on a branch off `dev`. Always create that branch before
+starting a new feature — never commit a new feature straight to `dev`.
+Name it short and `kebab-case`.
 
-```
+When the Definition of done is satisfied, Claude Code stops and reports
+the branch as ready to merge — it does not attempt the merge into `dev`
+itself. Claude Code's Auto Mode permission classifier blocks pushes/
+merges to shared branches by design (a repo-file instruction doesn't
+count as live consent), so this isn't optional. Both feature → dev and
+dev → main merges are the user's call.
+
 main   ← user merges, after testing dev
-dev    ← integration branch, work lands here
+dev    ← user merges, once Definition of done is satisfied
 <feature branches off dev, short kebab-case name>
+
 ```
 
+## Definition of done
+
+Before a feature branch is considered ready to merge into dev, verify —
+out loud, in your final message on that branch — all three:
+1. CLAUDE.md's Feature Status table includes this feature.
+2. Any changed invariant, architecture-map entry, or file-structure
+   entry is updated to match.
+3. The verification commands (npm run simulate / coverage / names)
+   still exit 0.
+If any of these fail, the feature is not done — fix it in the same
+session, not as a follow-up. Do not report a feature as finished
+without stating you checked all three.
+```
 ---
 
 ## Feature status
@@ -428,14 +535,20 @@ dev    ← integration branch, work lands here
 | Name tags resolved in choice labels | shipped | on `main` — `resolveCardNames` walked `setting/beat/dialogue/prompt/scenario` and a relationship's name, but not `leftLabel`/`rightLabel`, so `col_sam` and `ec_marry_sam` put a literal `{{cast:sam}}` on a live choice button while the prompt above it read a resolved name. The field list is now `NAMED_FIELDS` in `shared/names.js` and is EXPORTED, because `Deck.resolveNames` kept a second hardcoded copy as its "is there anything to do" gate — a card whose only tag sat in a label never reached the resolver at all, and two lists that had to agree were the reason one went stale. Labels are deliberately not re-capped after resolution (see the comment on `NAMED_FIELDS`). The simulator's unresolved-tag assertion now reads every player-visible field rather than `scenario`/`prompt` alone, and `synthesiseNamedCard` gained a `labelOnly` shape — without it, reverting the deck's pre-check alone still passed, because every other tagged card trips the gate through its prose. Both reverts were confirmed to fail before the fix was trusted. No engine, effect-resolution, referee or content changes. |
 | Card text fits instead of scrolling | shipped | on `main` — a long major card overflowed its box: the last line of the prompt ran underneath `.card__hint`, and `.card` carried `overflow: auto`, so the card grew a scrollbar. A card is a thing you swipe, and a scroll gesture on it fights the swipe for the same pointer. `useFitToCard` (`client/src/components/CardStack.jsx`) now measures the laid-out scene against the card's content box and binary-searches a type scale down to `FIT_MIN` (0.62) until it fits, publishing it as `--fit`; every font size, gap and indent inside the card is a multiple of that one variable, so the card rescales proportionally instead of one field being squashed. Measured rather than chosen in CSS because how much text fits depends on where the lines wrap, which a media query cannot see. `overflow: clip` (with `hidden` as the fallback for older engines) is the backstop, and the bottom padding now reserves the hint's row. Presentation only: no engine, validator, content or prompt changes — an over-budget major card is still logged by `narrativeWarnings`, which is where that belongs. |
 | Narrative truncation stops on a boundary | shipped | on `main` — `cleanNarrative` capped each field with a bare `slice(0, FIELD_LIMITS[field])`, so an over-long field was cut mid-word: a live card read "The super is not answering. Someone n". Measured before changing anything: 0 of 339 fields in the seed deck overrun a limit, but 23 of 285 generated cards do (~8%, `setting` and `beat` only), and 15 of those landed mid-word. `truncateNarrative` now prefers the last COMPLETE SENTENCE inside the budget, and falls back to a word boundary plus an ellipsis when there is no sentence end worth keeping (below 60% of the budget, obeying one would gut the text). Abbreviations and initials are not sentence ends, so "Dr. Okonkwo" and "J. K." do not cut there. Across all 23 real cases: 0 still cut mid-word, 0 exceed their limit, 7 end on a full sentence. The seed deck renders byte-identically — this only ever fires on live generation. |
+| American English spelling enforcement | shipped | on `dev` — explicit spelling instruction added to the generation system prompt, the obituary prompt and the extraction prompt (all three previously said nothing about it); `britishSpellingWarnings`/`BRITISH_SPELLINGS` added to `shared/scenario-format.js` and wired into `validateBatch` as a log-only warning across every tier. Also fixed British spellings that had crept into the prompts' own instructional text ("cheques", "ageing", "labelled", "ANONYMISE", "GENERALISE"). One-off audit of the live content flagged 15/91 library patterns and 18/239 seed scenarios, left for the admin edit flow — see Content model above. No tier budgets, structure or engine/effect changes |
+| Name pool activation controls + admin manager | shipped | on `dev` — every `server/name-pool.json` entry gained an `active` flag (default true), and a new `server/name-pool-controls.json` holds three pool-wide deactivation lists (category, region, gender_assoc), each entry requiring a `reason`. `shared/names.js`'s `assignName` filters out inactive/deactivated-category/deactivated-gender_assoc candidates before era filtering and before any `nextRandom` draw (deactivation never changes how many randoms a selection consumes, same rule region already followed), then degrades in a fixed order exactly as before, with one new final tier — reuse a name already in play among the still-eligible names, logged — ahead of the existing null/role-word fallback. `regionalWeight` treats a deactivated region exactly like the pre-existing no-signal case; region remains a weight, never a filter, so it cannot independently empty the eligible pool. `scripts/build-region-weights.js` needed no change: it already mutates each pool entry's `region_frequency` in place rather than replacing the record, so `active` (and any other field) already survives a rebuild untouched. New admin "Name pool" tab (`admin/src/components/NamePool.jsx`, `NamePoolForm.jsx`, `GroupControls.jsx`, `NamePoolHealth.jsx`): a filterable/searchable table with bulk multi-select + "select all matching filter" (the individual `active` flag is how an ad-hoc grouping like an era range is deactivated, since it doesn't warrant a persistent control), a create/edit modal with a plain add/remove `region_frequency` list editor, and three group-control panels (category/region/gender_assoc) each requiring a reason and a confirmation step before deactivating. New routes in `server/admin/index.js` (`/api/name-pool`, `/api/name-pool/bulk-active`, `/api/name-pool-controls/{categories,regions,gender-assocs}`, `/api/name-pool-health`), validated by new `content-schema.js` functions, all going through the existing `server/admin/store.js` backup/atomic-write/version-check path like every other content file. `server/name-pool-health.js` computes category spread, era coverage gaps, duplicate names, deactivation counts and a zero-eligible-candidate sweep across era+gender (region is deliberately not swept — see above), shared by `npm run names` and the admin's health panel; advisory only, never blocks a save or fails the build. No change to era-filtering logic, the diversity-weighted sampling algorithm, or `region_frequency`'s underlying values. |
+| Game-opening intro sequence | shipped | on `dev` — see "The opening intro sequence" above for the full three-step flow (two authored identity choices, then a generated grounding beat). New: `shared/intro.js` (identity-card content + fallback beats), `BAL.INTRO.financialTierModifiers` (`shared/balance.js`), `server/prompt.js`'s `INTRO_SYSTEM`/`buildIntroPrompt`, `POST /api/intro` (`server/index.js`, its own lightweight `validateIntroBeat` rather than `validateScenario`), `client/src/api.js`'s `fetchIntroBeat`, `client/src/components/Intro.jsx` and `GroundingBeat.jsx`, and a new `'intro'` phase in `App.jsx` between `'title'` and `'playing'`. `server/harvest.js`'s `entryEligibility` gained a `triggeredBy` check (only `"batch_generation"`/`"validator_retry"` are harvestable) specifically so the new `"intro_generation"` log entries are excluded — the first caller of `server/llm.js` other than `/api/scenarios`, which is what made that check necessary rather than implicit. No change to `deck.draw`, the situation library, seed selection, or any existing card's effect-resolution logic. |
+| Name Pool tab: unified tab strip + per-row names list | shipped | on `dev` — a page-length rework of the Name Pool tab, in two passes that landed as one: first the three group-control cards became a tab strip, then the browsable/filterable name table joined it as a fourth tab rather than sitting permanently above. `admin/src/components/NamePool.jsx` holds a single `tab` state (`'names'` default, then `'categories'`/`'regions'`/`'gender-assocs'`) and a small button strip (`Names`/`Category`/`Region`/`Gender association`, reusing the header's `.tabs` button styling via a new `.tabs--sub` CSS variant since a bare `.tabs` inside a column-flex `.pane` stretches full-width and floats right); only the active tab's panel renders. The Pool Health panel is the one thing that stays pinned above the strip regardless of tab. The table's bulk-select and create/edit modal are otherwise unchanged, just now conditionally rendered. `GroupControls.jsx` itself is unchanged in shape (still one component, three instantiations) plus two new props: `namePool` (the same array `NamePool.jsx` already fetched for the table) and `matchNames(entry, rowValue)` (the same predicate each tab already used to compute a row's count — `matchesCategory`/`matchesRegion`/`matchesGenderAssoc`, now named and shared instead of inlined per-call, so the count and the list can never disagree). Every row gained a collapsed-by-default `<details>` disclosure listing the matching names, filtered client-side with no new API call. No change to any API route, `name-pool-controls.json`'s shape, `assignName`'s selection/filtering logic, or the table's own filtering/bulk-select behavior. |
+| Name Pool tab: bulk select for group controls | shipped | on `dev` — each of the three group-control tabs (Category/Region/Gender association) gained the same bulk-select toolbar shape the Names tab's own table already had: a checkbox per row, "Select all", a selected count, and "Activate selected"/"Deactivate selected" buttons that act only on the applicable subset of the current selection (already-deactivated rows for activate, still-active rows for deactivate - mixing both in one selection is fine, each button just ignores the rows it doesn't apply to). Bulk deactivate opens the same reason-required confirm step the single-row flow uses, once, covering every selected row. **This DOES touch the API**, unlike every other Name Pool layout change above: `POST /api/name-pool-controls/:kind/bulk` (`server/admin/index.js`, inside the existing `groupControlRoutes` factory so all three kinds get it for free) takes `{ values, active, reason, version, force }` and writes the whole selection in one atomic call, the same shape `/api/name-pool/bulk-active` already established for the main table. This is not a style choice: a client-side loop calling the existing single-value `onDeactivate`/`onReactivate` props N times would race itself, because each of those closures (`admin/src/App.jsx`) captures `boot.nameControlsVersion` from whatever render created it, and nothing re-renders between synchronous loop iterations to hand it the version the *previous* iteration's write just produced - every call after the first would arrive with a stale version and hit the store's conflict check. `GroupControls.jsx` computes an exact (not summed) affected-name count for the bulk-deactivate confirmation by reusing its own `namePool`/`matchNames` - summing each row's `count` would double-count a name that carries several selected regions, since region membership isn't exclusive the way category and gender_assoc are. No change to `name-pool-controls.json`'s shape or `assignName`'s selection/filtering logic; the single-row add/remove routes and the Names tab's own bulk-active endpoint are untouched. |
 
 ---
 
 ## The admin module
 
 A separate interface for editing content — the library, the seed deck, the
-extraction draft queue — plus a cross-reference check, a live preview, a
-content harvester and a stats view. `npm run admin`, then <http://localhost:8787/admin>.
+name pool, the extraction draft queue — plus a cross-reference check, a live
+preview, a content harvester and a stats view. `npm run admin`, then
+<http://localhost:8787/admin>.
 
 **It has no authentication, and the server binds to `127.0.0.1` because of
 that.** The consequence is deliberate and worth knowing: the *game* is
@@ -457,6 +570,35 @@ Other things worth knowing before working on it:
   `.bak`, writes to a temp file and renames (so an interrupted save cannot leave
   a half-written library the game server then refuses to boot on), and checks a
   content hash so a file edited underneath you is refused rather than clobbered.
+- **The Name Pool tab is one tab strip, not a table plus three stacked
+  cards.** `admin/src/components/NamePool.jsx` holds a single `tab` state
+  (`'names'` default) switching between four panels — Names (the
+  browsable/filterable table, bulk-select and create/edit modal, unchanged
+  from before this rework), Category, Region and Gender association — behind
+  a small button strip reusing the header's `.tabs` button styling (a new
+  `.tabs--sub` CSS variant, since a bare `.tabs` inside a column-flex `.pane`
+  stretches full-width and floats right). Only the Pool Health panel stays
+  pinned above the strip regardless of which tab is active. The three group
+  controls still go through `admin/src/components/GroupControls.jsx` — still
+  one component, three instantiations — and every row there carries a names
+  disclosure (a plain `<details>`, collapsed by default) that expands to the
+  actual names in that group — category/gender_assoc match by equality,
+  region by any `region_frequency` entry for that code. It filters the
+  `namePool` array `NamePool.jsx` already passes down as a prop, through the
+  same `matchNames(entry, row.value)` predicate that computes the row's
+  count, so the two can never disagree — no separate API call, same as the
+  count never was one.
+- **Each group-control tab's bulk select is one atomic API call, not a loop
+  over the single-row routes.** `GroupControls.jsx`'s selection toolbar
+  (checkboxes, "Select all", "Activate selected"/"Deactivate selected",
+  each acting only on the applicable subset of the selection) calls
+  `POST /api/name-pool-controls/:kind/bulk` — new, same shape as
+  `/api/name-pool/bulk-active` — through props threaded from
+  `admin/src/App.jsx`. A client-side loop calling the existing per-value
+  `onDeactivate`/`onReactivate` closures repeatedly would have raced itself:
+  each of those closures captures `boot.nameControlsVersion` from whichever
+  render created it, nothing re-renders mid-loop, so every call after the
+  first would carry a stale version and hit the store's conflict check.
 - **Extraction never merges.** It appends to `situation-library.draft.json` and
   stops; entering the library is always an explicit human approval.
 - **Extraction flags likely content duplicates, it doesn't block them.**
@@ -521,12 +663,15 @@ fire-and-forget (`log-store.js`'s `appendLog`, called from inside the
 `fs.appendFile` callback), so a slow disk never delays the response already on
 its way to the player.
 
+`/api/intro` (the intro flow's one-off establishing-scene call, see "The
+opening intro sequence" below) is wrapped the same way, with `triggeredBy:
+"intro_generation"`. `age`/`contentMode`/`librarySlotUsed` are all `null` on
+that call - it has no live player's state to draw them from, and no scenario
+shape to validate against `validateBatch`.
+
 Deliberately **not** wrapped: the obituary call, admin preview, and pattern
-extraction. The log schema is shaped around gameplay (`triggeredBy` is only
-`"batch_generation"` or `"validator_retry"`; `age`/`contentMode`/
-`librarySlotUsed` all come from a live player's state), and those three calls
-don't have that context. Preview and extraction already show their own raw
-output in the admin UI, so nothing about them is opaque today.
+extraction. Preview and extraction already show their own raw output in the
+admin UI, so nothing about them is opaque today.
 
 Major-tier craft drift — a field outside ±30% of its word budget, or a card
 with no concrete number — is measured by `narrativeWarnings` during
@@ -573,7 +718,13 @@ admin's "Harvest" tab (`POST /admin/api/harvest`) is the only trigger, and it is
 game's permanent content becomes.
 
 **Eligibility.** A logged call is a candidate only if `keySource === "server"`,
-`validationResult === "passed"`, and the individual card carries no more than
+`validationResult === "passed"`, and `triggeredBy` is `"batch_generation"` or
+`"validator_retry"` — the two values an actual scenario-generation call
+carries. That last check is what keeps the intro flow's one-off establishing
+beat (`triggeredBy: "intro_generation"`, logged the same way as a gameplay
+call — see "Request/response logging" above) out of the harvester entirely:
+it is a fixed non-interactive line with no decision, not a scenario a life
+could ever repeat. And the individual card carries no more than
 `maxCraftWarnings` (default 0) of the batch's `validationWarnings`. That last
 filter is per CARD, not per call: `validateBatch` prefixes each warning with its
 raw-array index, so one over-budget major does not disqualify the other four.

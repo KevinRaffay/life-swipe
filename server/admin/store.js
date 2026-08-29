@@ -39,6 +39,8 @@ export const FILES = {
   // Not present in the repo yet. Everything here copes with that; the thread
   // editor is the one feature deliberately left for later.
   threads: { file: path.join(ROOT, 'server', 'thread-templates.json'), kind: 'thread' },
+  namePool: { file: path.join(ROOT, 'server', 'name-pool.json'), kind: 'namePoolEntry' },
+  nameControls: { file: path.join(ROOT, 'server', 'name-pool-controls.json'), kind: 'nameControls' },
 };
 
 // Canonical key order, so a save produces a readable diff instead of a
@@ -68,6 +70,10 @@ const KEY_ORDER = {
   // draft - the rejector writes whichever key its content type uses.
   rejection: ['id', 'rejectedAt', 'reason', 'pattern', 'scenario'],
   thread: ['id', 'beats'],
+  namePoolEntry: ['name', 'category', 'gender_assoc', 'active', 'era_start', 'era_end', 'region_frequency'],
+  // The controls file is one object, not a list of records - `ordered()`
+  // handles that shape too (see below).
+  nameControls: ['deactivatedCategories', 'deactivatedRegions', 'deactivatedGenderAssocs'],
 };
 
 export class ConflictError extends Error {

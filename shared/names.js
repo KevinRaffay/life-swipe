@@ -20,9 +20,39 @@ import { BAL } from './balance.js';
 // module runs in the browser, in the server and in the simulator, and only one
 // of those three knows what "@names" means.
 import NAME_POOL from '../server/name-pool.json' with { type: 'json' };
+// Pool-wide exclusion layers, edited from the admin's Name Pool tab. Same
+// reasoning as NAME_POOL itself: a static import means an admin edit needs a
+// server restart to take live effect, which is already true of every other
+// content file this game reads at boot.
+import NAME_POOL_CONTROLS from '../server/name-pool-controls.json' with { type: 'json' };
 import { seedFrom, nextRandom } from './rng.js';
 
-export { NAME_POOL };
+export { NAME_POOL, NAME_POOL_CONTROLS };
+
+export const GENDER_ASSOCS = ['f', 'm', 'neutral'];
+
+/**
+ * Is this name individually active, and not swept out by a pool-wide
+ * category or gender_assoc deactivation? Three independent switches, all of
+ * which exclude outright rather than weight - unlike region, none of these
+ * describe a real demographic tendency, so there is nothing to preserve by
+ * downweighting instead of removing.
+ */
+export function isNameEligible(entry, controls = NAME_POOL_CONTROLS) {
+  if (!entry || entry.active === false) return false;
+  const categories = (controls && controls.deactivatedCategories) || [];
+  if (categories.some((c) => c.category === entry.category)) return false;
+  const genders = (controls && controls.deactivatedGenderAssocs) || [];
+  if (genders.some((g) => g.genderAssoc === entry.gender_assoc)) return false;
+  return true;
+}
+
+/** Is this region's contribution to the weighting switched off? */
+export function isRegionDeactivated(region, controls = NAME_POOL_CONTROLS) {
+  if (!region) return false;
+  const regions = (controls && controls.deactivatedRegions) || [];
+  return regions.some((r) => r.region === region);
+}
 
 /* -------------------------------------------------------------- the tag */
 
@@ -166,10 +196,10 @@ export function takenNames({ relationships = {}, kids = [], ledger = null } = {}
   return taken;
 }
 
-const eraOk = (entry, year) =>
+export const eraOk = (entry, year) =>
   entry.era_start <= year && (!Number.isFinite(entry.era_end) || entry.era_end >= year);
 
-const genderOk = (entry, want) =>
+export const genderOk = (entry, want) =>
   !want || entry.gender_assoc === want || entry.gender_assoc === 'neutral';
 
 /**
@@ -189,8 +219,12 @@ const genderOk = (entry, want) =>
 export function regionalWeight(entry, region, {
   power = BAL.NAMES.regionPower,
   ceiling = BAL.NAMES.regionCeiling,
+  controls = NAME_POOL_CONTROLS,
 } = {}) {
   if (!region || !power) return 1;
+  // A deactivated region is exactly the no-signal case, not a name exclusion:
+  // it stops THIS region tilting the draw, nothing more.
+  if (isRegionDeactivated(region, controls)) return 1;
   const table = entry && entry.region_frequency;
   if (!table) return 1;
   const lq = table[region];
@@ -217,6 +251,13 @@ export function regionalWeight(entry, region, {
  * this feature set out to fix.
  *
  * Degrades in a fixed order and never throws: draw() cannot fail (invariant 4).
+ *
+ * Eligibility (individual `active`, category and gender_assoc deactivation)
+ * is a hard filter applied ahead of every pass below - era and gender-want are
+ * the only things that ever relax. Region is never in this list: it was
+ * already a weight applied only to already-eligible candidates (see
+ * `regionalWeight`), never a filter, so deactivating one changes nothing here
+ * - it has nothing to drop.
  */
 export function assignName({
   pool = NAME_POOL,
@@ -226,25 +267,41 @@ export function assignName({
   categoryUse = {},
   rng = Math.random,
   region = null,
+  controls = NAME_POOL_CONTROLS,
 } = {}) {
   const want = hintFor(role).gender;
   const free = (e) => !taken.has(firstName(e.name));
+  const eligible = (e) => isNameEligible(e, controls);
 
   const passes = [
-    (e) => free(e) && eraOk(e, birthYear) && genderOk(e, want),
-    (e) => free(e) && eraOk(e, birthYear),
-    (e) => free(e) && genderOk(e, want),
-    (e) => free(e),
+    (e) => eligible(e) && free(e) && eraOk(e, birthYear) && genderOk(e, want),
+    (e) => eligible(e) && free(e) && eraOk(e, birthYear),
+    (e) => eligible(e) && free(e) && genderOk(e, want),
+    (e) => eligible(e) && free(e),
+    // Deactivation can shrink the eligible pool far more than era/gender ever
+    // did on their own - this pass drops even "not already taken" and is the
+    // one genuinely new fallback tier this feature adds. Reusing a first name
+    // within one life is a smaller lie than a card with braces in it.
+    (e) => eligible(e),
   ];
 
   let candidates = [];
-  for (const pass of passes) {
-    candidates = pool.filter(pass);
-    if (candidates.length) break;
+  let tier = -1;
+  for (let i = 0; i < passes.length; i++) {
+    candidates = pool.filter(passes[i]);
+    if (candidates.length) { tier = i; break; }
   }
-  // 187 names against a life that names a few dozen people at most, so this is
-  // unreachable in practice - but a nameless card must never reach the player.
-  if (!candidates.length) return null;
+  if (tier === passes.length - 1) {
+    console.warn(`[names] pool-wide deactivation left no untaken candidate for role "${role}" - reusing a name already in play`);
+  }
+  // 187 names against a life that names a few dozen people at most, so an
+  // empty EVERY-tier result is unreachable without extreme deactivation - but
+  // a nameless card must never reach the player, so this still degrades
+  // gracefully: resolveCardNames falls back to the role word itself.
+  if (!candidates.length) {
+    console.warn(`[names] no active, non-deactivated name available at all for role "${role}"`);
+    return null;
+  }
 
   const byCategory = new Map();
   for (const entry of candidates) {
@@ -258,7 +315,7 @@ export function assignName({
   // to six names each, so weighting only inside them would move almost
   // nothing, and "more Somali names in Minnesota" is a statement about which
   // origins come up, not about which Somali name you get.
-  const regionOf = (entry) => regionalWeight(entry, region);
+  const regionOf = (entry) => regionalWeight(entry, region, { controls });
 
   const categories = [...byCategory.keys()];
   const weights = categories.map((c) => {
@@ -388,6 +445,7 @@ export function resolveCardNames(card, {
   rng = Math.random,
   pool = NAME_POOL,
   region = null,
+  controls = NAME_POOL_CONTROLS,
 } = {}) {
   const assigned = [];
   const pending = {};
@@ -420,6 +478,7 @@ export function resolveCardNames(card, {
       categoryUse,
       rng,
       region,
+      controls,
     });
     // A pool with nothing left to give is not a reason to show the player a
     // card with braces in it; fall back to the role itself, capitalised.
@@ -475,10 +534,11 @@ export function resolveBatchEphemeral(scenarios, {
   seedInput = 'preview',
   pool = NAME_POOL,
   region = null,
+  controls = NAME_POOL_CONTROLS,
 } = {}) {
   const { ledger, rng } = ephemeralNameContext(seedInput);
   const out = (scenarios || []).map((scenario) => {
-    const { card, assigned } = resolveCardNames(scenario, { ledger, relationships, kids, age, rng, pool, region });
+    const { card, assigned } = resolveCardNames(scenario, { ledger, relationships, kids, age, rng, pool, region, controls });
     for (const entry of assigned) {
       ledger.byTag[entry.key] = entry.name;
       if (entry.category) ledger.categories[entry.category] = (ledger.categories[entry.category] || 0) + 1;

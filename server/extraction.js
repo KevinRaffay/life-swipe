@@ -26,17 +26,20 @@ senior figure who normalises excess" is a shape. "Worked at a particular firm fo
 a man with a particular name" is not - that is a fact about one person.
 
 RULES, all of them load-bearing:
-1. ANONYMISE COMPLETELY. No names of people, companies, funds, products, places
+1. ANONYMIZE COMPLETELY. No names of people, companies, funds, products, places
    or publications. No dates, no years, no figures that only make sense for one
    person. If a detail identifies the source, it is wrong.
-2. GENERALISE UNTIL IT IS COMMON. Each pattern must plausibly describe thousands
+2. GENERALIZE UNTIL IT IS COMMON. Each pattern must plausibly describe thousands
    of different lives across different decades and industries. If it could only
    happen to one person, keep abstracting or discard it.
 3. SHAPES, NOT PLOTS. Capture the structure of the decision and its consequence,
    not the sequence of events.
 4. NO METHOD. Never describe how to commit a crime, obtain drugs or evade
    detection. Depict decisions and their costs.
-5. Discard anything you cannot anonymise. Fewer good patterns beats more weak ones.
+5. Discard anything you cannot anonymize. Fewer good patterns beats more weak ones.
+6. Write in American English spelling and conventions throughout (e.g. "enroll"
+   not "enrol", "color" not "colour", "realize" not "realise", "traveling" not
+   "travelling") - regardless of the source text's own spelling conventions.
 
 Return between 8 and 15 patterns as a JSON array and nothing else. Each object:
 

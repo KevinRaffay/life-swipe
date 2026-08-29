@@ -127,6 +127,31 @@ export const harvest = (options, onEvent = () => {}, signal = undefined) =>
 
 export const preview = (body) => json(`${base}/preview`, { method: 'POST', body });
 
+/* ------------------------------------------------------------- name pool */
+
+export const createNamePoolEntry = (record, version, force = false) =>
+  json(`${base}/name-pool`, { method: 'POST', body: { record, version, force } });
+export const updateNamePoolEntry = (name, record, version, force = false) =>
+  json(`${base}/name-pool/${encodeURIComponent(name)}`, { method: 'PUT', body: { record, version, force } });
+export const deleteNamePoolEntry = (name, version, force = false) =>
+  json(`${base}/name-pool/${encodeURIComponent(name)}`, { method: 'DELETE', body: { version, force } });
+export const bulkSetNameActive = (names, active, version, force = false) =>
+  json(`${base}/name-pool/bulk-active`, { method: 'POST', body: { names, active, version, force } });
+export const getNamePoolHealth = () => json(`${base}/name-pool-health`);
+
+// The three group-level controls (category / region / gender_assoc) share one
+// shape: add with a required reason, remove by value to reactivate.
+export const addGroupControl = (kind, value, reason, version, force = false) =>
+  json(`${base}/name-pool-controls/${kind}`, { method: 'POST', body: { value, reason, version, force } });
+export const removeGroupControl = (kind, value, version, force = false) =>
+  json(`${base}/name-pool-controls/${kind}/${encodeURIComponent(value)}`, { method: 'DELETE', body: { version, force } });
+// Bulk select on the Name Pool tab's group-control tabs: one write for the
+// whole selection rather than one request per row, same shape as
+// bulkSetNameActive - `active` picks the direction, `reason` only matters
+// (and is required) when deactivating.
+export const bulkSetGroupControlActive = (kind, values, active, reason, version, force = false) =>
+  json(`${base}/name-pool-controls/${kind}/bulk`, { method: 'POST', body: { values, active, reason, version, force } });
+
 const qs = (params) => {
   const usp = new URLSearchParams();
   for (const [k, v] of Object.entries(params || {})) {

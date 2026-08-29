@@ -152,6 +152,94 @@ export function wordCount(s) {
   return displayText(s).split(/\s+/).filter(Boolean).length;
 }
 
+// Reference list for the American-English spelling check: British forms mapped
+// to their American spelling. Explicit inflected forms rather than word stems -
+// a stem inside \b(...)\b can never match its own suffix (see the "embezzl"
+// lesson in CLAUDE.md), so this lists every form actually expected rather than
+// relying on one that silently misses the common case.
+export const BRITISH_SPELLINGS = [
+  ['color', ['colour', 'colours', 'coloured', 'colouring', 'colourful']],
+  ['favorite', ['favourite', 'favourites']],
+  ['favor', ['favour', 'favours', 'favoured', 'favouring']],
+  ['flavor', ['flavour', 'flavours', 'flavoured', 'flavourful']],
+  ['behavior', ['behaviour', 'behaviours', 'behavioural']],
+  ['neighbor', ['neighbour', 'neighbours', 'neighbourhood', 'neighbourly']],
+  ['honor', ['honour', 'honours', 'honoured', 'honourable']],
+  ['humor', ['humour', 'humoured', 'humourless']],
+  ['labor', ['labour', 'labours', 'laboured', 'labourer']],
+  ['realize', ['realise', 'realised', 'realising', 'realisation']],
+  ['organize', ['organise', 'organised', 'organising', 'organisation', 'organiser']],
+  ['recognize', ['recognise', 'recognised', 'recognising']],
+  ['apologize', ['apologise', 'apologised', 'apologising']],
+  ['criticize', ['criticise', 'criticised', 'criticising']],
+  ['specialize', ['specialise', 'specialised', 'specialising']],
+  ['analyze', ['analyse', 'analysed', 'analysing', 'analyser']],
+  ['enroll', ['enrol', 'enrolment']],
+  ['traveling', ['travelling']],
+  ['traveled', ['travelled']],
+  ['traveler', ['traveller', 'travellers']],
+  ['canceled', ['cancelled']],
+  ['canceling', ['cancelling']],
+  ['modeling', ['modelling']],
+  ['modeled', ['modelled']],
+  ['labeled', ['labelled']],
+  ['labeling', ['labelling']],
+  ['signaled', ['signalled']],
+  ['signaling', ['signalling']],
+  ['fueled', ['fuelled']],
+  ['fueling', ['fuelling']],
+  ['counselor', ['counsellor', 'counsellors']],
+  ['counseling', ['counselling']],
+  ['jeweler', ['jeweller', 'jewellers']],
+  ['jewelry', ['jewellery']],
+  ['program', ['programme', 'programmes']],
+  ['defense', ['defence', 'defences']],
+  ['offense', ['offence', 'offences']],
+  ['pretense', ['pretence']],
+  ['license', ['licence', 'licences']],
+  ['check', ['cheque', 'cheques']],
+  ['tire', ['tyre', 'tyres']],
+  ['curb', ['kerb']],
+  ['gray', ['grey']],
+  ['mold', ['mould', 'moulded', 'moulding']],
+  ['aluminum', ['aluminium']],
+  ['theater', ['theatre', 'theatres']],
+  ['center', ['centre', 'centres']],
+  ['liter', ['litre', 'litres']],
+  ['meter', ['metre', 'metres']],
+  ['fiber', ['fibre', 'fibres']],
+  ['aging', ['ageing']],
+  ['skeptical', ['sceptical']],
+  ['skepticism', ['scepticism']],
+  ['plow', ['plough', 'ploughed', 'ploughing']],
+  ['practice', ['practise', 'practised', 'practising']],
+];
+
+const BRITISH_SPELLING_RE = BRITISH_SPELLINGS.map(([american, forms]) => ({
+  american,
+  re: new RegExp('\\b(' + forms.join('|') + ')\\b', 'i'),
+}));
+
+/**
+ * British-spelling variants found in text, for style consistency only - this
+ * is a signal about house-style drift, not a validity check. Returns at most
+ * one warning per American target word even if several of its British forms
+ * appear, so a card that says "colour" three times doesn't spam the log.
+ */
+export function britishSpellingWarnings(text) {
+  const warnings = [];
+  if (!text) return warnings;
+  const seen = new Set();
+  for (const { american, re } of BRITISH_SPELLING_RE) {
+    const m = re.exec(text);
+    if (m && !seen.has(american)) {
+      seen.add(american);
+      warnings.push(`British spelling "${m[1]}" (use "${american}")`);
+    }
+  }
+  return warnings;
+}
+
 /** Non-fatal observations, for content tooling rather than the game loop. */
 export function narrativeWarnings(s) {
   const warnings = [];

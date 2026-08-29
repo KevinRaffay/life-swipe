@@ -24,6 +24,13 @@
 //      real name by the time it is dealt. A harvested card must carry the tag
 //      again, not the name - otherwise every future life meets the same Rowan.
 //      `depersonalise` is the reverse of shared/names.js's resolution step.
+//   4. GAMEPLAY CALLS ONLY. `entryEligibility` also checks `triggeredBy`
+//      against the two values a real scenario-generation call can carry. Other
+//      callLLM callers exist for content that isn't a scenario at all - the
+//      intro flow's one-off establishing beat ("intro_generation") is a fixed
+//      non-interactive line with no decision, not something a life repeats -
+//      and are excluded by that check rather than by relying on nothing else
+//      ever logging through the same wrapper.
 //
 // ON DEMAND ONLY. There is no scheduled job here and there should not be one:
 // harvesting decides what the game's permanent content becomes, and a person
@@ -516,6 +523,14 @@ export function warningsByIndex(validationWarnings) {
   return byIndex;
 }
 
+// The only two triggeredBy values a gameplay scenario-generation call can
+// carry (server/index.js's /api/scenarios). Anything else - including
+// "intro_generation", the one-off establishing-scene call the intro flow
+// makes through the same callLLM wrapper (server/prompt.js's
+// buildIntroPrompt) - is not a scenario a life could ever repeat, and is
+// excluded here rather than by accident.
+const HARVESTABLE_TRIGGERS = new Set(['batch_generation', 'validator_retry']);
+
 /**
  * Is this whole log entry a harvest candidate?
  *
@@ -529,6 +544,9 @@ export function entryEligibility(entry) {
   }
   if (entry.validationResult !== 'passed') {
     return { ok: false, reason: `outcome ${entry.validationResult || 'unknown'}` };
+  }
+  if (!HARVESTABLE_TRIGGERS.has(entry.triggeredBy)) {
+    return { ok: false, reason: `triggered by ${entry.triggeredBy || 'unknown'}` };
   }
   if (!entry.rawResponse) return { ok: false, reason: 'no response text' };
   return { ok: true, reason: null };

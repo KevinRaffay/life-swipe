@@ -9,16 +9,20 @@
 import express from 'express';
 import { read, write, update, exists, fileOf, ConflictError } from './store.js';
 import { validateLibraryPattern, validateSeedScenario, generateId,
-  PATTERN_CATEGORIES, PATTERN_RARITIES, MODES } from './content-schema.js';
+  validateNamePoolEntry, validateGroupControlEntry,
+  PATTERN_CATEGORIES, PATTERN_RARITIES, MODES, NAME_GENDER_ASSOCS } from './content-schema.js';
 import { crossReference } from './cross-reference.js';
 import { previewPattern, previewSeed, yearFor } from './preview.js';
 import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } from '../extraction.js';
 import { generateSeedDrafts } from '../seed-generation.js';
 import { runHarvest, HARVEST_DEFAULTS } from '../harvest.js';
+import { computeNamePoolHealth } from '../name-pool-health.js';
 import { hasKey, MODEL } from '../anthropic.js';
 import { queryLogs, getLogEntry, getLogSummary } from '../log-store.js';
 import { EXTRACTED, HAND_AUTHORED, SOURCES, tallySources, harvestedShare } from '../../shared/provenance.js';
 import { US_REGIONS } from '../../shared/regions.js';
+
+const EMPTY_NAME_CONTROLS = { deactivatedCategories: [], deactivatedRegions: [], deactivatedGenderAssocs: [] };
 
 // try/await rather than Promise.resolve(fn()).catch(): a handler that throws
 // SYNCHRONOUSLY - which is exactly what the store does on a version conflict -
@@ -54,6 +58,8 @@ export function createAdminRouter() {
     const seeds = read('seeds');
     const drafts = read('drafts');
     const seedDrafts = read('seedDrafts');
+    const namePool = read('namePool');
+    const nameControls = read('nameControls', EMPTY_NAME_CONTROLS);
     res.json({
       library: library.data,
       libraryVersion: library.version,
@@ -63,14 +69,22 @@ export function createAdminRouter() {
       draftsVersion: drafts.version,
       seedDrafts: seedDrafts.data,
       seedDraftsVersion: seedDrafts.version,
+      namePool: namePool.data,
+      namePoolVersion: namePool.version,
+      nameControls: nameControls.data,
+      nameControlsVersion: nameControls.version,
       threadsPresent: exists('threads'),
       llmEnabled: hasKey(),
       model: hasKey() ? MODEL : null,
-      vocab: { categories: PATTERN_CATEGORIES, rarities: PATTERN_RARITIES, modes: MODES, sources: SOURCES },
+      vocab: {
+        categories: PATTERN_CATEGORIES, rarities: PATTERN_RARITIES, modes: MODES, sources: SOURCES,
+        nameGenderAssocs: NAME_GENDER_ASSOCS,
+      },
       harvestDefaults: HARVEST_DEFAULTS,
       regions: US_REGIONS,
       files: {
         library: fileOf('library'), seeds: fileOf('seeds'), drafts: fileOf('drafts'), seedDrafts: fileOf('seedDrafts'),
+        namePool: fileOf('namePool'), nameControls: fileOf('nameControls'),
       },
     });
   }));
@@ -169,6 +183,163 @@ export function createAdminRouter() {
 
   libraryRoutes('library', (record, siblings) => validateLibraryPattern(record, siblings), 'pattern');
   libraryRoutes('seeds', (record, siblings) => validateSeedScenario(record, siblings).problems, 'scenario');
+
+  /* ----------------------------------------------------------- name pool */
+
+  // Not libraryRoutes: a name-pool entry is addressed by `name`, not `id`,
+  // and needs one extra bulk-write route for "select all matching the
+  // current filter, then deactivate" - an ad-hoc grouping (an era range, a
+  // search match) that does not warrant a persistent control of its own.
+  router.get('/api/name-pool', asHandler((_req, res) => {
+    const { data, version } = read('namePool');
+    res.json({ data, version });
+  }));
+
+  router.post('/api/name-pool', asHandler((req, res) => {
+    const record = { active: true, ...(req.body?.record || {}) };
+    const current = read('namePool').data;
+    const problems = validateNamePoolEntry(record, current);
+    if (problems.length) return res.status(400).json({ error: 'invalid name-pool entry', problems });
+    const result = update('namePool', (list) => [...list, record], writeOpts(req));
+    res.json({ ok: true, data: result.data, version: result.version, backup: result.backup });
+  }));
+
+  router.put('/api/name-pool/:name', asHandler((req, res) => {
+    const record = req.body?.record;
+    const current = read('namePool').data;
+    const index = current.findIndex((e) => e.name.toLowerCase() === req.params.name.toLowerCase());
+    if (index === -1) return res.status(404).json({ error: `no name-pool entry "${req.params.name}"` });
+    const problems = validateNamePoolEntry(record, current.filter((_, i) => i !== index));
+    if (problems.length) return res.status(400).json({ error: 'invalid name-pool entry', problems });
+    const result = update('namePool', (list) => list.map((e, i) => (i === index ? record : e)), writeOpts(req));
+    res.json({ ok: true, data: result.data, version: result.version, backup: result.backup });
+  }));
+
+  router.delete('/api/name-pool/:name', asHandler((req, res) => {
+    const current = read('namePool').data;
+    const key = req.params.name.toLowerCase();
+    if (!current.some((e) => e.name.toLowerCase() === key)) {
+      return res.status(404).json({ error: `no name-pool entry "${req.params.name}"` });
+    }
+    const result = update('namePool', (list) => list.filter((e) => e.name.toLowerCase() !== key), writeOpts(req));
+    res.json({ ok: true, data: result.data, version: result.version, backup: result.backup });
+  }));
+
+  router.post('/api/name-pool/bulk-active', asHandler((req, res) => {
+    const names = Array.isArray(req.body?.names) ? req.body.names.map(String) : [];
+    const active = req.body?.active === true;
+    if (!names.length) return res.status(400).json({ error: 'no names given' });
+    const wanted = new Set(names.map((n) => n.toLowerCase()));
+    const current = read('namePool').data;
+    const missing = names.filter((n) => !current.some((e) => e.name.toLowerCase() === n.toLowerCase()));
+    if (missing.length) return res.status(404).json({ error: `unknown name(s): ${missing.join(', ')}` });
+    const result = update(
+      'namePool',
+      (list) => list.map((e) => (wanted.has(e.name.toLowerCase()) ? { ...e, active } : e)),
+      writeOpts(req),
+    );
+    res.json({ ok: true, data: result.data, version: result.version, backup: result.backup, changed: names.length });
+  }));
+
+  router.get('/api/name-pool-health', asHandler((_req, res) => {
+    const pool = read('namePool').data;
+    const controls = read('nameControls', EMPTY_NAME_CONTROLS).data;
+    res.json(computeNamePoolHealth({ pool, controls }));
+  }));
+
+  /* --------------------------------------------------- name-pool controls */
+
+  router.get('/api/name-pool-controls', asHandler((_req, res) => {
+    const { data, version } = read('nameControls', EMPTY_NAME_CONTROLS);
+    res.json({ data, version });
+  }));
+
+  // One route builder for all three group-level controls - category, region
+  // and gender_assoc deactivation share one shape (a list of {value, reason,
+  // deactivatedAt} in name-pool-controls.json), so it is written once and
+  // parametrised rather than duplicated three times, the same relationship
+  // libraryRoutes above has to library/seeds.
+  const groupControlRoutes = (listKey, field, urlSegment, noun, countAffected) => {
+    router.post(`/api/name-pool-controls/${urlSegment}`, asHandler((req, res) => {
+      const value = req.body?.value;
+      const reason = req.body?.reason;
+      const controls = read('nameControls', EMPTY_NAME_CONTROLS).data;
+      const siblings = (controls[listKey] || []).map((e) => e[field]);
+      const problems = validateGroupControlEntry({ value, reason }, siblings, noun);
+      if (problems.length) return res.status(400).json({ error: `invalid ${noun} deactivation`, problems });
+      const pool = read('namePool').data;
+      const affected = countAffected(pool, value);
+      const entry = { [field]: value, reason: String(reason).trim(), deactivatedAt: new Date().toISOString() };
+      const result = update(
+        'nameControls',
+        (data) => ({ ...EMPTY_NAME_CONTROLS, ...data, [listKey]: [...((data && data[listKey]) || []), entry] }),
+        { ...writeOpts(req), fallback: EMPTY_NAME_CONTROLS },
+      );
+      res.json({ ok: true, data: result.data, version: result.version, backup: result.backup, affected });
+    }));
+
+    router.delete(`/api/name-pool-controls/${urlSegment}/:value`, asHandler((req, res) => {
+      const controls = read('nameControls', EMPTY_NAME_CONTROLS).data;
+      if (!(controls[listKey] || []).some((e) => e[field] === req.params.value)) {
+        return res.status(404).json({ error: `"${req.params.value}" is not deactivated` });
+      }
+      const result = update(
+        'nameControls',
+        (data) => ({ ...EMPTY_NAME_CONTROLS, ...data, [listKey]: ((data && data[listKey]) || []).filter((e) => e[field] !== req.params.value) }),
+        { ...writeOpts(req), fallback: EMPTY_NAME_CONTROLS },
+      );
+      res.json({ ok: true, data: result.data, version: result.version, backup: result.backup });
+    }));
+
+    // Bulk select on the admin's Name Pool tab needs one atomic write for the
+    // whole selection, not a sequence of the single-value routes above: this
+    // request carries the `version` the client last read exactly once, so N
+    // selected rows cost one version check instead of N sequential ones (each
+    // racing the last write's new version and needing its own conflict retry).
+    // Same shape choice as /api/name-pool/bulk-active: one route, an `active`
+    // boolean picks the direction, rather than two routes.
+    router.post(`/api/name-pool-controls/${urlSegment}/bulk`, asHandler((req, res) => {
+      const values = Array.isArray(req.body?.values) ? [...new Set(req.body.values.map(String))] : [];
+      const active = req.body?.active === true;
+      const reason = req.body?.reason;
+      if (!values.length) return res.status(400).json({ error: `no ${noun}s given` });
+
+      const controls = read('nameControls', EMPTY_NAME_CONTROLS).data;
+      const siblings = (controls[listKey] || []).map((e) => e[field]);
+
+      if (active) {
+        const missing = values.filter((v) => !siblings.includes(v));
+        if (missing.length) return res.status(404).json({ error: `not deactivated: ${missing.join(', ')}` });
+        const result = update(
+          'nameControls',
+          (data) => ({ ...EMPTY_NAME_CONTROLS, ...data, [listKey]: ((data && data[listKey]) || []).filter((e) => !values.includes(e[field])) }),
+          { ...writeOpts(req), fallback: EMPTY_NAME_CONTROLS },
+        );
+        return res.json({ ok: true, data: result.data, version: result.version, backup: result.backup, changed: values.length });
+      }
+
+      // Reused per-value: reason-required and not-already-deactivated are the
+      // same rules the single-add route enforces, just run once per selected
+      // value here so a bulk request cannot smuggle in a bad one.
+      const problems = [...new Set(values.flatMap((value) => validateGroupControlEntry({ value, reason }, siblings, noun)))];
+      if (problems.length) return res.status(400).json({ error: `invalid ${noun} bulk deactivation`, problems });
+      const timestamp = new Date().toISOString();
+      const entries = values.map((value) => ({ [field]: value, reason: String(reason).trim(), deactivatedAt: timestamp }));
+      const result = update(
+        'nameControls',
+        (data) => ({ ...EMPTY_NAME_CONTROLS, ...data, [listKey]: [...((data && data[listKey]) || []), ...entries] }),
+        { ...writeOpts(req), fallback: EMPTY_NAME_CONTROLS },
+      );
+      res.json({ ok: true, data: result.data, version: result.version, backup: result.backup, changed: values.length });
+    }));
+  };
+
+  groupControlRoutes('deactivatedCategories', 'category', 'categories', 'category',
+    (pool, value) => pool.filter((e) => e.category === value).length);
+  groupControlRoutes('deactivatedRegions', 'region', 'regions', 'region',
+    (pool, value) => pool.filter((e) => e.region_frequency && Number.isFinite(e.region_frequency[value])).length);
+  groupControlRoutes('deactivatedGenderAssocs', 'genderAssoc', 'gender-assocs', 'gender_assoc',
+    (pool, value) => pool.filter((e) => e.gender_assoc === value).length);
 
   /* ------------------------------------------------- extraction + drafts */
 

@@ -7,7 +7,7 @@
 // job (engine.js -> normalizeEffects), because that depends on live game state.
 
 import { checkCompliance, MODES } from './content.js';
-import { TIERS, normalizeNarrative, displayText, narrativeWarnings } from './scenario-format.js';
+import { TIERS, normalizeNarrative, displayText, narrativeWarnings, britishSpellingWarnings } from './scenario-format.js';
 import { checkNameDrift, checkReintroductions } from './names.js';
 
 const WEIGHTS = new Set([...TIERS, 'trivial']);
@@ -260,6 +260,12 @@ export function validateBatch(raw, { minValid = 1, tier = null, age = 99, relati
     if (res.scenario.weight === 'major') {
       for (const w of narrativeWarnings(res.scenario)) warnings.push(`scenario[${i}]: ${w}`);
     }
+    // Spelling-convention drift, log-only across every tier: the house style
+    // is American English throughout, and this is a style signal, not a
+    // validity check, same as the major-tier craft warnings above.
+    const spellingText = [displayText(res.scenario), res.scenario.leftLabel, res.scenario.rightLabel]
+      .filter(Boolean).join(' ');
+    for (const w of britishSpellingWarnings(spellingText)) warnings.push(`scenario[${i}]: ${w}`);
     // Off-screen reintroduction, across ALL tiers: a named relationship that
     // dropped out of the recent-history window and comes back on a bare name,
     // with no role reminder to place them. Log-only, like the drift above.
