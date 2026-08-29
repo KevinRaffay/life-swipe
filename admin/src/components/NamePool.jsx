@@ -17,14 +17,29 @@ const STATUS_OPTIONS = [
 const isExcludedByGroup = (entry, deactivatedCategories, deactivatedGenderAssocs) =>
   deactivatedCategories.has(entry.category) || deactivatedGenderAssocs.has(entry.gender_assoc);
 
+// Shared by each GroupControls row's `count` AND its collapsible names list
+// (`matchNames`), so the two can never disagree about who is in a group.
+const matchesCategory = (entry, category) => entry.category === category;
+const matchesGenderAssoc = (entry, genderAssoc) => entry.gender_assoc === genderAssoc;
+const matchesRegion = (entry, code) =>
+  Boolean(entry.region_frequency) && Number.isFinite(entry.region_frequency[code]);
+
+const TABS = [
+  ['names', 'Names'],
+  ['categories', 'Category'],
+  ['regions', 'Region'],
+  ['gender-assocs', 'Gender association'],
+];
+
 export default function NamePool({
   namePool, nameControls, genderAssocs, busy,
-  onSaveEntry, onDeleteEntry, onBulkActive, onAddGroupControl, onRemoveGroupControl,
+  onSaveEntry, onDeleteEntry, onBulkActive, onAddGroupControl, onRemoveGroupControl, onBulkGroupControlActive,
 }) {
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({ category: '', genderAssoc: '', status: '', eraFrom: '', eraTo: '' });
   const [selected, setSelected] = useState(() => new Set());
   const [editing, setEditing] = useState(undefined); // undefined = closed, null = new
+  const [tab, setTab] = useState('names');
   const [healthTick, setHealthTick] = useState(0);
   const bump = () => setHealthTick((t) => t + 1);
 
@@ -103,6 +118,12 @@ export default function NamePool({
   const reactivateGroup = async (kind, value) => {
     const ok = await onRemoveGroupControl(kind, value);
     if (ok) bump();
+    return ok;
+  };
+  const bulkGroupControlAction = async (kind, values, active, reason) => {
+    const ok = await onBulkGroupControlActive(kind, values, active, reason);
+    if (ok) bump();
+    return ok;
   };
 
   const categoryRegionNote = (category) => {
@@ -171,114 +192,146 @@ export default function NamePool({
     <div className="pane">
       <NamePoolHealth refreshKey={healthTick} />
 
-      <section className="card">
-        <div className="toolbar">
-          <input
-            className="search"
-            placeholder="search name or category..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <select value={filters.category} onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}>
-            <option value="">all categories</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={filters.genderAssoc} onChange={(e) => setFilters((f) => ({ ...f, genderAssoc: e.target.value }))}>
-            <option value="">all genders</option>
-            {genderAssocs.map((g) => <option key={g} value={g}>{g}</option>)}
-          </select>
-          <select value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}>
-            {STATUS_OPTIONS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
-          </select>
-          <input
-            style={{ maxWidth: 90 }}
-            type="number" placeholder="era from"
-            value={filters.eraFrom}
-            onChange={(e) => setFilters((f) => ({ ...f, eraFrom: e.target.value }))}
-          />
-          <input
-            style={{ maxWidth: 90 }}
-            type="number" placeholder="era to"
-            value={filters.eraTo}
-            onChange={(e) => setFilters((f) => ({ ...f, eraTo: e.target.value }))}
-          />
-          <span className="spacer" />
-          <span className="muted small">{filteredRows.length} of {namePool.length}</span>
-          <button className="btn btn--primary" onClick={() => setEditing(null)}>New</button>
-        </div>
-
-        <div className="toolbar">
-          <button className="btn" onClick={selectAllMatching} disabled={!filteredRows.length}>
-            Select all matching filter ({filteredRows.length})
+      <nav className="tabs tabs--sub">
+        {TABS.map(([key, label]) => (
+          <button
+            key={key}
+            className={tab === key ? 'is-on' : ''}
+            onClick={() => setTab(key)}
+          >
+            {label}
           </button>
-          <span className="muted small">{selected.size} selected</span>
-          <span className="spacer" />
-          <button className="btn" onClick={() => bulkAction(true)} disabled={busy || !selected.size}>Activate selected</button>
-          <button className="btn btn--danger" onClick={() => bulkAction(false)} disabled={busy || !selected.size}>Deactivate selected</button>
-          {selected.size > 0 && <button className="link" onClick={clearSelection}>clear</button>}
-        </div>
+        ))}
+      </nav>
 
-        <Table
-          columns={columns}
-          rows={tableRows}
-          onSelect={(r) => setEditing(namePool.find((e) => e.name === r.name) || null)}
-          selectedId={editing ? editing.name : undefined}
-        />
-
-        {editing !== undefined && (
-          <Modal title={editing ? `Editing ${editing.name}` : 'New name'} onClose={() => setEditing(undefined)}>
-            <NamePoolForm
-              value={editing}
-              genderAssocs={genderAssocs}
-              categories={categories}
-              busy={busy}
-              onCancel={() => setEditing(undefined)}
-              onSave={saveEntry}
-              onDelete={deleteEntry}
+      {tab === 'names' && (
+        <section className="card">
+          <div className="toolbar">
+            <input
+              className="search"
+              placeholder="search name or category..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
-          </Modal>
-        )}
-      </section>
+            <select value={filters.category} onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}>
+              <option value="">all categories</option>
+              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={filters.genderAssoc} onChange={(e) => setFilters((f) => ({ ...f, genderAssoc: e.target.value }))}>
+              <option value="">all genders</option>
+              {genderAssocs.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+            <select value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}>
+              {STATUS_OPTIONS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+            </select>
+            <input
+              style={{ maxWidth: 90 }}
+              type="number" placeholder="era from"
+              value={filters.eraFrom}
+              onChange={(e) => setFilters((f) => ({ ...f, eraFrom: e.target.value }))}
+            />
+            <input
+              style={{ maxWidth: 90 }}
+              type="number" placeholder="era to"
+              value={filters.eraTo}
+              onChange={(e) => setFilters((f) => ({ ...f, eraTo: e.target.value }))}
+            />
+            <span className="spacer" />
+            <span className="muted small">{filteredRows.length} of {namePool.length}</span>
+            <button className="btn btn--primary" onClick={() => setEditing(null)}>New</button>
+          </div>
 
-      <GroupControls
-        title="Category controls"
-        description="Deactivating a category excludes every name in it from selection pool-wide, regardless of each name's own active flag."
-        rows={categories.map((c) => ({
-          value: c,
-          count: namePool.filter((e) => e.category === c).length,
-          deactivated: (nameControls.deactivatedCategories || []).find((d) => d.category === c) || null,
-        }))}
-        note={categoryRegionNote}
-        busy={busy}
-        onDeactivate={(value, reason) => deactivateGroup('categories', value, reason)}
-        onReactivate={(value) => reactivateGroup('categories', value)}
-      />
+          <div className="toolbar">
+            <button className="btn" onClick={selectAllMatching} disabled={!filteredRows.length}>
+              Select all matching filter ({filteredRows.length})
+            </button>
+            <span className="muted small">{selected.size} selected</span>
+            <span className="spacer" />
+            <button className="btn" onClick={() => bulkAction(true)} disabled={busy || !selected.size}>Activate selected</button>
+            <button className="btn btn--danger" onClick={() => bulkAction(false)} disabled={busy || !selected.size}>Deactivate selected</button>
+            {selected.size > 0 && <button className="link" onClick={clearSelection}>clear</button>}
+          </div>
 
-      <GroupControls
-        title="Region controls"
-        description="Deactivating a region does not remove any names - it turns off that region's contribution to the weighting dimension, treating a resolved player region as no signal (exactly like the existing absent-region case)."
-        rows={regionsInUse.map((code) => ({
-          value: code,
-          count: namePool.filter((e) => e.region_frequency && Number.isFinite(e.region_frequency[code])).length,
-          deactivated: (nameControls.deactivatedRegions || []).find((d) => d.region === code) || null,
-        }))}
-        busy={busy}
-        onDeactivate={(value, reason) => deactivateGroup('regions', value, reason)}
-        onReactivate={(value) => reactivateGroup('regions', value)}
-      />
+          <Table
+            columns={columns}
+            rows={tableRows}
+            onSelect={(r) => setEditing(namePool.find((e) => e.name === r.name) || null)}
+            selectedId={editing ? editing.name : undefined}
+          />
 
-      <GroupControls
-        title="Gender association controls"
-        description="Deactivating a gender_assoc excludes every name carrying it from selection pool-wide."
-        rows={genderAssocs.map((g) => ({
-          value: g,
-          count: namePool.filter((e) => e.gender_assoc === g).length,
-          deactivated: (nameControls.deactivatedGenderAssocs || []).find((d) => d.genderAssoc === g) || null,
-        }))}
-        busy={busy}
-        onDeactivate={(value, reason) => deactivateGroup('gender-assocs', value, reason)}
-        onReactivate={(value) => reactivateGroup('gender-assocs', value)}
-      />
+          {editing !== undefined && (
+            <Modal title={editing ? `Editing ${editing.name}` : 'New name'} onClose={() => setEditing(undefined)}>
+              <NamePoolForm
+                value={editing}
+                genderAssocs={genderAssocs}
+                categories={categories}
+                busy={busy}
+                onCancel={() => setEditing(undefined)}
+                onSave={saveEntry}
+                onDelete={deleteEntry}
+              />
+            </Modal>
+          )}
+        </section>
+      )}
+
+      {tab === 'categories' && (
+        <GroupControls
+          title="Category controls"
+          description="Deactivating a category excludes every name in it from selection pool-wide, regardless of each name's own active flag."
+          rows={categories.map((c) => ({
+            value: c,
+            count: namePool.filter((e) => matchesCategory(e, c)).length,
+            deactivated: (nameControls.deactivatedCategories || []).find((d) => d.category === c) || null,
+          }))}
+          note={categoryRegionNote}
+          namePool={namePool}
+          matchNames={matchesCategory}
+          busy={busy}
+          onDeactivate={(value, reason) => deactivateGroup('categories', value, reason)}
+          onReactivate={(value) => reactivateGroup('categories', value)}
+          onBulkDeactivate={(values, reason) => bulkGroupControlAction('categories', values, false, reason)}
+          onBulkReactivate={(values) => bulkGroupControlAction('categories', values, true)}
+        />
+      )}
+
+      {tab === 'regions' && (
+        <GroupControls
+          title="Region controls"
+          description="Deactivating a region does not remove any names - it turns off that region's contribution to the weighting dimension, treating a resolved player region as no signal (exactly like the existing absent-region case)."
+          rows={regionsInUse.map((code) => ({
+            value: code,
+            count: namePool.filter((e) => matchesRegion(e, code)).length,
+            deactivated: (nameControls.deactivatedRegions || []).find((d) => d.region === code) || null,
+          }))}
+          namePool={namePool}
+          matchNames={matchesRegion}
+          busy={busy}
+          onDeactivate={(value, reason) => deactivateGroup('regions', value, reason)}
+          onReactivate={(value) => reactivateGroup('regions', value)}
+          onBulkDeactivate={(values, reason) => bulkGroupControlAction('regions', values, false, reason)}
+          onBulkReactivate={(values) => bulkGroupControlAction('regions', values, true)}
+        />
+      )}
+
+      {tab === 'gender-assocs' && (
+        <GroupControls
+          title="Gender association controls"
+          description="Deactivating a gender_assoc excludes every name carrying it from selection pool-wide."
+          rows={genderAssocs.map((g) => ({
+            value: g,
+            count: namePool.filter((e) => matchesGenderAssoc(e, g)).length,
+            deactivated: (nameControls.deactivatedGenderAssocs || []).find((d) => d.genderAssoc === g) || null,
+          }))}
+          namePool={namePool}
+          matchNames={matchesGenderAssoc}
+          busy={busy}
+          onDeactivate={(value, reason) => deactivateGroup('gender-assocs', value, reason)}
+          onReactivate={(value) => reactivateGroup('gender-assocs', value)}
+          onBulkDeactivate={(values, reason) => bulkGroupControlAction('gender-assocs', values, false, reason)}
+          onBulkReactivate={(values) => bulkGroupControlAction('gender-assocs', values, true)}
+        />
+      )}
     </div>
   );
 }

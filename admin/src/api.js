@@ -145,6 +145,12 @@ export const addGroupControl = (kind, value, reason, version, force = false) =>
   json(`${base}/name-pool-controls/${kind}`, { method: 'POST', body: { value, reason, version, force } });
 export const removeGroupControl = (kind, value, version, force = false) =>
   json(`${base}/name-pool-controls/${kind}/${encodeURIComponent(value)}`, { method: 'DELETE', body: { version, force } });
+// Bulk select on the Name Pool tab's group-control tabs: one write for the
+// whole selection rather than one request per row, same shape as
+// bulkSetNameActive - `active` picks the direction, `reason` only matters
+// (and is required) when deactivating.
+export const bulkSetGroupControlActive = (kind, values, active, reason, version, force = false) =>
+  json(`${base}/name-pool-controls/${kind}/bulk`, { method: 'POST', body: { values, active, reason, version, force } });
 
 const qs = (params) => {
   const usp = new URLSearchParams();

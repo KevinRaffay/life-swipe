@@ -290,6 +290,48 @@ export function createAdminRouter() {
       );
       res.json({ ok: true, data: result.data, version: result.version, backup: result.backup });
     }));
+
+    // Bulk select on the admin's Name Pool tab needs one atomic write for the
+    // whole selection, not a sequence of the single-value routes above: this
+    // request carries the `version` the client last read exactly once, so N
+    // selected rows cost one version check instead of N sequential ones (each
+    // racing the last write's new version and needing its own conflict retry).
+    // Same shape choice as /api/name-pool/bulk-active: one route, an `active`
+    // boolean picks the direction, rather than two routes.
+    router.post(`/api/name-pool-controls/${urlSegment}/bulk`, asHandler((req, res) => {
+      const values = Array.isArray(req.body?.values) ? [...new Set(req.body.values.map(String))] : [];
+      const active = req.body?.active === true;
+      const reason = req.body?.reason;
+      if (!values.length) return res.status(400).json({ error: `no ${noun}s given` });
+
+      const controls = read('nameControls', EMPTY_NAME_CONTROLS).data;
+      const siblings = (controls[listKey] || []).map((e) => e[field]);
+
+      if (active) {
+        const missing = values.filter((v) => !siblings.includes(v));
+        if (missing.length) return res.status(404).json({ error: `not deactivated: ${missing.join(', ')}` });
+        const result = update(
+          'nameControls',
+          (data) => ({ ...EMPTY_NAME_CONTROLS, ...data, [listKey]: ((data && data[listKey]) || []).filter((e) => !values.includes(e[field])) }),
+          { ...writeOpts(req), fallback: EMPTY_NAME_CONTROLS },
+        );
+        return res.json({ ok: true, data: result.data, version: result.version, backup: result.backup, changed: values.length });
+      }
+
+      // Reused per-value: reason-required and not-already-deactivated are the
+      // same rules the single-add route enforces, just run once per selected
+      // value here so a bulk request cannot smuggle in a bad one.
+      const problems = [...new Set(values.flatMap((value) => validateGroupControlEntry({ value, reason }, siblings, noun)))];
+      if (problems.length) return res.status(400).json({ error: `invalid ${noun} bulk deactivation`, problems });
+      const timestamp = new Date().toISOString();
+      const entries = values.map((value) => ({ [field]: value, reason: String(reason).trim(), deactivatedAt: timestamp }));
+      const result = update(
+        'nameControls',
+        (data) => ({ ...EMPTY_NAME_CONTROLS, ...data, [listKey]: [...((data && data[listKey]) || []), ...entries] }),
+        { ...writeOpts(req), fallback: EMPTY_NAME_CONTROLS },
+      );
+      res.json({ ok: true, data: result.data, version: result.version, backup: result.backup, changed: values.length });
+    }));
   };
 
   groupControlRoutes('deactivatedCategories', 'category', 'categories', 'category',

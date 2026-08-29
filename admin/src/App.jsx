@@ -219,6 +219,16 @@ export default function App() {
     return true;
   };
 
+  const bulkSetGroupControlActive = async (kind, values, active, reason) => {
+    const res = await save(
+      (force) => api.bulkSetGroupControlActive(kind, values, active, reason, boot.nameControlsVersion, force),
+      `${active ? 'Reactivated' : 'Deactivated'} ${values.length}`,
+    );
+    if (!res) return false;
+    patch({ nameControls: res.data, nameControlsVersion: res.version });
+    return true;
+  };
+
   return (
     <main className="admin">
       <header className="admin__head">
@@ -328,6 +338,7 @@ export default function App() {
           onBulkActive={bulkSetNameActive}
           onAddGroupControl={addGroupControl}
           onRemoveGroupControl={removeGroupControl}
+          onBulkGroupControlActive={bulkSetGroupControlActive}
         />
       )}
 
