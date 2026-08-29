@@ -5526,5 +5526,413 @@
       "happiness": 3,
       "timeCostMonths": 0.25
     }
+  },
+  {
+    "id": "highschool_texts_during_third_period",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}} texts during third period: he has a spare and wants to know if you can meet him at the vending machines. You have a quiz sixth period you have not studied for.",
+    "leftLabel": "Meet him now",
+    "rightLabel": "Stay in class",
+    "leftEffects": {
+      "health": -2,
+      "happiness": 5,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_your_mother_has_left",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your mother has left a library book on your bed about summer coding camps. The sticky note says only 'just in case'. You have not asked her opinion on anything career-related in months.",
+    "leftLabel": "Look it up",
+    "rightLabel": "Slide it off",
+    "leftEffects": {
+      "happiness": 3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 6
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -2,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -4
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_texts_asking_if_you",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}} texts asking if you will come watch him play the ukulele at an open mic. He actually bought the ukulele.",
+    "leftLabel": "Go watch",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "happiness": 10,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -5
+      }
+    }
+  },
+  {
+    "id": "college_the_garden_center_s",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The garden center's spring rush is starting. Rick offers you a supervisor role for the season - more hours, more responsibility, same eleven dollars an hour. Do you take it?",
+    "leftLabel": "Take the role",
+    "rightLabel": "Stay as-is",
+    "leftEffects": {
+      "money": 400,
+      "happiness": -5,
+      "flags": [
+        "supervisor_experience"
+      ],
+      "timeCostMonths": 4
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "timeCostMonths": 4
+    }
+  },
+  {
+    "id": "highschool_there_is_an_open",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "There is an open sign-up for the school's winter talent show. You have no discernible talent, which is apparently not a disqualifier based on last year's lineup.",
+    "leftLabel": "Sign up",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "happiness": 10,
+      "flags": [
+        "performed_publicly"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_dad_is_building_something",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Dad is building something in the shed again and has left the door open, which is new. You could go ask what it is, or let him have the silence he usually prefers.",
+    "leftLabel": "Go ask",
+    "rightLabel": "Let him be",
+    "leftEffects": {
+      "happiness": 7,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 1,
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -3
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_the_vending_machine_returns",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The vending machine returns your dollar bill three times in a row. You could keep feeding it until it gives you the chips, or pocket the extra two dollars.",
+    "leftLabel": "Keep trying",
+    "rightLabel": "Pocket it",
+    "leftEffects": {
+      "money": -1,
+      "happiness": 2,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": 2,
+      "happiness": 3,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_invites_you_to_a",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}} invites you to a weekend camping trip with four people you only half know. It costs $60 for your share of the site and food. Do you go?",
+    "leftLabel": "Go camping",
+    "rightLabel": "Skip it",
+    "leftEffects": {
+      "money": -60,
+      "health": 5,
+      "happiness": 12,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -4,
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_says_there_are_eight",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:manager}} says there are eight more flats of impatiens in the van. You are already twenty minutes past the end of your shift. Do you stay and finish, or clock out on time?",
+    "leftLabel": "Stay and finish",
+    "rightLabel": "Clock out now",
+    "leftEffects": {
+      "money": 18,
+      "happiness": 5,
+      "flags": [
+        "reliable_employee"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "flags": [
+        "boundary_setter"
+      ]
+    }
+  },
+  {
+    "id": "college_the_garden_centre_wants",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The garden centre wants you back for the spring season. The hours are the same, the polo is still green, and your track commitments are over. Do you re-up?",
+    "leftLabel": "Go back",
+    "rightLabel": "Look elsewhere",
+    "leftEffects": {
+      "money": 1804,
+      "happiness": 5,
+      "flags": [
+        "has_part_time_job"
+      ],
+      "timeCostMonths": 6
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "college_your_best_friend_texts",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend, texts to say he is thinking about dropping out of his electrician programme after one semester. He wants to know what you think. Do you tell him honestly, or tell him it is his call?",
+    "leftLabel": "Be honest",
+    "rightLabel": "His call",
+    "leftEffects": {
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -8,
+        "flags": [
+          "sione_considering_dropout"
+        ]
+      },
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 5,
+        "flags": [
+          "sione_considering_dropout"
+        ]
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_the_recycling_drive_grant",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The recycling drive grant came through. {{new:classmate}} texts to say your share is $38, not $40 — one volunteer showed up twice and claimed an extra cut. Do you let it go?",
+    "leftLabel": "Let it go",
+    "rightLabel": "Push back",
+    "leftEffects": {
+      "money": 38,
+      "happiness": -3,
+      "flags": [
+        "lets_small_wrongs_pass"
+      ]
+    },
+    "rightEffects": {
+      "money": 40,
+      "happiness": 4,
+      "relationship": {
+        "name": "{{new:classmate}}",
+        "role": "classmate",
+        "qualityDelta": -8
+      }
+    }
   }
 ]
