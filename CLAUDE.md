@@ -504,7 +504,7 @@ out loud, in your final message on that branch — all three:
 If any of these fail, the feature is not done — fix it in the same
 session, not as a follow-up. Do not report a feature as finished
 without stating you checked all three.
-
+```
 ---
 
 ## Feature status
