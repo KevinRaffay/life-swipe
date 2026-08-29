@@ -76,9 +76,11 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/schema.js` | structural validation + mode compliance. Runs server-side *and* client-side. |
 | `shared/content.js` | content-mode policy, the minor rule, keyword detection, dark-arc budget. |
 | `shared/scenario-format.js` | weight tiers and which narrative fields each carries. |
-| `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check. |
+| `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check, pool-wide activation filtering. |
 | `shared/regions.js` | region codes and labels, shared by the server resolver and the settings dropdown. |
-| `server/name-pool.json` | 187 names across 49 origins, with era, gender and per-region frequency. Data only. |
+| `server/name-pool.json` | 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. Data only. |
+| `server/name-pool-controls.json` | pool-wide deactivation lists (category / region / gender_assoc), each entry carrying a required reason and timestamp. Data only. |
+| `server/name-pool-health.js` | pool-health measurements (spread, era gaps, zero-candidate combinations) shared by `npm run names` and the admin's Name Pool health panel. |
 | `server/geo.js` | offline IP → region. Holds the privacy contract; read it before touching location. |
 | `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
@@ -123,13 +125,15 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
 | `server/harvest.js` | the content harvester: reads `server/logs/llm-requests.jsonl`, filters it to server-key calls that passed validation, puts the cast's name tags back into the cards, drops the ones that only make sense inside one life, and proposes seed-deck and situation-library drafts. Never writes a content file - the admin route does the appending. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
-| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender and per-region frequency. |
+| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. |
+| `server/name-pool-controls.json` | data only: pool-wide deactivation lists for category / region / gender_assoc, each entry requiring a reason. |
+| `server/name-pool-health.js` | pool-health measurements (category spread, era gaps, zero-eligible-candidate warnings), shared by `npm run names` and the admin's health panel. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
 | `server/admin/index.js` | the admin API router; mounted at `/admin`, loopback-only, no auth. Every route can rewrite content files. |
 | `server/admin/store.js` | the ONLY writer of content files: `.bak` backup, temp-file atomic write, content-hash version check. |
 | `server/admin/preview.js` | live preview: runs the real generation path against fresh in-memory sample state and returns raw + validated output, including the cards `/api/scenarios` would have dropped. |
 | `server/admin/cross-reference.js` | best-effort reachability check: which library `requires` flags nothing in the game ever sets. Advisory, never a save blocker. |
-| `server/admin/content-schema.js` | field-level validation for the two editable content types, reusing the extraction checks and the game's own `validateScenario`. |
+| `server/admin/content-schema.js` | field-level validation for the editable content types (library, seeds, name-pool entries, name-pool group controls), reusing the extraction checks and the game's own `validateScenario`. |
 
 **`client/`** — the player app (React, built by Vite to `dist/`).
 
@@ -245,6 +249,27 @@ plus a per-role age offset) and then samples **category first**, weighted
 `1/(1+used)^1.5` against origins this life has already spent — a uniform draw
 over the whole pool would just hand out names in proportion to how many of each
 origin the file happens to contain.
+
+**Activation controls** sit ahead of all of that. Every entry carries an
+`active` flag (default true), and `server/name-pool-controls.json` adds three
+pool-wide exclusion lists — deactivated categories, gender_assocs and regions —
+each entry requiring a `reason`, since these are high-impact and should leave
+a visible trail of why. Category and gender_assoc deactivation exclude every
+matching name from selection outright, applied in `assignName` before era
+filtering and before any random draw, regardless of a name's own `active`
+flag. Region deactivation is different in kind: it never excludes a name, it
+only makes that region behave like the existing no-signal case (see Regional
+weighting below) — region is a weight, never a filter, so there is nothing
+else for a region control to remove. If deactivation ever leaves a role with
+no untaken, era/gender-matching candidate, `assignName` relaxes era and
+gender-want exactly as before, then — new — falls back to reusing a name
+already in play among the still-eligible names, logging a warning each time;
+only if literally no active, non-deactivated name exists at all does it return
+null, which `resolveCardNames` covers with the capitalised role word. All of
+this is edited from the admin's Name Pool tab (`npm run dev:admin`), including
+a bulk "select all matching the current filter" action against the individual
+`active` flag — how an ad-hoc grouping (an era range, a search match) is
+deactivated without a persistent control of its own.
 
 Two tag forms, resolved identically; what differs is who writes them.
 `{{new:roommate}}` is the storyteller introducing somebody, where the role is
@@ -428,14 +453,16 @@ dev    ← integration branch, work lands here
 | Name tags resolved in choice labels | shipped | on `main` — `resolveCardNames` walked `setting/beat/dialogue/prompt/scenario` and a relationship's name, but not `leftLabel`/`rightLabel`, so `col_sam` and `ec_marry_sam` put a literal `{{cast:sam}}` on a live choice button while the prompt above it read a resolved name. The field list is now `NAMED_FIELDS` in `shared/names.js` and is EXPORTED, because `Deck.resolveNames` kept a second hardcoded copy as its "is there anything to do" gate — a card whose only tag sat in a label never reached the resolver at all, and two lists that had to agree were the reason one went stale. Labels are deliberately not re-capped after resolution (see the comment on `NAMED_FIELDS`). The simulator's unresolved-tag assertion now reads every player-visible field rather than `scenario`/`prompt` alone, and `synthesiseNamedCard` gained a `labelOnly` shape — without it, reverting the deck's pre-check alone still passed, because every other tagged card trips the gate through its prose. Both reverts were confirmed to fail before the fix was trusted. No engine, effect-resolution, referee or content changes. |
 | Card text fits instead of scrolling | shipped | on `main` — a long major card overflowed its box: the last line of the prompt ran underneath `.card__hint`, and `.card` carried `overflow: auto`, so the card grew a scrollbar. A card is a thing you swipe, and a scroll gesture on it fights the swipe for the same pointer. `useFitToCard` (`client/src/components/CardStack.jsx`) now measures the laid-out scene against the card's content box and binary-searches a type scale down to `FIT_MIN` (0.62) until it fits, publishing it as `--fit`; every font size, gap and indent inside the card is a multiple of that one variable, so the card rescales proportionally instead of one field being squashed. Measured rather than chosen in CSS because how much text fits depends on where the lines wrap, which a media query cannot see. `overflow: clip` (with `hidden` as the fallback for older engines) is the backstop, and the bottom padding now reserves the hint's row. Presentation only: no engine, validator, content or prompt changes — an over-budget major card is still logged by `narrativeWarnings`, which is where that belongs. |
 | Narrative truncation stops on a boundary | shipped | on `main` — `cleanNarrative` capped each field with a bare `slice(0, FIELD_LIMITS[field])`, so an over-long field was cut mid-word: a live card read "The super is not answering. Someone n". Measured before changing anything: 0 of 339 fields in the seed deck overrun a limit, but 23 of 285 generated cards do (~8%, `setting` and `beat` only), and 15 of those landed mid-word. `truncateNarrative` now prefers the last COMPLETE SENTENCE inside the budget, and falls back to a word boundary plus an ellipsis when there is no sentence end worth keeping (below 60% of the budget, obeying one would gut the text). Abbreviations and initials are not sentence ends, so "Dr. Okonkwo" and "J. K." do not cut there. Across all 23 real cases: 0 still cut mid-word, 0 exceed their limit, 7 end on a full sentence. The seed deck renders byte-identically — this only ever fires on live generation. |
+| Name pool activation controls + admin manager | shipped | on `name-pool-manager`, not yet merged to `dev` — every `server/name-pool.json` entry gained an `active` flag (default true), and a new `server/name-pool-controls.json` holds three pool-wide deactivation lists (category, region, gender_assoc), each entry requiring a `reason`. `shared/names.js`'s `assignName` filters out inactive/deactivated-category/deactivated-gender_assoc candidates before era filtering and before any `nextRandom` draw (deactivation never changes how many randoms a selection consumes, same rule region already followed), then degrades in a fixed order exactly as before, with one new final tier — reuse a name already in play among the still-eligible names, logged — ahead of the existing null/role-word fallback. `regionalWeight` treats a deactivated region exactly like the pre-existing no-signal case; region remains a weight, never a filter, so it cannot independently empty the eligible pool. `scripts/build-region-weights.js` needed no change: it already mutates each pool entry's `region_frequency` in place rather than replacing the record, so `active` (and any other field) already survives a rebuild untouched. New admin "Name pool" tab (`admin/src/components/NamePool.jsx`, `NamePoolForm.jsx`, `GroupControls.jsx`, `NamePoolHealth.jsx`): a filterable/searchable table with bulk multi-select + "select all matching filter" (the individual `active` flag is how an ad-hoc grouping like an era range is deactivated, since it doesn't warrant a persistent control), a create/edit modal with a plain add/remove `region_frequency` list editor, and three group-control panels (category/region/gender_assoc) each requiring a reason and a confirmation step before deactivating. New routes in `server/admin/index.js` (`/api/name-pool`, `/api/name-pool/bulk-active`, `/api/name-pool-controls/{categories,regions,gender-assocs}`, `/api/name-pool-health`), validated by new `content-schema.js` functions, all going through the existing `server/admin/store.js` backup/atomic-write/version-check path like every other content file. `server/name-pool-health.js` computes category spread, era coverage gaps, duplicate names, deactivation counts and a zero-eligible-candidate sweep across era+gender (region is deliberately not swept — see above), shared by `npm run names` and the admin's health panel; advisory only, never blocks a save or fails the build. No change to era-filtering logic, the diversity-weighted sampling algorithm, or `region_frequency`'s underlying values. |
 
 ---
 
 ## The admin module
 
 A separate interface for editing content — the library, the seed deck, the
-extraction draft queue — plus a cross-reference check, a live preview, a
-content harvester and a stats view. `npm run admin`, then <http://localhost:8787/admin>.
+name pool, the extraction draft queue — plus a cross-reference check, a live
+preview, a content harvester and a stats view. `npm run admin`, then
+<http://localhost:8787/admin>.
 
 **It has no authentication, and the server binds to `127.0.0.1` because of
 that.** The consequence is deliberate and worth knowing: the *game* is

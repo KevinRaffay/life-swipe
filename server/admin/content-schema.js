@@ -11,11 +11,15 @@
 import { validateScenario } from '../../shared/schema.js';
 import { SOURCES, isSource } from '../../shared/provenance.js';
 import { CATEGORIES, RARITIES, validatePattern } from '../extraction.js';
+import { GENDER_ASSOCS } from '../../shared/names.js';
 
 export const PATTERN_CATEGORIES = [...CATEGORIES];
 export const PATTERN_RARITIES = [...RARITIES];
 export const MODES = ['safe', 'mature'];
 export const CONTENT_SOURCES = [...SOURCES];
+export const NAME_GENDER_ASSOCS = [...GENDER_ASSOCS];
+
+const REGION_CODE_RE = /^[A-Z]{2}(-[A-Z0-9]{1,3})?$/;
 
 // Authoring provenance is optional - every record written before it existed
 // has none, and shared/provenance.js reads that absence as 'hand-authored'.
@@ -69,6 +73,64 @@ export function validateSeedScenario(card, siblings = []) {
   }
   problems.push(...sourceProblems(card));
   return { ok: result.ok && !problems.length, problems, normalised: result.scenario || null };
+}
+
+/**
+ * Validate one name-pool entry for the admin form. Mirrors the structural
+ * half of scripts/name-check.js's checks (that script is the authority on the
+ * FILE as a whole - duplicates across the pool, category-share warnings - this
+ * is the authority on one record in isolation, before it is written).
+ * @param {object} entry
+ * @param {Array} siblings  the rest of the pool, for the name-uniqueness check
+ * @returns {string[]} human-readable problems, empty when valid
+ */
+export function validateNamePoolEntry(entry, siblings = []) {
+  const problems = [];
+  if (typeof entry?.name !== 'string' || !entry.name.trim()) problems.push('name must be a non-empty string');
+  else if (siblings.some((s) => s.name.toLowerCase() === entry.name.toLowerCase())) {
+    problems.push(`name "${entry.name}" is already used by another entry`);
+  }
+  if (typeof entry?.category !== 'string' || !entry.category.trim()) problems.push('category is required');
+  if (!NAME_GENDER_ASSOCS.includes(entry?.gender_assoc)) {
+    problems.push(`gender_assoc must be one of ${NAME_GENDER_ASSOCS.join(', ')}`);
+  }
+  if (!Number.isFinite(entry?.era_start) || entry.era_start < 1900 || entry.era_start > 2030) {
+    problems.push('era_start must be a number between 1900 and 2030');
+  }
+  if (entry?.era_end !== undefined && entry.era_end !== null) {
+    if (!Number.isFinite(entry.era_end) || entry.era_end <= entry.era_start) {
+      problems.push('era_end must be a number after era_start');
+    }
+  }
+  if (entry?.active !== undefined && typeof entry.active !== 'boolean') problems.push('active must be true or false');
+  if (entry?.region_frequency !== undefined) {
+    if (typeof entry.region_frequency !== 'object' || Array.isArray(entry.region_frequency) || entry.region_frequency === null) {
+      problems.push('region_frequency must be an object of region code -> weight');
+    } else {
+      for (const [code, lq] of Object.entries(entry.region_frequency)) {
+        if (!REGION_CODE_RE.test(code)) problems.push(`bad region code "${code}"`);
+        if (!Number.isFinite(lq) || lq <= 0) problems.push(`region_frequency.${code} must be a positive number`);
+      }
+    }
+  }
+  return problems;
+}
+
+/**
+ * Validate one entry being added to a name-pool-controls list (category,
+ * region or gender_assoc deactivation). `reason` is required on all three -
+ * this is a pool-wide action, and the whole point of the file is a visible
+ * trail of why.
+ * @param {{ value: string, reason: string }} input
+ * @param {Array} siblings  the rest of that one list, for the duplicate check
+ * @param {string} label    "category" | "region" | "gender_assoc", for messages
+ */
+export function validateGroupControlEntry({ value, reason }, siblings = [], label = 'value') {
+  const problems = [];
+  if (typeof value !== 'string' || !value.trim()) problems.push(`${label} is required`);
+  else if (siblings.includes(value)) problems.push(`${value} is already deactivated`);
+  if (typeof reason !== 'string' || !reason.trim()) problems.push('reason is required');
+  return problems;
 }
 
 /** A unique snake_case id derived from a title, for approving a draft. */

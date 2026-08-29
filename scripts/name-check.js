@@ -11,18 +11,23 @@
 
 import fs from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
-import { assignName, createNameLedger, impliedBirthYear } from '../shared/names.js';
+import { assignName, createNameLedger, impliedBirthYear, GENDER_ASSOCS } from '../shared/names.js';
 import { BAL } from '../shared/balance.js';
 import { seedFrom, nextRandom } from '../shared/rng.js';
+import { computeNamePoolHealth } from '../server/name-pool-health.js';
 
 const POOL_PATH = fileURLToPath(new URL('../server/name-pool.json', import.meta.url));
+const CONTROLS_PATH = fileURLToPath(new URL('../server/name-pool-controls.json', import.meta.url));
 const pool = JSON.parse(fs.readFileSync(POOL_PATH, 'utf8'));
+const controls = fs.existsSync(CONTROLS_PATH)
+  ? JSON.parse(fs.readFileSync(CONTROLS_PATH, 'utf8'))
+  : { deactivatedCategories: [], deactivatedRegions: [], deactivatedGenderAssocs: [] };
 
 const LIVES = Number(process.argv[2]) || 400;
 const NAMES_PER_LIFE = 8;
 const MIN_ENTRIES = 150;
 const MAX_CATEGORY_SHARE = 0.08;
-const GENDERS = new Set(['f', 'm', 'neutral']);
+const GENDERS = new Set(GENDER_ASSOCS);
 
 /* ------------------------------------------------------------ structure */
 
@@ -42,6 +47,7 @@ pool.forEach((e, i) => {
   if (typeof e.name !== 'string' || !e.name.trim()) errors.push(`${at}: name must be a non-empty string`);
   if (typeof e.category !== 'string' || !e.category.trim()) errors.push(`${at}: category required`);
   if (!GENDERS.has(e.gender_assoc)) errors.push(`${at}: gender_assoc must be f | m | neutral`);
+  if (e.active !== undefined && typeof e.active !== 'boolean') errors.push(`${at}: active must be true or false when present`);
   if (!Number.isFinite(e.era_start)) errors.push(`${at}: era_start must be a number`);
   else if (e.era_start < 1900 || e.era_start > 2030) errors.push(`${at}: era_start ${e.era_start} out of range`);
   if (e.era_end !== undefined) {
@@ -69,14 +75,11 @@ pool.forEach((e, i) => {
   }
 });
 
+// Category-share warnings live in the pool-health block below (it also knows
+// which categories are deactivated, so an intentionally-sidelined category
+// does not read as an accidental imbalance).
 const categories = new Map();
 for (const e of pool) categories.set(e.category, (categories.get(e.category) || 0) + 1);
-for (const [cat, n] of categories) {
-  const share = n / pool.length;
-  if (share > MAX_CATEGORY_SHARE) {
-    warnings.push(`category "${cat}" is ${(share * 100).toFixed(1)}% of the pool (cap ${MAX_CATEGORY_SHARE * 100}%)`);
-  }
-}
 
 console.log(`pool: ${pool.length} names, ${categories.size} categories`);
 
@@ -256,6 +259,28 @@ if (JSON.stringify([...neutral.counts]) !== JSON.stringify([...baseline.counts])
   errors.push('the no-region draw is not reproducible');
 }
 console.log(`  (none)   era-only baseline                       -      1.0x   ${(topShareOf(baseline.counts) * 100).toFixed(0)}%`);
+
+/* ----------------------------------------------------------- pool health */
+
+// Shared with the admin's Name Pool health panel (server/name-pool-health.js)
+// so the two never disagree about what these numbers mean. Advisory here too:
+// none of this fails the build on its own - every warning below can only
+// exist after deliberate deactivation, never from the pool as shipped.
+const health = computeNamePoolHealth({ pool, controls });
+console.log(`\npool health: ${health.active} active, ${health.inactive} inactive, ${health.eligible} eligible for selection`);
+if (health.deactivatedCategories.length) console.log(`  deactivated categories: ${health.deactivatedCategories.join(', ')}`);
+if (health.deactivatedRegions.length) console.log(`  deactivated regions: ${health.deactivatedRegions.join(', ')}`);
+if (health.deactivatedGenderAssocs.length) console.log(`  deactivated gender_assocs: ${health.deactivatedGenderAssocs.join(', ')}`);
+if (health.duplicateNames.length) warnings.push(`duplicate name entries: ${health.duplicateNames.join(', ')}`);
+for (const c of health.categorySpread) {
+  if (c.overrepresented && !c.deactivated) warnings.push(`category "${c.category}" is ${(c.share * 100).toFixed(1)}% of the pool (cap ${MAX_CATEGORY_SHARE * 100}%)`);
+}
+if (health.eraCoverageGaps.length) warnings.push(`no name in the pool covers era window(s): ${health.eraCoverageGaps.join(', ')}`);
+if (health.zeroCandidateWarnings.length) {
+  const sample = health.zeroCandidateWarnings.slice(0, 5)
+    .map((w) => `${w.year} (${w.want})`).join(', ');
+  warnings.push(`${health.zeroCandidateWarnings.length} era+gender combination(s) have zero eligible candidates before the engine's reuse-a-name fallback, e.g. ${sample}`);
+}
 
 /* -------------------------------------------------------------- verdict */
 

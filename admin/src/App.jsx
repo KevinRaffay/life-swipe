@@ -11,10 +11,12 @@ import Harvest from './components/Harvest.jsx';
 import Preview from './components/Preview.jsx';
 import Stats from './components/Stats.jsx';
 import Logs from './components/Logs.jsx';
+import NamePool from './components/NamePool.jsx';
 
 const TABS = [
   ['library', 'Library'],
   ['seeds', 'Seed deck'],
+  ['names', 'Name pool'],
   ['extraction', 'Extract & drafts'],
   ['seed-gen', 'Generate seeds'],
   ['harvest', 'Harvest'],
@@ -159,6 +161,64 @@ export default function App() {
     ));
   };
 
+  // The Name Pool tab manages its own filters/selection/editing state
+  // locally (it is not a row-in-a-list-that-opens-a-shared-Modal like
+  // library/seeds), and only calls up here for the network round trip - the
+  // same conflict handling (`save`) and toast every other write in this app
+  // gets, plus patching boot state on success.
+  const saveNamePoolEntry = async (prevName, record) => {
+    const res = await save(
+      (force) => (prevName
+        ? api.updateNamePoolEntry(prevName, record, boot.namePoolVersion, force)
+        : api.createNamePoolEntry(record, boot.namePoolVersion, force)),
+      prevName ? `Saved ${record.name}` : `Created ${record.name}`,
+    );
+    if (!res) return false;
+    patch({ namePool: res.data, namePoolVersion: res.version });
+    return true;
+  };
+
+  const deleteNamePoolEntry = async (record) => {
+    if (!window.confirm(`Delete name "${record.name}"?`)) return false;
+    const res = await save(
+      (force) => api.deleteNamePoolEntry(record.name, boot.namePoolVersion, force),
+      `Deleted ${record.name}`,
+    );
+    if (!res) return false;
+    patch({ namePool: res.data, namePoolVersion: res.version });
+    return true;
+  };
+
+  const bulkSetNameActive = async (names, active) => {
+    const res = await save(
+      (force) => api.bulkSetNameActive(names, active, boot.namePoolVersion, force),
+      `${active ? 'Activated' : 'Deactivated'} ${names.length} name${names.length === 1 ? '' : 's'}`,
+    );
+    if (!res) return false;
+    patch({ namePool: res.data, namePoolVersion: res.version });
+    return true;
+  };
+
+  const addGroupControl = async (kind, value, reason) => {
+    const res = await save(
+      (force) => api.addGroupControl(kind, value, reason, boot.nameControlsVersion, force),
+      `Deactivated ${value}`,
+    );
+    if (!res) return false;
+    patch({ nameControls: res.data, nameControlsVersion: res.version });
+    return true;
+  };
+
+  const removeGroupControl = async (kind, value) => {
+    const res = await save(
+      (force) => api.removeGroupControl(kind, value, boot.nameControlsVersion, force),
+      `Reactivated ${value}`,
+    );
+    if (!res) return false;
+    patch({ nameControls: res.data, nameControlsVersion: res.version });
+    return true;
+  };
+
   return (
     <main className="admin">
       <header className="admin__head">
@@ -255,6 +315,20 @@ export default function App() {
             </Modal>
           )}
         </div>
+      )}
+
+      {tab === 'names' && (
+        <NamePool
+          namePool={boot.namePool}
+          nameControls={boot.nameControls}
+          genderAssocs={boot.vocab.nameGenderAssocs}
+          busy={busy}
+          onSaveEntry={saveNamePoolEntry}
+          onDeleteEntry={deleteNamePoolEntry}
+          onBulkActive={bulkSetNameActive}
+          onAddGroupControl={addGroupControl}
+          onRemoveGroupControl={removeGroupControl}
+        />
       )}
 
       {tab === 'extraction' && (
