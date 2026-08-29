@@ -132,11 +132,15 @@ function* iterEntries() {
 const endOfDayIfBareDate = (value) =>
   (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) ? `${value}T23:59:59.999Z` : value;
 
-function matchesFilters(e, { from, to, outcome, contentMode, hasLibrarySlot, search }) {
+function matchesFilters(e, { from, to, outcome, contentMode, keySource, hasLibrarySlot, search }) {
   if (from && e.timestamp < from) return false;
   if (to && e.timestamp > to) return false;
   if (outcome && e.validationResult !== outcome) return false;
   if (contentMode && e.contentMode !== contentMode) return false;
+  // Entries written before keySource existed have no field at all, so an
+  // explicit "server" filter must not match them - that absence is the whole
+  // point of the field (see server/llm.js).
+  if (keySource && e.keySource !== keySource) return false;
   if (hasLibrarySlot === true && !e.librarySlotUsed) return false;
   if (hasLibrarySlot === false && e.librarySlotUsed) return false;
   if (search) {
@@ -156,10 +160,10 @@ const toListRow = ({ assembledPrompt, rawResponse, ...rest }) => rest;
  * active file's oldest entry.
  */
 export function queryLogs({
-  from = null, to = null, outcome = null, contentMode = null,
+  from = null, to = null, outcome = null, contentMode = null, keySource = null,
   hasLibrarySlot = null, search = null, page = 1, pageSize = 50,
 } = {}) {
-  const filters = { from, to: endOfDayIfBareDate(to), outcome, contentMode, hasLibrarySlot, search };
+  const filters = { from, to: endOfDayIfBareDate(to), outcome, contentMode, keySource, hasLibrarySlot, search };
   const matches = [];
   for (const entry of iterEntries()) {
     if (matchesFilters(entry, filters)) matches.push(entry);
@@ -172,6 +176,30 @@ export function queryLogs({
   const start = (p - 1) * size;
 
   return { rows: matches.slice(start, start + size).map(toListRow), total, page: p, pageSize: size };
+}
+
+/**
+ * FULL entries - prompt and response text included - most-recent-first, capped
+ * at `limit`. The list view deliberately strips those two blobs (toListRow);
+ * the content harvester needs them, because the response text IS the content
+ * it mines and the prompt text is the only record of the state it was written
+ * against.
+ *
+ * Same filters as queryLogs, minus pagination: a harvest run is a one-shot
+ * scan over a bounded window, not a browsable list.
+ */
+export function queryEntries({
+  from = null, to = null, outcome = null, contentMode = null, keySource = null,
+  hasLibrarySlot = null, search = null, limit = 200,
+} = {}) {
+  const filters = { from, to: endOfDayIfBareDate(to), outcome, contentMode, keySource, hasLibrarySlot, search };
+  const matches = [];
+  for (const entry of iterEntries()) {
+    if (matchesFilters(entry, filters)) matches.push(entry);
+  }
+  matches.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+  const cap = Math.max(1, Math.min(2000, Number(limit) || 200));
+  return { entries: matches.slice(0, cap), total: matches.length, limit: cap };
 }
 
 /** One full entry (including the prompt and response text), by id. */

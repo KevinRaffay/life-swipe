@@ -19,6 +19,7 @@ import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { hasKey } from '../server/anthropic.js';
 import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings, MAX_SOURCE_CHARS } from '../server/extraction.js';
+import { EXTRACTED } from '../shared/provenance.js';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
@@ -62,7 +63,12 @@ const existing = JSON.parse(fs.readFileSync(path.join(ROOT, 'server', 'situation
 const collisions = idCollisions(patterns, existing);
 const duplicates = duplicateWarnings(patterns, existing);
 
-fs.writeFileSync(OUT, JSON.stringify(patterns, null, 2) + '\n');
+// Stamped with where they came from, the same as the admin paste box does
+// (server/admin/index.js). Provenance follows the record into the library on
+// approval; see shared/provenance.js for why it is worth counting.
+const stamped = patterns.map((p) => ({ ...p, source: EXTRACTED }));
+
+fs.writeFileSync(OUT, JSON.stringify(stamped, null, 2) + '\n');
 
 console.log('\nwrote    ' + OUT + '  (' + patterns.length + ' candidates, ' +
             (ms / 1000).toFixed(1) + 's)\n');

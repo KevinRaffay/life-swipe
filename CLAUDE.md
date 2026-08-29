@@ -91,6 +91,8 @@ Breaking any of these is a bug regardless of what the tests say.
 | `server/admin/` | the content admin API. Localhost only, no auth — read `index.js` before touching it. |
 | `server/admin/store.js` | the ONLY thing that writes content files: backup, atomic write, version check, key order. |
 | `server/extraction.js` | the extraction prompt and checks, shared by the CLI and the admin. |
+| `server/harvest.js` | mining the LLM request log for content worth keeping: eligibility, de-personalisation, generalisability, both draft paths. Reads the log, writes nothing. |
+| `shared/provenance.js` | the authoring-provenance vocabulary (`hand-authored`/`extracted`/`generated`/`harvested`) and the harvested-share maths. |
 | `admin/` | the admin React app. Its own Vite root; never an input to the player build. |
 
 `shared/` runs in both the browser and Node — the simulator exercises the same
@@ -116,6 +118,7 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `server/log-store.js` | the LLM log file: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
+| `server/harvest.js` | the content harvester: reads `server/logs/llm-requests.jsonl`, filters it to server-key calls that passed validation, puts the cast's name tags back into the cards, drops the ones that only make sense inside one life, and proposes seed-deck and situation-library drafts. Never writes a content file - the admin route does the appending. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
 | `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender and per-region frequency. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
@@ -209,6 +212,21 @@ do; `--force` (CLI) / the "generate even for buckets that already meet their
 coverage target" checkbox (admin) generates for every bucket/mode pair
 regardless, since the bare target is a floor, not a ceiling on how much
 variety a bucket is worth having.
+
+**Content provenance** — every library pattern and seed scenario records where
+it came from, in a `source` field: `hand-authored` (a person, in the admin forms
+or the JSON directly), `extracted` (`server/extraction.js`, from pasted external
+text), `generated` (`server/seed-generation.js`, bulk drafting) or `harvested`
+(`server/harvest.js`, mined from the request log). A record written before the
+field existed reads as hand-authored, which is what it is. `shared/provenance.js`
+owns the vocabulary.
+
+This is **not** the runtime `source` `shared/deck.js` stamps on a dealt card
+(`seed`/`llm`/`fallback`/`library`) — the deck overwrites that for every seed at
+load time, so the two never meet, and nothing in the game loop reads the
+authoring value. The admin's Stats tab shows the **harvested share** of the deck
+and the library. Watch it; nothing enforces it. A deck that becomes mostly
+harvested from itself narrows toward the model's own most common outputs.
 
 **Names** — 187 names across 49 cultural origins in `server/name-pool.json`,
 each carrying the era it was in use and any gender it reads as. The engine
@@ -385,14 +403,15 @@ dev    ← integration branch, work lands here
 | Career/education continuity | shipped | on `dev` — same class of bug as off-screen relationship reintroduction, different mechanism: `stateSummary()` in `shared/engine.js` now derives a `careerBackground` object (current occupation, current education, and any of `CAREER_BACKGROUND_FLAGS` = `college_degree`/`trade_cert`/`white_collar_experience` the life has earned), computed fresh every call so it can never scroll out of the trimmed recent-history window. Surfaced in every generation prompt as its own STATE line, plus a new CAREER BACKGROUND FLAGS / CAREER PLAUSIBILITY block in the system prompt instructing the model that a white-collar offer needs a bridging event without a qualifying flag already on record. Four career-category situation-library patterns that previously fired with `requires: []` despite presupposing white-collar standing (`early_career_toxic_mentor`, `early_career_toxic_mentorship`, `market_crash_job_loss`, `market_crash_job_loss_2`) now require `college_degree`; the seed deck's `col_major` (declaring a CS/philosophy major) sets it. No engine/effect-resolution changes - purely context completeness and library gating |
 | Off-screen relationship reintroduction | shipped | on `dev` — a named relationship absent from the recent-history window is marked `[OFF-SCREEN lately]` in the prompt's people line (which already carries role/flags), and the storyteller is asked to reintroduce it by role on first mention ("Dmitri, the guy from your study group") rather than a bare name. Log-only backstop `checkReintroductions` (`shared/names.js`) fires through `validateBatch` → `validationWarnings` → Logs tab across all tiers, best-effort string match. No tier budgets, structure or effect/engine changes; no question-mark/either-or rule added |
 | Bulk seed-scenario generation | shipped | on `bulk-seed-generation` — `server/seed-generation.js` drafts candidates for whichever bucket/mode pairs `npm run coverage` flags short, down the real `server/prompt.js` templates and `shared/schema.js`/`shared/content.js` validators against a generic per-bucket sample state (built from the real engine's `createState`, trimmed to Mom/Dad only so no card can hardcode one throwaway life's assigned names). Weight-tier mix biased toward minor (`tierQuotas`); roughly 1-in-4-5 candidates ground in an eligible situation-library pattern via `shared/library.js`'s own `filterPatterns`. `npm run generate-seeds -- --mode=both --target=15` (CLI) and the admin's "Generate seeds" tab (`POST /api/generate-seeds`) share this core. Draft-only: writes `scenarios-seed.draft.json`, never `data/scenarios-seed.json`. Draft review generalises the existing pattern-draft approve/reject/edit routes (`server/admin/index.js`'s `draftRoutes`) and UI (`admin/src/components/DraftQueue.jsx`, extracted from `Extraction.jsx`) to a second draft/target pair rather than duplicating them. `force` (CLI `--force`, admin checkbox) generates for every bucket/mode pair regardless of current coverage, not only short ones - the common case once the deck is healthy is that a plain run has nothing to do. No live generation path, engine or validator changes |
+| Content harvesting pipeline | shipped | on `content-harvesting-pipeline` — `server/harvest.js` mines `server/logs/llm-requests.jsonl` for live generations worth keeping and routes them into the two existing draft queues. Eligibility: `keySource === "server"` (a NEW log field, `server/llm.js` ← `meta.keySource`, declared by `server/index.js`'s generation call; there is no BYOK path in the codebase, and an UNDECLARED key source records null and is ineligible, so nothing logged before this feature can be harvested and a future BYOK path that forgets to declare itself is excluded by default rather than swept in), `validationResult === "passed"`, and per-CARD craft warnings at or below a configurable threshold (default 0 — `validateBatch` indexes each warning by raw-array position, so one over-budget major does not disqualify its neighbours). Seed path → `scenarios-seed.draft.json`: the card as written, de-personalised by reading the cast back out of the logged prompt and reversing `shared/names.js`'s resolution (narrative fields get the tag; choice LABELS get the role in plain words, since `resolveCardNames` does not walk labels and a tag there would reach the player as braces), screened against story-memory flag callbacks and explicit back-references to a decision this player already made, gated with `requiresFlags: ["married"]`/`["has_kids"]` where the dependency can be carried instead of disqualifying, and de-duplicated by extraction's own Jaccard scoring (`duplicatesBy`, refactored out of `duplicateWarnings`) against the deck, the queue and the batch. Library path → `situation-library.draft.json`: major-tier only, fed to the EXISTING `extractPatterns` prompt as its "source text" rather than a new prompt, whole batch as one document, skipped below 3 majors; output through the existing `duplicateWarnings`/`idCollisions`/`identityWarnings`. Trigger is the admin's "Harvest" tab (`POST /api/harvest`, NDJSON-streamed like `/api/generate-seeds`) — on demand only, no scheduler. Provenance: `shared/provenance.js` (`hand-authored`/`extracted`/`generated`/`harvested`) stamped by every writing path, surviving approval into the live files, with the harvested share on the Stats tab as a diversity signal nothing enforces. Never auto-merges; no generation, engine, effect-resolution or referee changes. |
 
 ---
 
 ## The admin module
 
 A separate interface for editing content — the library, the seed deck, the
-extraction draft queue — plus a cross-reference check, a live preview and a
-stats view. `npm run admin`, then <http://localhost:8787/admin>.
+extraction draft queue — plus a cross-reference check, a live preview, a
+content harvester and a stats view. `npm run admin`, then <http://localhost:8787/admin>.
 
 **It has no authentication, and the server binds to `127.0.0.1` because of
 that.** The consequence is deliberate and worth knowing: the *game* is
@@ -441,6 +460,12 @@ Other things worth knowing before working on it:
   (`server/admin/index.js`'s `draftRoutes`) that pattern-draft review uses,
   parametrised by draft file, target file and validator rather than
   duplicated.
+- **Harvesting never merges either**, and never runs on a timer. The "Harvest"
+  tab (`admin/src/components/Harvest.jsx`) reads the request log on demand and
+  appends to both draft queues; see "Content harvesting" below. Its two review
+  lists are the same `DraftQueue.jsx` the other two tabs use, filtered to
+  `source === 'harvested'` so "where did this row come from" stays answerable
+  at a glance in a queue three features write to.
 - `admin/` is a separate Vite root building to `dist-admin/`. `npm run build`
   never sees it, which is why no admin code can reach the player bundle.
 
@@ -476,6 +501,16 @@ accepted. On a two-attempt request, the winning attempt (if any) logs
 attempt was the *last* one made logs `"fell_back_to_seed"` if nothing won —
 that is the one line that actually corresponds to what the player experienced.
 
+`keySource` (`"server"` | `"byok"` | `null`) says which API key paid for the
+call. It exists for the harvester, which may only mine server-key generations —
+see "Content harvesting" below for why null is ineligible rather than assumed.
+The Logs tab shows it as a column and a filter, and reads a missing one as "not
+recorded" rather than a dash, because that absence is a real answer.
+
+The log is otherwise still write-once and read-only. The harvester reads it
+through `log-store.js`'s `queryEntries` (full entries, including the two big text
+blobs the list view strips) and never writes back to it.
+
 Rotation is by size (10MB) or entry count (5000), whichever comes first —
 `LIFESWIPE_LOG_MAX_BYTES` / `LIFESWIPE_LOG_MAX_ENTRIES` override either. The
 active file becomes `llm-requests.<epoch-ms>.jsonl.gz`; the 5 most recent
@@ -485,6 +520,70 @@ spanning a rotation boundary still returns complete results.
 
 The admin has no URL router (see above), so "Logs" is a tab like the others,
 not literally a route at `/admin/logs`.
+
+### Content harvesting
+
+`server/harvest.js` mines `server/logs/llm-requests.jsonl` for live generations
+worth keeping, and feeds them into the two draft queues that already exist. The
+admin's "Harvest" tab (`POST /admin/api/harvest`) is the only trigger, and it is
+**on demand only** — no scheduler, deliberately, because this decides what the
+game's permanent content becomes.
+
+**Eligibility.** A logged call is a candidate only if `keySource === "server"`,
+`validationResult === "passed"`, and the individual card carries no more than
+`maxCraftWarnings` (default 0) of the batch's `validationWarnings`. That last
+filter is per CARD, not per call: `validateBatch` prefixes each warning with its
+raw-array index, so one over-budget major does not disqualify the other four.
+
+`keySource` was added by this feature (`server/llm.js`, from `meta.keySource`;
+`server/index.js`'s generation call declares `'server'`). There is no BYOK path in
+the codebase — `anthropic.js` reads `process.env.ANTHROPIC_API_KEY` and nothing
+else — so today every live call says `server`. **Undeclared is null, and null is
+ineligible.** That shape is the point: every entry logged before this feature
+existed is skipped rather than assumed, and a future BYOK path that forgets to
+declare itself is excluded by default rather than quietly harvested. A player's
+own key pays for their content; harvesting it would be taking something that was
+not offered.
+
+**Seed path** (lighter touch) → `scenarios-seed.draft.json`. The card is kept as
+written, with three things done to it:
+
+- **De-personalised.** The reverse of `shared/names.js`'s resolution step. The
+  cast is read back out of the logged prompt text (the `people:` line, the
+  `children:` line, and the "Tags already spent in this life" line, which gives an
+  exact tag→name mapping), and every name goes back to a tag. Narrative fields get
+  the tag; **choice labels get the role in plain words** ("Ask Nadia" → "Ask your
+  spouse"), because `resolveCardNames` does not walk the labels and a tag written
+  into one would reach the player as literal braces. Mom and Dad are left alone —
+  address forms, not names (invariant 8). A card with a cast name still in it
+  afterwards is dropped, not shipped.
+- **Screened for generalisability.** A proxy, not a rule, in the same spirit as a
+  library pattern's requires/excludes. A card is dropped if it leans on a flag
+  only this life has (the story-memory flags, not the canonical engine ones — so
+  `lawn_business` disqualifies, `married` does not), or if it explicitly
+  back-references a decision this player already made. Where a flag can carry the
+  dependency instead of disqualifying it, it does: a card whose cast includes a
+  spouse or a child is gated with `requiresFlags: ["married"]` / `["has_kids"]`.
+- **Checked for near-repeats**, by the same Jaccard word-overlap scoring
+  extraction uses (`duplicatesBy`, threshold 0.6), against the live deck, the
+  draft queue and earlier candidates in the same run. This is what makes a second
+  harvest over the same window add nothing.
+
+**Library path** (heavier touch) → `situation-library.draft.json`. Major-tier
+cards only, and it does **not** write a second generalisation prompt: it hands
+those scenarios to `extractPatterns` as its "source text", exactly as the paste
+box hands it a memoir. The whole batch goes in as one document — the extractor is
+asked for 8–15 patterns, which is a sensible ask of fifteen scenes and a nonsense
+ask of one, so the path skips itself below three eligible majors. Output runs
+through the existing `duplicateWarnings`, `idCollisions` and `identityWarnings`
+against the live library, the draft queue and the batch.
+
+Both paths only ever APPEND. `server/harvest.js` writes no file at all; the admin
+route does the appending, and approval into `data/scenarios-seed.json` or
+`server/situation-library.json` stays the separate human action it is everywhere
+else. Every harvested draft is stamped `source: "harvested"` (which survives
+approval) plus a `harvestedFrom` note of which log entry it came from (which does
+not — the log rotates and that id stops resolving).
 
 ---
 
@@ -521,6 +620,14 @@ hands out. The rules, in short, with `server/geo.js` holding the long version:
   grows.
 - **Mature-mode lives run short** — mean 39.6 swipes, p10 19, against a 40–80
   target, because the mature seed deck is financially brutal. Pre-existing.
+- **Choice labels are never name-resolved.** `resolveCardNames`'s `TEXT_FIELDS`
+  covers `setting/beat/dialogue/prompt/scenario` and a relationship's name, but
+  not `leftLabel`/`rightLabel` — so the seed deck's `col_sam` and `ec_marry_sam`
+  reach the player reading "Be friends with {{cast:sam}}". Pre-existing, found
+  while writing the harvester's residual-name check; the harvester works around
+  it by writing the plain role phrase into labels instead of a tag. Fixing it
+  properly means adding the two fields to `TEXT_FIELDS`, which is a change to
+  the deal-time naming path and wants its own branch.
 - **`MINOR_SUBSTANCES_BLOCKED` is `false`** in `content.js`. The spec's stricter
   reading is `true`; it ships `false` so the coming-of-age deck keeps its
   peer-pressure cards. Hard drugs, crime, prison, gambling and sexual content

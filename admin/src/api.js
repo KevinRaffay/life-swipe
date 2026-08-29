@@ -44,19 +44,23 @@ export const approveDraft = (kind, id, record, targetVersion, force = false) =>
 export const rejectDraft = (kind, id, reason) =>
   json(`${base}/${kind}/${encodeURIComponent(id)}/reject`, { method: 'POST', body: { reason } });
 
-// A generation run is many sequential LLM calls (minutes, for a large or
-// forced batch), so this reads the response as NDJSON instead of one JSON
-// blob at the end - each line is a `{type: 'bucket'|'batch'}` progress event,
-// reported to `onEvent` as it arrives, until a `{type: 'done', ...}` line
-// carries the same summary the old single-response version returned (or
-// `{type: 'error'}` if the run failed partway through).
-export async function generateSeeds(mode, target, force = false, onEvent = () => {}, signal = undefined) {
+// Some runs are many sequential LLM calls (minutes, for a large seed batch or
+// a wide harvest), so those endpoints answer in NDJSON instead of one JSON
+// blob at the end: each line is a progress event, reported to `onEvent` as it
+// arrives, until a `{type: 'done', ...}` line carries the summary a plain JSON
+// response would have returned - or `{type: 'error'}` if the run failed
+// partway through, which cannot be an HTTP status because the headers went out
+// with the first progress line.
+//
+// Written once and shared: /generate-seeds and /harvest differ only in their
+// URL and their payload.
+async function ndjson(path, body, onEvent = () => {}, signal = undefined) {
   let res;
   try {
-    res = await fetch(`${base}/generate-seeds`, {
+    res = await fetch(`${base}${path}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ mode, target, force }),
+      body: JSON.stringify(body),
       signal,
     });
   } catch (err) {
@@ -69,7 +73,7 @@ export async function generateSeeds(mode, target, force = false, onEvent = () =>
   }
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    const err = new Error(data.error || `${base}/generate-seeds responded ${res.status}`);
+    const err = new Error(data.error || `${base}${path} responded ${res.status}`);
     err.status = res.status;
     throw err;
   }
@@ -108,9 +112,18 @@ export async function generateSeeds(mode, target, force = false, onEvent = () =>
   }
   handleLine(buffer);
 
-  if (!done) throw new Error('the generation run ended without a result - check the server log');
+  if (!done) throw new Error(`the run at ${path} ended without a result - check the server log`);
   return done;
 }
+
+export const generateSeeds = (mode, target, force = false, onEvent = () => {}, signal = undefined) =>
+  ndjson('/generate-seeds', { mode, target, force }, onEvent, signal);
+
+// One on-demand harvest over a slice of the LLM request log. `seeds` and
+// `patterns` pick which draft queues the run feeds; the library path is the
+// only half that calls a model, so a seeds-only run works with no API key.
+export const harvest = (options, onEvent = () => {}, signal = undefined) =>
+  ndjson('/harvest', options, onEvent, signal);
 
 export const preview = (body) => json(`${base}/preview`, { method: 'POST', body });
 

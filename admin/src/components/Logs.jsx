@@ -5,6 +5,12 @@ const PAGE_SIZE = 50;
 
 const OUTCOME_LABEL = { passed: 'passed', failed: 'failed', fell_back_to_seed: 'fell back' };
 
+// Whose key paid for the call. Only 'server' calls may be harvested, and a
+// call logged before the field existed has none at all - which is a real
+// answer worth showing, not a gap to paper over with a dash.
+const KEY_SOURCE_LABEL = { server: 'server', byok: 'player key' };
+const keySourceOf = (r) => KEY_SOURCE_LABEL[r.keySource] || 'not recorded';
+
 const fmtTokens = (n) => (n == null ? '—' : n.toLocaleString('en-US'));
 const fmtPct = (n) => `${Math.round((n || 0) * 100)}%`;
 
@@ -16,7 +22,7 @@ const fmtPct = (n) => `${Math.round((n || 0) * 100)}%`;
 export default function Logs() {
   const [summary, setSummary] = useState(null);
   const [filters, setFilters] = useState({
-    from: '', to: '', outcome: '', contentMode: '', hasLibrarySlot: '', search: '',
+    from: '', to: '', outcome: '', contentMode: '', keySource: '', hasLibrarySlot: '', search: '',
   });
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ rows: [], total: 0 });
@@ -97,6 +103,11 @@ export default function Logs() {
             <option value="safe">safe</option>
             <option value="mature">mature</option>
           </select>
+          <select value={filters.keySource} onChange={(e) => setFilter('keySource', e.target.value)} title="which API key paid for the call">
+            <option value="">any key source</option>
+            <option value="server">server key</option>
+            <option value="byok">player key</option>
+          </select>
           <select value={filters.hasLibrarySlot} onChange={(e) => setFilter('hasLibrarySlot', e.target.value)}>
             <option value="">library slot: any</option>
             <option value="yes">library slot: yes</option>
@@ -114,7 +125,7 @@ export default function Logs() {
           <table className="table">
             <thead>
               <tr>
-                <th>time</th><th>outcome</th><th>age</th><th>mode</th>
+                <th>time</th><th>outcome</th><th>age</th><th>mode</th><th>key</th>
                 <th>library slot</th><th>tokens (in/out)</th><th>latency</th>
               </tr>
             </thead>
@@ -134,6 +145,7 @@ export default function Logs() {
                   </td>
                   <td>{r.age ?? '—'}</td>
                   <td>{r.contentMode || '—'}</td>
+                  <td className={r.keySource ? '' : 'muted'}>{keySourceOf(r)}</td>
                   <td>{r.librarySlotUsed || '—'}</td>
                   <td>{r.tokenUsage ? `${fmtTokens(r.tokenUsage.input)} / ${fmtTokens(r.tokenUsage.output)}` : '—'}</td>
                   <td>{r.latencyMs != null ? `${r.latencyMs} ms` : '—'}</td>
@@ -159,6 +171,7 @@ export default function Logs() {
                 <span className={`pill pill--${detail.validationResult || 'unknown'}`}>
                   {OUTCOME_LABEL[detail.validationResult] || detail.validationResult || 'unknown'}
                 </span>
+                <span className="pill">key: {keySourceOf(detail)}</span>
                 {detail.librarySlotUsed && <span className="pill">slot: {detail.librarySlotUsed}</span>}
                 <span className="muted small">
                   {detail.latencyMs} ms · {detail.tokenUsage

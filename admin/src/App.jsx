@@ -7,6 +7,7 @@ import PatternForm from './components/PatternForm.jsx';
 import SeedForm from './components/SeedForm.jsx';
 import Extraction from './components/Extraction.jsx';
 import SeedGeneration from './components/SeedGeneration.jsx';
+import Harvest from './components/Harvest.jsx';
 import Preview from './components/Preview.jsx';
 import Stats from './components/Stats.jsx';
 import Logs from './components/Logs.jsx';
@@ -16,6 +17,7 @@ const TABS = [
   ['seeds', 'Seed deck'],
   ['extraction', 'Extract & drafts'],
   ['seed-gen', 'Generate seeds'],
+  ['harvest', 'Harvest'],
   ['preview', 'Preview'],
   ['stats', 'Stats'],
   ['logs', 'Logs'],
@@ -88,6 +90,15 @@ export default function App() {
     setEditing(undefined);
     revalidate();
   };
+
+  // The two draft queues are shared with extraction and bulk generation, so
+  // the Harvest tab's badge counts only the rows this feature put there.
+  const harvestedWaiting = useMemo(
+    () => (boot
+      ? [...boot.drafts, ...boot.seedDrafts].filter((d) => d.source === 'harvested').length
+      : 0),
+    [boot],
+  );
 
   const rows = useMemo(() => {
     if (!boot) return [];
@@ -168,6 +179,7 @@ export default function App() {
               {label}
               {key === 'extraction' && boot.drafts.length > 0 && <span className="count">{boot.drafts.length}</span>}
               {key === 'seed-gen' && boot.seedDrafts.length > 0 && <span className="count">{boot.seedDrafts.length}</span>}
+              {key === 'harvest' && harvestedWaiting > 0 && <span className="count">{harvestedWaiting}</span>}
             </button>
           ))}
         </nav>
@@ -259,6 +271,18 @@ export default function App() {
         <SeedGeneration
           seedDrafts={boot.seedDrafts}
           llmEnabled={boot.llmEnabled}
+          onChanged={(next) => { patch(next); revalidate(); }}
+        />
+      )}
+
+      {tab === 'harvest' && (
+        <Harvest
+          seedDrafts={boot.seedDrafts}
+          drafts={boot.drafts}
+          library={boot.library}
+          vocab={boot.vocab}
+          llmEnabled={boot.llmEnabled}
+          defaults={boot.harvestDefaults}
           onChanged={(next) => { patch(next); revalidate(); }}
         />
       )}

@@ -154,7 +154,7 @@ const DUP_STOPWORDS = new Set(['the', 'a', 'an', 'of', 'to', 'in', 'on', 'at', '
   'with', 'who', 'their', 'that', 'this', 'into', 'from', 'they', 'them', 'has', 'have', 'had',
   'is', 'are', 'was', 'were', 'it', 'its', 'but', 'by', 'as', 'over', 'after', 'before', 'when']);
 
-const tokenize = (text) => new Set(
+export const tokenize = (text) => new Set(
   String(text || '')
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
@@ -162,7 +162,7 @@ const tokenize = (text) => new Set(
     .filter((w) => w.length > 2 && !DUP_STOPWORDS.has(w)),
 );
 
-const jaccard = (a, b) => {
+export const jaccard = (a, b) => {
   if (!a.size || !b.size) return 0;
   let shared = 0;
   for (const w of a) if (b.has(w)) shared++;
@@ -176,6 +176,39 @@ const jaccard = (a, b) => {
 export const DUPLICATE_THRESHOLD = 0.6;
 
 /**
+ * The scoring itself, over whatever text a caller says identifies a record.
+ *
+ * Patterns compare their one anonymised sentence; a harvested seed card
+ * compares its whole rendered narrative (server/harvest.js). Same measurement,
+ * same threshold, different accessor - which is the only reason this is
+ * parametrised rather than written twice. Candidates are compared against
+ * `existing` AND against earlier candidates in the same batch, because a run
+ * that produces the same shape twice is the commonest way a near-repeat gets
+ * in.
+ *
+ * @param {Array} candidates
+ * @param {Array} existing
+ * @param {(record: object) => string} textOf   the text that identifies a record
+ * @param {number} [threshold]
+ * @returns {{ id: string, duplicateOf: string, score: number }[]}
+ */
+export function duplicatesBy(candidates, existing, textOf, threshold = DUPLICATE_THRESHOLD) {
+  const pool = (existing || []).map((p) => ({ id: p.id, tokens: tokenize(textOf(p)) }));
+  const out = [];
+  for (const p of candidates || []) {
+    const tokens = tokenize(textOf(p));
+    let best = null;
+    for (const c of pool) {
+      const score = jaccard(tokens, c.tokens);
+      if (score >= threshold && (!best || score > best.score)) best = { id: c.id, score };
+    }
+    if (best) out.push({ id: p.id, duplicateOf: best.id, score: Math.round(best.score * 100) / 100 });
+    pool.push({ id: p.id, tokens });
+  }
+  return out;
+}
+
+/**
  * Flags candidates whose `pattern` text closely overlaps an existing pattern
  * (library or draft queue, whatever the caller passes as `existing`) or an
  * earlier candidate in the same batch. Advisory only, same as
@@ -184,18 +217,5 @@ export const DUPLICATE_THRESHOLD = 0.6;
  *
  * @returns {{ id: string, duplicateOf: string, score: number }[]}
  */
-export function duplicateWarnings(patterns, existing) {
-  const pool = (existing || []).map((p) => ({ id: p.id, tokens: tokenize(p.pattern) }));
-  const out = [];
-  for (const p of patterns) {
-    const tokens = tokenize(p.pattern);
-    let best = null;
-    for (const c of pool) {
-      const score = jaccard(tokens, c.tokens);
-      if (score >= DUPLICATE_THRESHOLD && (!best || score > best.score)) best = { id: c.id, score };
-    }
-    if (best) out.push({ id: p.id, duplicateOf: best.id, score: Math.round(best.score * 100) / 100 });
-    pool.push({ id: p.id, tokens });
-  }
-  return out;
-}
+export const duplicateWarnings = (patterns, existing) =>
+  duplicatesBy(patterns, existing, (p) => p.pattern);

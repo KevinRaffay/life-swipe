@@ -46,7 +46,7 @@ export const FILES = {
 // follow the listed ones.
 const KEY_ORDER = {
   pattern: ['id', 'pattern', 'category', 'life_stage', 'modes', 'requires', 'excludes',
-    'typical_effects', 'rarity', 'note'],
+    'typical_effects', 'rarity', 'note', 'source'],
   // Identity, then where the card may be dealt, then the narrative in the same
   // order a player reads it (the tier order in shared/scenario-format.js), then
   // the choice and its consequences.
@@ -55,7 +55,12 @@ const KEY_ORDER = {
   // near the front, others near the back, so no key order round-trips it
   // byte-for-byte. `npm run normalise-content` rewrites it into this order once,
   // in its own commit, after which every admin save is a minimal diff.
-  seed: ['id', 'stages', 'life_stage', 'minAge', 'maxAge', 'modes', 'weight', 'priority',
+  // `source` sits with the identity fields: it is authoring provenance
+  // ('hand-authored' | 'extracted' | 'generated' | 'harvested', see
+  // shared/provenance.js), not the runtime `source` shared/deck.js stamps on a
+  // dealt card - the deck overwrites that one for every seed at load time, so
+  // the two never collide.
+  seed: ['id', 'source', 'stages', 'life_stage', 'minAge', 'maxAge', 'modes', 'weight', 'priority',
     'requiresFlags', 'forbidsFlags',
     'setting', 'beat', 'dialogue', 'prompt', 'leftLabel', 'rightLabel',
     'leftEffects', 'rightEffects', 'timeCostMonths'],

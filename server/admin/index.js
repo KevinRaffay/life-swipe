@@ -14,8 +14,10 @@ import { crossReference } from './cross-reference.js';
 import { previewPattern, previewSeed, yearFor } from './preview.js';
 import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } from '../extraction.js';
 import { generateSeedDrafts } from '../seed-generation.js';
+import { runHarvest, HARVEST_DEFAULTS } from '../harvest.js';
 import { hasKey, MODEL } from '../anthropic.js';
 import { queryLogs, getLogEntry, getLogSummary } from '../log-store.js';
+import { EXTRACTED, HAND_AUTHORED, SOURCES, tallySources, harvestedShare } from '../../shared/provenance.js';
 import { US_REGIONS } from '../../shared/regions.js';
 
 // try/await rather than Promise.resolve(fn()).catch(): a handler that throws
@@ -64,7 +66,8 @@ export function createAdminRouter() {
       threadsPresent: exists('threads'),
       llmEnabled: hasKey(),
       model: hasKey() ? MODEL : null,
-      vocab: { categories: PATTERN_CATEGORIES, rarities: PATTERN_RARITIES, modes: MODES },
+      vocab: { categories: PATTERN_CATEGORIES, rarities: PATTERN_RARITIES, modes: MODES, sources: SOURCES },
+      harvestDefaults: HARVEST_DEFAULTS,
       regions: US_REGIONS,
       files: {
         library: fileOf('library'), seeds: fileOf('seeds'), drafts: fileOf('drafts'), seedDrafts: fileOf('seedDrafts'),
@@ -88,6 +91,22 @@ export function createAdminRouter() {
     }, {});
     const { stats } = crossReference();
     res.json({
+      // Where the content came from, and how much of it the game wrote for
+      // itself. NOT a limit - nothing enforces this number. It is a
+      // content-diversity signal: a deck that becomes mostly harvested-from-
+      // itself narrows toward the model's own most common outputs, and the
+      // only way to notice that happening is to watch the number move.
+      provenance: {
+        patterns: tallySources(library),
+        seeds: tallySources(seeds),
+        drafts: tallySources(drafts),
+        seedDrafts: tallySources(seedDrafts),
+        harvestedShare: {
+          patterns: harvestedShare(library),
+          seeds: harvestedShare(seeds),
+          combined: harvestedShare([...library, ...seeds]),
+        },
+      },
       patterns: {
         total: library.length,
         byCategory: tally(library, 'category'),
@@ -116,7 +135,10 @@ export function createAdminRouter() {
     }));
 
     router.post(`/api/${name}`, asHandler((req, res) => {
-      const record = req.body?.record;
+      // Created through the admin form, so a person typed it. Only on POST:
+      // editing a harvested or extracted record must not relabel where it came
+      // from, and an explicit source in the body always wins.
+      const record = { source: HAND_AUTHORED, ...(req.body?.record || {}) };
       const current = read(name).data;
       const problems = validate(record, current);
       if (problems.length) return res.status(400).json({ error: `invalid ${label}`, problems });
@@ -174,7 +196,7 @@ export function createAdminRouter() {
     const stamped = result.patterns.map((p) => {
       const id = taken.has(p.id) ? generateId(p.id, [...taken]) : (p.id || generateId(p.pattern, [...taken]));
       taken.add(id);
-      return { ...p, id };
+      return { ...p, id, source: EXTRACTED };
     });
 
     const saved = update('drafts', (list) => [...list, ...stamped], { force: true });
@@ -264,7 +286,11 @@ export function createAdminRouter() {
     // attaches it so a reviewer can see major-tier craft drift before
     // approving) - it is not part of the seed schema and must not ship into
     // data/scenarios-seed.json just because a draft happened to carry it.
-    sanitize: ({ validationWarnings, ...rest }) => rest,
+    // harvestedFrom is the same kind of thing: which log entry a candidate came
+    // out of is worth reading during review and worthless afterwards, since the
+    // log rotates and that id stops resolving. `source` is NOT stripped - the
+    // whole point of provenance is that it survives approval.
+    sanitize: ({ validationWarnings, harvestedFrom, ...rest }) => rest,
   });
 
   // Bulk-generate seed candidates for coverage-thin buckets and append them to
@@ -335,6 +361,103 @@ export function createAdminRouter() {
     }
   });
 
+  /* ------------------------------------------------------------ harvest */
+
+  // Mine the LLM request log for content worth keeping and append it to the
+  // two draft queues. ON DEMAND ONLY: there is no scheduler behind this and
+  // there should not be one - harvesting decides what the game's permanent
+  // content becomes, so a person starts every run and reads every result.
+  //
+  // Same never-merge rule as extraction and seed generation, and the same
+  // streaming shape as /api/generate-seeds: the library path is a single
+  // extraction call that can run for minutes, so progress goes out as NDJSON
+  // rather than leaving the button looking hung. Not asHandler-wrapped for
+  // the same reason that route is not - once a line is written, a fresh
+  // res.status().json() can no longer run.
+  router.post('/api/harvest', async (req, res) => {
+    const body = req.body || {};
+    const wantSeeds = body.seeds !== false;
+    const wantPatterns = body.patterns !== false;
+
+    if (!wantSeeds && !wantPatterns) {
+      return res.status(400).json({ error: 'nothing to harvest - pick at least one destination' });
+    }
+    // Only the library path calls a model; seed harvesting is pure text
+    // transformation over what the log already holds, so it works with no key.
+    if (wantPatterns && !hasKey()) {
+      return res.status(503).json({ error: 'ANTHROPIC_API_KEY is not set, so library-pattern harvesting is unavailable' });
+    }
+
+    res.setHeader('Content-Type', 'application/x-ndjson');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+    const send = (event) => { if (!res.writableEnded && !res.destroyed) res.write(JSON.stringify(event) + '\n'); };
+
+    try {
+      const seeds = read('seeds').data;
+      const library = read('library').data;
+      const seedDrafts = read('seedDrafts').data;
+      const drafts = read('drafts').data;
+
+      const limitNum = Number(body.limit);
+      const craftNum = Number(body.maxCraftWarnings);
+
+      const result = await runHarvest({
+        from: body.from || null,
+        to: body.to || null,
+        limit: Number.isFinite(limitNum) && limitNum > 0 ? limitNum : HARVEST_DEFAULTS.limit,
+        maxCraftWarnings: Number.isFinite(craftNum) && craftNum >= 0 ? craftNum : HARVEST_DEFAULTS.maxCraftWarnings,
+        seeds, library, seedDrafts, drafts,
+        wantSeeds, wantPatterns,
+        // The event's own `type` becomes `stage`: `type` is the NDJSON
+        // envelope's word for done/error/progress, and letting a progress
+        // event overwrite it would make the last line of a run look like
+        // an unknown event to the reader in admin/src/api.js.
+        onProgress: ({ type: stage, ...rest }) => send({ type: 'progress', stage, ...rest }),
+      });
+
+      // Append only, both queues, exactly like /api/extract and
+      // /api/generate-seeds. Nothing here can reach data/scenarios-seed.json
+      // or server/situation-library.json.
+      const savedSeedDrafts = result.seeds.records.length
+        ? update('seedDrafts', (list) => [...list, ...result.seeds.records], { force: true })
+        : { data: seedDrafts, version: read('seedDrafts').version };
+      const savedDrafts = result.patterns.patterns.length
+        ? update('drafts', (list) => [...list, ...result.patterns.patterns], { force: true })
+        : { data: drafts, version: read('drafts').version };
+
+      send({
+        type: 'done',
+        ok: true,
+        scanned: result.scanned,
+        matching: result.matching,
+        stats: result.stats,
+        rejections: result.rejections,
+        seedsAdded: result.seeds.records.length,
+        seedDuplicates: result.seeds.duplicates,
+        patternsAdded: result.patterns.patterns.length,
+        patternProblems: result.patterns.problems,
+        patternCollisions: result.patterns.collisions,
+        patternDuplicates: result.patterns.duplicates,
+        patternWarnings: result.patterns.warnings,
+        patternsSkipped: result.patterns.skipped,
+        majorsUsed: result.patterns.majorsUsed,
+        model: result.patterns.model,
+        ms: result.patterns.ms,
+        seedDrafts: savedSeedDrafts.data,
+        seedDraftsVersion: savedSeedDrafts.version,
+        drafts: savedDrafts.data,
+        draftsVersion: savedDrafts.version,
+      });
+    } catch (err) {
+      if (err.status >= 500 || !err.status) console.error('[admin]', err);
+      send({ type: 'error', message: err.message });
+    } finally {
+      if (!res.writableEnded) res.end();
+    }
+  });
+
   /* ------------------------------------------------------------ preview */
 
   router.post('/api/preview', asHandler(async (req, res) => {
@@ -371,7 +494,7 @@ export function createAdminRouter() {
   }));
 
   router.get('/api/logs', asHandler((req, res) => {
-    const { page, pageSize, from, to, outcome, contentMode, hasLibrarySlot, search } = req.query;
+    const { page, pageSize, from, to, outcome, contentMode, keySource, hasLibrarySlot, search } = req.query;
     res.json(queryLogs({
       page: Number(page) || 1,
       pageSize: Number(pageSize) || 50,
@@ -379,6 +502,7 @@ export function createAdminRouter() {
       to: to || null,
       outcome: outcome || null,
       contentMode: contentMode || null,
+      keySource: keySource || null,
       hasLibrarySlot: hasLibrarySlot === 'yes' ? true : hasLibrarySlot === 'no' ? false : null,
       search: search || null,
     }));
