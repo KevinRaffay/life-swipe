@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const COMMIT_PX = 88;      // drag distance that counts as a decision
 const FLICK_VELOCITY = 0.6; // px/ms - a fast flick commits at a shorter distance
@@ -27,11 +27,88 @@ function ScenarioBody({ card }) {
   );
 }
 
+/* -------------------------------------------------------------- fitting */
+
+// How far the type may shrink before we stop and let the card clip. Below this
+// it stops being readable on a phone, and a card that needs it is a content
+// bug - a major card is budgeted at 60-90 words and narrativeWarnings already
+// logs the ones that blow past it - rather than something the layout should go
+// on absorbing silently.
+const FIT_MIN = 0.62;
+// Halvings of the 0.38-wide range. Seven lands within about half a percent,
+// which is finer than a rendered pixel at these sizes.
+const FIT_STEPS = 7;
+
+/**
+ * Shrink a card's type until its content fits, so nothing is clipped and the
+ * card never scrolls.
+ *
+ * Why measure instead of choosing sizes in CSS: how much text fits depends on
+ * where the lines happen to wrap, which depends on the words themselves. Two
+ * cards of identical character count can differ by two lines. A media query
+ * cannot see that; only the laid-out box can.
+ *
+ * Binary search rather than one height ratio, for the same reason - halving
+ * the font does not halve the height, because wrapping moves in steps. Seven
+ * passes, each a forced reflow of one small subtree, on an event that happens
+ * when a person swipes. Nowhere near a hot path.
+ *
+ * useLayoutEffect so the scale lands before paint; in an ordinary effect every
+ * deal shows one frame of oversized text first.
+ */
+function useFitToCard(cardRef, dealKey) {
+  useLayoutEffect(() => {
+    const card = cardRef.current;
+    if (!card) return undefined;
+    const scene = card.querySelector('.scene');
+    if (!scene) return undefined;
+
+    const fit = () => {
+      const styles = window.getComputedStyle(card);
+      const available = card.clientHeight
+        - parseFloat(styles.paddingTop || 0)
+        - parseFloat(styles.paddingBottom || 0);
+      // Not laid out yet - a zero-height stack mid-transition, or display:none.
+      // Leaving --fit alone beats deriving a scale from a meaningless box.
+      if (!(available > 0)) return;
+
+      const fitsAt = (scale) => {
+        card.style.setProperty('--fit', String(scale));
+        return scene.scrollHeight <= available;
+      };
+
+      if (fitsAt(1)) return;            // the common case: nothing to do
+
+      let low = FIT_MIN;                // the floor, taken whether or not it fits
+      let high = 1;                     // known not to fit
+      let best = FIT_MIN;
+      for (let i = 0; i < FIT_STEPS; i++) {
+        const mid = (low + high) / 2;
+        if (fitsAt(mid)) { best = mid; low = mid; } else { high = mid; }
+      }
+      card.style.setProperty('--fit', String(best));
+    };
+
+    fit();
+
+    // Rotation, a resized window, a mobile address bar sliding away: the
+    // available height changes without the card changing. Observed on the
+    // STACK, not the card - the callback writes to the card, and observing
+    // what you mutate is how a ResizeObserver loop starts.
+    const stack = card.parentElement;
+    if (!stack || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(fit);
+    observer.observe(stack);
+    return () => observer.disconnect();
+  }, [cardRef, dealKey]);
+}
+
 export default function CardStack({ card, peek, onDecide, disabled }) {
   const [drag, setDrag] = useState(0);
   const [exiting, setExiting] = useState(null); // 'left' | 'right'
   const pointer = useRef(null);
   const cardRef = useRef(null);
+  const peekRef = useRef(null);
   const queued = useRef(null);
 
   // Any new deal resets the gesture state. Keyed on uid rather than id: the
@@ -52,6 +129,11 @@ export default function CardStack({ card, peek, onDecide, disabled }) {
     }
     return undefined;
   }, [dealId]);
+
+  // Both cards are fitted: the peek is dimmed and scaled, not hidden, so an
+  // overflowing one still shows a clipped line behind the top card.
+  useFitToCard(cardRef, dealId);
+  useFitToCard(peekRef, peek ? (peek.uid ?? peek.id) : null);
 
   const commit = useCallback((side) => {
     if (disabled) return;
@@ -134,7 +216,7 @@ export default function CardStack({ card, peek, onDecide, disabled }) {
   return (
     <div className="card-stack">
       {peek && (
-        <article className="card card--peek" aria-hidden="true">
+        <article className="card card--peek" aria-hidden="true" ref={peekRef}>
           <ScenarioBody card={peek} />
         </article>
       )}
