@@ -51,6 +51,26 @@ export async function fetchScenarios({ summary, recent, count = 5, librarySlot =
   return data.scenarios || [];
 }
 
+/**
+ * The one-off establishing scene between the two identity choices and the
+ * first deck.draw() card (shared/intro.js). Best-effort like everything else
+ * here: a shorter timeout than the scenario/obituary calls, because this one
+ * blocks a screen the player is looking at rather than a background refill,
+ * and null on any failure so the caller can fall back to
+ * shared/intro.js's authored beat - the intro never waits on the network any
+ * longer than this.
+ */
+export async function fetchIntroBeat({ financialTier, personality, region }) {
+  try {
+    const data = await jsonPost('/api/intro', { financialTier, personality, region }, 15000);
+    return data.source === 'llm' && data.setting && data.beat
+      ? { setting: data.setting, beat: data.beat }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchObituary(stats, history) {
   try {
     const data = await jsonPost('/api/obituary', { stats, history }, 40000);

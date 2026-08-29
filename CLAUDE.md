@@ -84,6 +84,7 @@ Breaking any of these is a bug regardless of what the tests say.
 | `server/geo.js` | offline IP → region. Holds the privacy contract; read it before touching location. |
 | `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
+| `shared/intro.js` | the two authored identity choices shown at the start of every life, and the offline fallback text for the grounding beat that follows them. Not generated content: excluded from seen_patterns/seen_seed_ids and from LLM request logging. |
 | `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
 | `shared/fallback.js` | procedural templates so offline play never runs dry. |
 | `server/index.js` | serves `dist/`, proxies Anthropic, resolves the content tier. |
@@ -116,10 +117,10 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 
 | file | owns |
 | --- | --- |
-| `server/index.js` | the HTTP server: serves `dist/`, the `/api/*` endpoints (`scenarios`, `obituary`, `region`, `coverage`, seed/library/name-pool reads), resolves the content tier, and mounts the admin when bound to loopback. |
+| `server/index.js` | the HTTP server: serves `dist/`, the `/api/*` endpoints (`scenarios`, `intro`, `obituary`, `region`, `coverage`, seed/library/name-pool reads), resolves the content tier, and mounts the admin when bound to loopback. |
 | `server/anthropic.js` | the Messages API client, hand-rolled (no SDK). Holds the API key check, `MODEL`, `complete`, `extractJson`. |
-| `server/llm.js` | wraps the `anthropic.js` call for `/api/scenarios` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. |
-| `server/prompt.js` | builds the system + user storyteller prompts and the obituary prompt. (The spec calls this `llm.js`.) |
+| `server/llm.js` | wraps the `anthropic.js` call for `/api/scenarios` and `/api/intro` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. |
+| `server/prompt.js` | builds the system + user storyteller prompts, the intro grounding-beat prompt, and the obituary prompt. (The spec calls this `llm.js`.) |
 | `server/log-store.js` | the LLM log file: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
@@ -141,13 +142,15 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | --- | --- |
 | `client/index.html` | the Vite HTML entry. |
 | `client/src/main.jsx` | mounts the React root. |
-| `client/src/App.jsx` | the root component: the game loop, the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`) and which screen is showing. |
-| `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently. |
+| `client/src/App.jsx` | the root component: the game loop (title → intro → playing → ended), the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`) and which screen is showing. |
+| `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently, including the intro grounding beat (`fetchIntroBeat`). |
 | `client/src/prefs.js` | per-player cross-life memory in `localStorage` (content mode, age gate, region choice, `seen_patterns`/`seen_seed_ids`), every access wrapped. |
 | `client/src/styles.css` | all styles. |
 | `client/src/components/CardStack.jsx` | the swipe gesture (pointer events), tiered card rendering, and `useFitToCard` — the measure-and-shrink pass that keeps a long card inside its box so it never scrolls. |
 | `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. |
 | `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice. |
+| `client/src/components/Intro.jsx` | the opening sequence between StartScreen and the first `deck.draw()` card: two authored identity choices (`shared/intro.js`) rendered through the same `CardStack`, then the grounding beat. Presentational only - `App.jsx` owns the state and the `applyChoice` calls. |
+| `client/src/components/GroundingBeat.jsx` | the intro's one non-interactive screen: a generated (or, on failure/timeout, authored-fallback) establishing scene, shown once, reusing the major-tier card's `.scene__setting`/`.scene__beat` visual treatment. Tap or swipe (via `pointerup`, not `click`, so a drag still registers) to continue - there is no choice to make. |
 | `client/src/severity.js` | classifies a turn's consequences as `major` or `standard` for EventToast - the one place the toast/modal threshold is tuned. |
 | `client/src/components/EventToast.jsx` | the toast of what the engine did to the player after the last swipe: fixed ~3-4s duration, paused while a pointer is down, tap to dismiss early. Routes `major` turns to `ConsequenceModal` instead. |
 | `client/src/components/ConsequenceModal.jsx` | the dismissible dialog for major-tier consequences (a pending event resolving, a significant new flag, a large stat swing). Same centered-dialog pattern as `admin/src/components/Modal.jsx`, reimplemented client-side since admin never ships to players. |
@@ -328,6 +331,52 @@ change it, and it never enters saved game state.
 
 ---
 
+## The opening intro sequence
+
+Between `StartScreen` (content mode, age confirmation, region) and the first
+`deck.draw()` card, every life runs three fixed steps, tracked by `App.jsx` as
+`phase === 'intro'` and never persisted across lives:
+
+1. **Two authored identity choices** (`shared/intro.js`) - a financial-tier
+   binary and a bookish/social binary, each picked from a small pool of 3-4
+   hand-written phrasing variants (no cross-life seen-tracking; the pool is
+   too small to need it). Rendered through the exact same `CardStack` swipe
+   gesture as any real card, and applied through the exact same
+   `applyChoice`/`normalizeEffects` path (invariant 1) - `shared/intro.js`
+   only builds the scenario shape, via `validateScenario`, same as a
+   hand-authored seed. The financial card sets a starting-money nudge
+   (`BAL.INTRO.financialTierModifiers`, `shared/balance.js`) and a
+   `modest_upbringing`/`comfortable_upbringing` flag; the personality card
+   sets `bookish`/`social` with no mechanical effect. Both are excluded from
+   `seen_patterns`/`seen_seed_ids` and from LLM request logging entirely -
+   they never touch `Deck.draw` and never call the model, so there is nothing
+   here for `server/harvest.js` to ever see.
+2. **One non-interactive grounding beat** (`client/src/components/GroundingBeat.jsx`),
+   generated by `POST /api/intro` (`server/prompt.js`'s `INTRO_SYSTEM`/
+   `buildIntroPrompt`, inputs: `PRESENT_YEAR`, the resolved region, and the two
+   flags just set) and logged through `server/llm.js` like any generation
+   call, tagged `triggeredBy: "intro_generation"` - a value
+   `server/harvest.js`'s eligibility check excludes on purpose (see "Content
+   harvesting" below), since this is a fixed line with no decision, not a
+   scenario a life could repeat. Validated with a lightweight length-only
+   schema check (`server/index.js`'s `validateIntroBeat`), deliberately NOT
+   `validateScenario`'s prompt/decision-shape rules, since this content has no
+   decision by design. Same "cannot fail" guarantee as `deck.draw`: a failed
+   or slow (15s timeout) call falls back to one of `shared/intro.js`'s two
+   authored beats, keyed by the financial-tier flag only. Reuses the
+   major-tier card's `.scene__setting`/`.scene__beat` visual weight, since
+   this is the first thing a player reads; tap or swipe (via `pointerup`) to
+   continue - there is no choice.
+3. **Hand-off**: `App.jsx`'s `completeIntro` draws the first two real cards
+   from the already-constructed `Deck` and switches to `phase === 'playing'`,
+   exactly what `start()` used to do directly before this sequence existed.
+
+`deck.draw`, the situation library, seed selection and every existing card's
+effect-resolution logic are all unchanged - this is a pre-game sequence that
+terminates into the existing game loop, not a new game mode.
+
+---
+
 ## Verification expectations
 
 Three commands must exit 0 before anything merges:
@@ -488,6 +537,7 @@ without stating you checked all three.
 | Narrative truncation stops on a boundary | shipped | on `main` — `cleanNarrative` capped each field with a bare `slice(0, FIELD_LIMITS[field])`, so an over-long field was cut mid-word: a live card read "The super is not answering. Someone n". Measured before changing anything: 0 of 339 fields in the seed deck overrun a limit, but 23 of 285 generated cards do (~8%, `setting` and `beat` only), and 15 of those landed mid-word. `truncateNarrative` now prefers the last COMPLETE SENTENCE inside the budget, and falls back to a word boundary plus an ellipsis when there is no sentence end worth keeping (below 60% of the budget, obeying one would gut the text). Abbreviations and initials are not sentence ends, so "Dr. Okonkwo" and "J. K." do not cut there. Across all 23 real cases: 0 still cut mid-word, 0 exceed their limit, 7 end on a full sentence. The seed deck renders byte-identically — this only ever fires on live generation. |
 | American English spelling enforcement | shipped | on `american-english-enforcement`, not yet merged to `dev` — explicit spelling instruction added to the generation system prompt, the obituary prompt and the extraction prompt (all three previously said nothing about it); `britishSpellingWarnings`/`BRITISH_SPELLINGS` added to `shared/scenario-format.js` and wired into `validateBatch` as a log-only warning across every tier. Also fixed British spellings that had crept into the prompts' own instructional text ("cheques", "ageing", "labelled", "ANONYMISE", "GENERALISE"). One-off audit of the live content flagged 15/91 library patterns and 18/239 seed scenarios, left for the admin edit flow — see Content model above. No tier budgets, structure or engine/effect changes |
 | Name pool activation controls + admin manager | shipped | on `name-pool-manager`, not yet merged to `dev` — every `server/name-pool.json` entry gained an `active` flag (default true), and a new `server/name-pool-controls.json` holds three pool-wide deactivation lists (category, region, gender_assoc), each entry requiring a `reason`. `shared/names.js`'s `assignName` filters out inactive/deactivated-category/deactivated-gender_assoc candidates before era filtering and before any `nextRandom` draw (deactivation never changes how many randoms a selection consumes, same rule region already followed), then degrades in a fixed order exactly as before, with one new final tier — reuse a name already in play among the still-eligible names, logged — ahead of the existing null/role-word fallback. `regionalWeight` treats a deactivated region exactly like the pre-existing no-signal case; region remains a weight, never a filter, so it cannot independently empty the eligible pool. `scripts/build-region-weights.js` needed no change: it already mutates each pool entry's `region_frequency` in place rather than replacing the record, so `active` (and any other field) already survives a rebuild untouched. New admin "Name pool" tab (`admin/src/components/NamePool.jsx`, `NamePoolForm.jsx`, `GroupControls.jsx`, `NamePoolHealth.jsx`): a filterable/searchable table with bulk multi-select + "select all matching filter" (the individual `active` flag is how an ad-hoc grouping like an era range is deactivated, since it doesn't warrant a persistent control), a create/edit modal with a plain add/remove `region_frequency` list editor, and three group-control panels (category/region/gender_assoc) each requiring a reason and a confirmation step before deactivating. New routes in `server/admin/index.js` (`/api/name-pool`, `/api/name-pool/bulk-active`, `/api/name-pool-controls/{categories,regions,gender-assocs}`, `/api/name-pool-health`), validated by new `content-schema.js` functions, all going through the existing `server/admin/store.js` backup/atomic-write/version-check path like every other content file. `server/name-pool-health.js` computes category spread, era coverage gaps, duplicate names, deactivation counts and a zero-eligible-candidate sweep across era+gender (region is deliberately not swept — see above), shared by `npm run names` and the admin's health panel; advisory only, never blocks a save or fails the build. No change to era-filtering logic, the diversity-weighted sampling algorithm, or `region_frequency`'s underlying values. |
+| Game-opening intro sequence | shipped | on `game-opening-intro-flow`, not yet merged to `dev` — see "The opening intro sequence" above for the full three-step flow (two authored identity choices, then a generated grounding beat). New: `shared/intro.js` (identity-card content + fallback beats), `BAL.INTRO.financialTierModifiers` (`shared/balance.js`), `server/prompt.js`'s `INTRO_SYSTEM`/`buildIntroPrompt`, `POST /api/intro` (`server/index.js`, its own lightweight `validateIntroBeat` rather than `validateScenario`), `client/src/api.js`'s `fetchIntroBeat`, `client/src/components/Intro.jsx` and `GroundingBeat.jsx`, and a new `'intro'` phase in `App.jsx` between `'title'` and `'playing'`. `server/harvest.js`'s `entryEligibility` gained a `triggeredBy` check (only `"batch_generation"`/`"validator_retry"` are harvestable) specifically so the new `"intro_generation"` log entries are excluded — the first caller of `server/llm.js` other than `/api/scenarios`, which is what made that check necessary rather than implicit. No change to `deck.draw`, the situation library, seed selection, or any existing card's effect-resolution logic. |
 
 ---
 
@@ -582,12 +632,15 @@ fire-and-forget (`log-store.js`'s `appendLog`, called from inside the
 `fs.appendFile` callback), so a slow disk never delays the response already on
 its way to the player.
 
+`/api/intro` (the intro flow's one-off establishing-scene call, see "The
+opening intro sequence" below) is wrapped the same way, with `triggeredBy:
+"intro_generation"`. `age`/`contentMode`/`librarySlotUsed` are all `null` on
+that call - it has no live player's state to draw them from, and no scenario
+shape to validate against `validateBatch`.
+
 Deliberately **not** wrapped: the obituary call, admin preview, and pattern
-extraction. The log schema is shaped around gameplay (`triggeredBy` is only
-`"batch_generation"` or `"validator_retry"`; `age`/`contentMode`/
-`librarySlotUsed` all come from a live player's state), and those three calls
-don't have that context. Preview and extraction already show their own raw
-output in the admin UI, so nothing about them is opaque today.
+extraction. Preview and extraction already show their own raw output in the
+admin UI, so nothing about them is opaque today.
 
 Major-tier craft drift — a field outside ±30% of its word budget, or a card
 with no concrete number — is measured by `narrativeWarnings` during
@@ -634,7 +687,13 @@ admin's "Harvest" tab (`POST /admin/api/harvest`) is the only trigger, and it is
 game's permanent content becomes.
 
 **Eligibility.** A logged call is a candidate only if `keySource === "server"`,
-`validationResult === "passed"`, and the individual card carries no more than
+`validationResult === "passed"`, and `triggeredBy` is `"batch_generation"` or
+`"validator_retry"` — the two values an actual scenario-generation call
+carries. That last check is what keeps the intro flow's one-off establishing
+beat (`triggeredBy: "intro_generation"`, logged the same way as a gameplay
+call — see "Request/response logging" above) out of the harvester entirely:
+it is a fixed non-interactive line with no decision, not a scenario a life
+could ever repeat. And the individual card carries no more than
 `maxCraftWarnings` (default 0) of the batch's `validationWarnings`. That last
 filter is per CARD, not per call: `validateBatch` prefixes each warning with its
 raw-array index, so one over-budget major does not disqualify the other four.

@@ -7,8 +7,9 @@ import {
   createState, applyChoice, stageOf, finalStats, stateSummary, recentDecisions, contentTier,
 } from '@shared/engine.js';
 import { nextRandom } from '@shared/rng.js';
+import { buildIdentityCard, fallbackGroundingBeat, INTRO_CARD_ORDER } from '@shared/intro.js';
 
-import { fetchScenarios, getConfig, fetchRegion } from './api.js';
+import { fetchScenarios, getConfig, fetchRegion, fetchIntroBeat } from './api.js';
 import {
   getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen, beginLife,
   getActiveRegion, getDetectedRegion, setDetectedRegion,
@@ -20,14 +21,22 @@ import Hud from './components/Hud.jsx';
 import EventToast from './components/EventToast.jsx';
 import Obituary from './components/Obituary.jsx';
 import StartScreen from './components/StartScreen.jsx';
+import Intro from './components/Intro.jsx';
 
 export default function App() {
-  const [phase, setPhase] = useState('title');       // title | playing | ended
+  const [phase, setPhase] = useState('title');       // title | intro | playing | ended
   const [state, setState] = useState(null);
   const [cards, setCards] = useState([]);            // [current, peek]
   const [events, setEvents] = useState([]);
   const [severity, setSeverity] = useState('standard');
   const [config, setConfig] = useState({ llmEnabled: false, model: null });
+  // The intro sequence's own tiny bit of state - never persisted, and never
+  // touched again once phase leaves 'intro'. introStep is 0/1 for the two
+  // identity cards, 2 for the grounding beat; introBeat is null while that
+  // beat's generation call is in flight (see beginGroundingBeat below).
+  const [introCards, setIntroCards] = useState([]);
+  const [introStep, setIntroStep] = useState(0);
+  const [introBeat, setIntroBeat] = useState(null);
   const deckRef = useRef(null);
 
   // decide() is handed to CardStack and fired from a timer, so it must always
@@ -35,9 +44,13 @@ export default function App() {
   const stateRef = useRef(state);
   const cardsRef = useRef(cards);
   const phaseRef = useRef(phase);
+  const introCardsRef = useRef(introCards);
+  const introStepRef = useRef(introStep);
   stateRef.current = state;
   cardsRef.current = cards;
   phaseRef.current = phase;
+  introCardsRef.current = introCards;
+  introStepRef.current = introStep;
 
   useEffect(() => { getConfig().then(setConfig); }, []);
 
@@ -82,7 +95,10 @@ export default function App() {
   }), []);
 
   // Mode is fixed at birth and never changes mid-life: switching would orphan
-  // in-flight arcs and the flags they planted.
+  // in-flight arcs and the flags they planted. The deck is built here, same as
+  // before, but its first draw() waits until the intro sequence hands off to
+  // completeIntro below - the two identity cards and the grounding beat come
+  // first, every life, never persisted across lives.
   const start = useCallback((contentMode = 'safe') => {
     // Advances the per-player life counter that the seen-window is measured in.
     beginLife();
@@ -90,14 +106,65 @@ export default function App() {
     const deck = makeDeck(region);
     deckRef.current = deck;
     const fresh = createState({ seed: `${Date.now()}-${Math.random()}`, contentMode, region });
-    const first = deck.draw(fresh);
-    const second = deck.draw(fresh);
+    const identityCards = INTRO_CARD_ORDER.map((kind) => buildIdentityCard(kind, () => nextRandom(fresh)));
     setState(fresh);
-    setCards([first, second]);
+    setIntroCards(identityCards);
+    setIntroStep(0);
+    setIntroBeat(null);
     setEvents([]);
     setSeverity('standard');
-    setPhase('playing');
+    setPhase('intro');
   }, [makeDeck]);
+
+  // The identity cards go through the exact same applyChoice/normalizeEffects
+  // path as any real card (invariant 1) - this only decides what happens
+  // around that call: advance to the next identity card, or move on to the
+  // grounding beat once both have resolved. Death is astronomically unlikely
+  // at 16 but not impossible, so it is handled here exactly like decide() does.
+  const decideIntro = useCallback((side) => {
+    const s = stateRef.current;
+    const card = introCardsRef.current[introStepRef.current];
+    if (!s || phaseRef.current !== 'intro' || !card) return;
+
+    const result = applyChoice(s, card, side);
+    if (result.ended) {
+      setState(result.state);
+      setPhase('ended');
+      return;
+    }
+    setState(result.state);
+    if (introStepRef.current < introCardsRef.current.length - 1) {
+      setIntroStep(introStepRef.current + 1);
+    } else {
+      setIntroStep(introStepRef.current + 1); // -> the grounding beat step
+      beginGroundingBeat(result.state);
+    }
+  }, []);
+
+  // Kicks off the one generation call the intro flow makes, tagged
+  // 'intro_generation' server-side so the harvester never sees it (this is a
+  // fixed non-interactive beat, not a scenario a life could repeat). Same
+  // "cannot fail" guarantee as deck.draw: any failure or timeout falls back to
+  // shared/intro.js's authored beat, so the intro is never stuck waiting.
+  const beginGroundingBeat = useCallback((s) => {
+    const financialTier = s.flags.includes('comfortable_upbringing') ? 'comfortable_upbringing' : 'modest_upbringing';
+    const personality = s.flags.includes('social') ? 'social' : 'bookish';
+    fetchIntroBeat({ financialTier, personality, region: getActiveRegion() }).then((beat) => {
+      setIntroBeat(beat || fallbackGroundingBeat(financialTier));
+    });
+  }, []);
+
+  // The intro's last step: draw the first two real cards and hand off to the
+  // ordinary game loop, exactly as start() used to do before the intro existed.
+  const completeIntro = useCallback(() => {
+    const s = stateRef.current;
+    const deck = deckRef.current;
+    if (!s || !deck || phaseRef.current !== 'intro') return;
+    const first = deck.draw(s);
+    const second = deck.draw(s);
+    setCards([first, second]);
+    setPhase('playing');
+  }, []);
 
   const decide = useCallback((side) => {
     const state = stateRef.current;
@@ -144,6 +211,20 @@ export default function App() {
     return (
       <main className="app">
         <StartScreen onStart={start} llmEnabled={config.llmEnabled} model={config.model} />
+      </main>
+    );
+  }
+
+  if (phase === 'intro') {
+    return (
+      <main className="app">
+        <Intro
+          step={introStep}
+          cards={introCards}
+          beat={introBeat}
+          onDecide={decideIntro}
+          onContinue={completeIntro}
+        />
       </main>
     );
   }

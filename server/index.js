@@ -13,7 +13,10 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { complete, extractJson, hasKey, MODEL } from './anthropic.js';
 import { callLLM, AnthropicError } from './llm.js';
-import { buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt } from './prompt.js';
+import {
+  buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt,
+  INTRO_SYSTEM, buildIntroPrompt,
+} from './prompt.js';
 import { effectiveTier } from '../shared/content.js';
 import { checkCoverage, coverage } from '../scripts/coverage.js';
 import { validateBatch } from '../shared/schema.js';
@@ -234,6 +237,62 @@ app.post('/api/obituary', async (req, res) => {
     console.warn('[obituary]', err.message);
     res.json({ source: 'fallback', reason: err.message });
   }
+});
+
+// How long a field is trusted to be, without leaning on validateScenario's
+// prompt/decision-shape rules - this content has no decision by design, so
+// those rules do not apply here.
+const INTRO_BEAT_FIELD_LEN = [15, 240];
+
+function validateIntroBeat(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const [min, max] = INTRO_BEAT_FIELD_LEN;
+  const setting = typeof raw.setting === 'string' ? raw.setting.trim() : '';
+  const beat = typeof raw.beat === 'string' ? raw.beat.trim() : '';
+  if (setting.length < min || setting.length > max) return null;
+  if (beat.length < min || beat.length > max) return null;
+  return { setting, beat };
+}
+
+// POST /api/intro  { financialTier, personality, region }
+// The one non-interactive establishing scene between the two authored
+// identity choices (shared/intro.js) and the first deck.draw() card. Routed
+// through callLLM so it is logged like any generation call, but tagged with a
+// distinct triggeredBy: this is a fixed one-off beat with no decision, never a
+// scenario a life could repeat, so server/harvest.js's eligibility check
+// excludes it by construction. Always 200; a failure here just means the
+// client shows one of shared/intro.js's authored fallback beats.
+app.post('/api/intro', async (req, res) => {
+  const { financialTier, personality, region = null } = req.body || {};
+  if (!hasKey()) return res.json({ source: 'fallback', reason: 'no ANTHROPIC_API_KEY set' });
+
+  const call = await callLLM({
+    system: INTRO_SYSTEM,
+    user: buildIntroPrompt({ region, financialTier, personality }),
+    prefill: '{',
+    maxTokens: 400,
+    temperature: 1,
+    meta: {
+      triggeredBy: 'intro_generation',
+      // Paid for by the server's own ANTHROPIC_API_KEY, same as every other
+      // live call - stated rather than assumed, same reasoning as
+      // /api/scenarios above.
+      keySource: 'server',
+    },
+  });
+
+  if (call.error) {
+    call.finalizeLog('failed', [call.error.message], null);
+    return res.json({ source: 'fallback', reason: call.error.message });
+  }
+
+  const beat = validateIntroBeat(extractJson(call.text));
+  if (!beat) {
+    call.finalizeLog('failed', ['intro beat failed the lightweight schema check'], null);
+    return res.json({ source: 'fallback', reason: 'invalid intro beat' });
+  }
+  call.finalizeLog('passed', null, null);
+  res.json({ source: 'llm', ...beat });
 });
 
 app.get('/api/seed-scenarios', (_req, res) => res.json(seedScenarios));

@@ -4,6 +4,9 @@
 // PROPOSES effects. The engine clamps every number, rolls every probability and
 // decides every death. Nothing the model returns is authoritative.
 
+import { BAL } from '../shared/balance.js';
+import { labelFor } from '../shared/regions.js';
+
 const SYSTEM_TEMPLATE = `You are the STORYTELLER for "Life Swipe", a darkly comic life-simulation game.
 The player lives one life from 16 until they die or go broke, one binary swipe at a time.
 
@@ -384,6 +387,52 @@ function librarySlotBlock(slot) {
     lines.push('different futures, and both must be defensible in the moment.');
   }
   return lines.join(String.fromCharCode(10));
+}
+
+/* ---------------------------------------------------------- intro beat */
+
+// The one non-interactive scene between the two identity choices
+// (shared/intro.js) and the first real deck.draw() card. Deliberately its own
+// small shape - { setting, beat }, no prompt/dialogue/decision - rather than a
+// TIER_FIELDS combination, because it is not a scenario: there is nothing to
+// swipe on.
+export const INTRO_SYSTEM = `You write the opening ESTABLISHING SCENE for a new life in "Life Swipe", a darkly comic life-simulation game.
+
+This is NOT a scenario card. There is no decision, no prompt, no choice - it
+runs once, before the player's first swipe. It is one short grounding beat: a
+concrete moment that shows who this 16-year-old already is.
+
+Write two fields only:
+  "setting": one line grounding a specific place and time - the same
+    groundedness a minor-tier scenario card uses: a real weekday, a real room,
+    one small sensory detail. Never "somewhere, later".
+  "beat":    one line of ordinary action that SHOWS the two things you were
+    told about this character - their upbringing, their bookish or social
+    bent - without naming or explaining either as a trait.
+
+TONE: the same deadpan, specific, second-person voice as the rest of the game.
+No dialogue, no question, no decision - just the beat.
+
+SPELLING: American English throughout.
+
+Return JSON only, nothing else: { "setting": "...", "beat": "..." }`;
+
+export function buildIntroPrompt({ region, financialTier, personality }) {
+  const place = region ? labelFor(region) : 'a place that could be anywhere in the country';
+  const money = financialTier === 'comfortable_upbringing'
+    ? 'Money was rarely the thing anyone in the house worried about.'
+    : 'Money was tight most months, and everyone in the house knew it.';
+  const temperament = personality === 'social'
+    ? 'Given the choice, they would rather be out with people than alone with a book.'
+    : 'Given the choice, they would rather have their nose in a book than be out with people.';
+
+  return `THE CHARACTER
+  Sixteen years old. The year is ${BAL.PRESENT_YEAR}.
+  Roughly based in: ${place}.
+  ${money}
+  ${temperament}
+
+Write the establishing beat as JSON: { "setting": "...", "beat": "..." }`;
 }
 
 export const OBITUARY_SYSTEM = `You write obituaries for "Life Swipe", a darkly comic life simulator.
