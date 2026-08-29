@@ -659,14 +659,67 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 /* ------------------------------------------------------- intro grounding */
 
 /* The non-interactive third intro step (client/src/components/GroundingBeat.jsx).
-   Reuses .card/.scene wholesale - major-tier weight for the first thing a
-   player reads - but there is nothing to choose here, so the hint is a single
-   centred line rather than the left/right pair .card__hint is built for. */
-.intro-beat { cursor: pointer; transition: opacity 220ms linear, transform 220ms ease; }
-.intro-beat.is-exiting { opacity: 0; transform: scale(0.97); }
-.intro-beat__hint { justify-content: center; }
-.intro-beat--loading { cursor: default; }
-.intro-beat__loading-text {
+   A popup over the intro screen rather than a screen of its own: the same
+   backdrop + centred-dialog shape as .consequence-backdrop/.consequence-modal,
+   so the player app's two modals read as one pattern. The panel keeps the
+   card's gradient and ink because its body is major-tier .scene content, whose
+   colours are card colours - and because this is the first thing a player
+   reads. Nothing to choose here, so the hint is a single centred line rather
+   than the left/right pair .card__hint is built for. */
+.grounding-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(8, 6, 16, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: toast-in 220ms cubic-bezier(.2, 1, .3, 1);
+  transition: opacity 220ms linear;
+  /* The whole backdrop is the target: tap or drag anywhere to continue. */
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.grounding-backdrop.is-exiting { opacity: 0; }
+/* Nothing to acknowledge until the beat lands, so nothing to click either. */
+.grounding-backdrop--loading { cursor: default; }
+
+.grounding-modal {
+  position: relative;
+  width: 100%; max-width: min(400px, var(--shell));
+  max-height: min(600px, 80vh);
+  padding: 28px 24px 46px;
+  border-radius: var(--radius);
+  background: linear-gradient(158deg, var(--card) 0%, var(--card-2) 100%);
+  color: var(--card-ink);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  overflow: clip;
+  box-shadow:
+    0 24px 70px -12px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  outline: none;
+}
+
+.grounding-modal__hint {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 20px;
+  margin: 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--card-ink-dim);
+  pointer-events: none;
+}
+
+.grounding-modal__loading {
   margin: 0;
   text-align: center;
   font-weight: 600;
