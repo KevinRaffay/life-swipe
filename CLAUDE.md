@@ -474,6 +474,25 @@ Other things worth knowing before working on it:
   (`server/admin/index.js`'s `draftRoutes`) that pattern-draft review uses,
   parametrised by draft file, target file and validator rather than
   duplicated.
+- **The harvester does NOT run extraction's anonymity sweep on seed
+  candidates.** It did, and the reason it stopped is worth remembering: that
+  sweep is written for a library pattern lifted out of somebody's biography,
+  where a proper noun or a date means leaked identity. A seed card is under
+  the opposite instruction — the storyteller prompt's GROUNDING section
+  demands "A Tuesday in April, the garden centre car park" and the tone guide
+  asks for brand names outright. Pointed at that content the sweep flagged
+  Tuesday, September, Saturday, Civic, Kmart and Dad: nine warnings across
+  fifteen drafts, none of them real, which is how a reviewer learns to skip
+  the warnings list entirely. A narrower "capitalised word in a person-naming
+  position" replacement was measured too and scored *worse* — it caught
+  choice-label verbs and more brands, and still found no real name in 201
+  candidates. What remains is one precise check, `hardcodedNameWarnings`: a
+  relationship effect naming somebody outright instead of by tag, which is
+  exactly the condition `npm run names` fails on, and therefore the one that
+  would otherwise break the build *after* approval. It fires zero times on
+  today's log, so it was confirmed by planting a card that trips it and
+  watching `npm run names` exit 1. The library path still runs the real
+  `identityWarnings`, where it is the right question.
 - **Harvesting never merges either**, and never runs on a timer. The "Harvest"
   tab (`admin/src/components/Harvest.jsx`) reads the request log on demand and
   appends to both draft queues; see "Content harvesting" below. Its two review

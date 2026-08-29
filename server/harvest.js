@@ -167,6 +167,10 @@ export function parseGenerationContext(assembledPrompt) {
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
+// The opening of a name tag. Named because "does this contain {{" reads as a
+// syntax question and is actually an identity one.
+const TAG_OPEN = '{{';
+
 // The role phrase to write into a tag. "unspecified role" is what the prompt
 // prints when a relationship has none; it is not something to hand to the name
 // resolver, which reads the role for age and gender plausibility.
@@ -456,6 +460,40 @@ export function gateFlagsFor(usedTags) {
   return [...gates];
 }
 
+/* ------------------------------------------------------ hardcoded names */
+
+// The two address forms scripts/name-check.js exempts, spelled its way. Kept
+// separate from ADDRESS_TERMS above, which is the looser set used for reading
+// a cast list out of a prompt: this one has to match the gate exactly, or the
+// warning stops predicting what that gate will do.
+const NAME_CHECK_EXEMPT = new Set(['Mom', 'Dad']);
+
+/**
+ * A relationship effect naming somebody literally instead of by tag.
+ *
+ * This is the ONE identity problem a harvested seed card can still have, and
+ * it is worth flagging because it is not cosmetic: `npm run names` fails the
+ * build on exactly this condition, and it only looks at the seed deck - so a
+ * card that carries it sails through review and breaks the check AFTER
+ * approval, which is the worst place to find out.
+ *
+ * De-personalisation removes every name it can see, so this fires only when
+ * the model invented somebody the prompt never listed. Rare by design (the
+ * storyteller prompt forbids inventing names, and validateBatch drops cards
+ * that rename a known person), which is why it is a warning rather than a
+ * rejection: a person reads it and decides.
+ */
+export function hardcodedNameWarnings(card) {
+  const out = [];
+  for (const side of ['leftEffects', 'rightEffects']) {
+    const rel = card[side] && card[side].relationship;
+    if (!rel || typeof rel.name !== 'string' || !rel.name.trim()) continue;
+    if (rel.name.includes(TAG_OPEN) || NAME_CHECK_EXEMPT.has(rel.name)) continue;
+    out.push(`${side} names "${rel.name}" outright rather than with a tag - npm run names fails on this once the card is approved`);
+  }
+  return out;
+}
+
 /* ---------------------------------------------------------- eligibility */
 
 const WARNING_INDEX_RE = /^scenario\[(\d+)\]:\s*/;
@@ -648,17 +686,26 @@ export function harvestSeeds(candidates, {
     const gates = gateFlagsFor(candidate.usedTags);
     if (gates.length) record.requiresFlags = gates;
 
-    // Advisory, exactly like extraction's anonymity sweep: proper nouns are
-    // house style here (the tone guide asks for brand names and dollar
-    // figures), so this is a list to read rather than a reason to drop a card.
+    // NOT extraction's anonymity sweep. That one is written for a library
+    // pattern lifted out of somebody's biography, where a proper noun or a
+    // date means leaked identity - "no names of people, companies, products
+    // or places, no dates" is its rule 1. A seed card is under the opposite
+    // instruction: the storyteller prompt's GROUNDING section demands "A
+    // Tuesday in April, the garden centre car park", and the tone guide asks
+    // for brand names outright. Pointed at this content the sweep flagged
+    // Tuesday, September, Saturday, Civic, Kmart and Dad - nine warnings
+    // across fifteen drafts, none of them real, which is how a reviewer
+    // learns to skip the warnings list entirely.
     //
-    // Narrative fields only, not the choice labels: a label is a fragment
-    // ("Stay in class") with no sentence around it, so to the sweep its
-    // leading capital reads as a mid-sentence proper noun every time.
-    const identity = identityWarnings({ pattern: displayText(record), typical_effects: '', note: '' });
+    // Measured before removing, and a narrower "capitalised word in a
+    // person-naming position" replacement was measured too: it scored worse,
+    // catching choice-label verbs and more brands, and still found no real
+    // name in 201 candidates. So the generic sweep is gone and only the one
+    // precise, zero-noise check remains. (harvestPatterns still runs the real
+    // identityWarnings, where it is the right question.)
     const notes = [
       ...(candidate.warnings || []),
-      ...identity.map((w) => `identity: ${w}`),
+      ...hardcodedNameWarnings(record),
     ];
     if (notes.length) record.validationWarnings = notes;
 
