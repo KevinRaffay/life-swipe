@@ -1580,5 +1580,204 @@
     "rarity": "common",
     "note": "Distinct from parental_matching_savings_goal — fires without the parental incentive structure.",
     "source": "harvested"
+  },
+  {
+    "id": "parental_matching_savings_goal_2",
+    "pattern": "A parent offers to match a teenager's savings dollar-for-dollar toward a first major purchase, forcing a choice between disciplined sacrifice and keeping money fluid.",
+    "category": "money",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "parental_matching_savings_goal"
+    ],
+    "typical_effects": "Branch point: committing builds financial discipline and unlocks the asset but closes off spontaneous spending; staying loose preserves freedom but delays independence milestones. Should set a flag if the player commits, enabling future car-ownership events.",
+    "rarity": "common",
+    "note": "The specific vehicle and figures should be randomised on firing; the structural shape is the parental incentive and the sacrifice trade-off.",
+    "source": "harvested"
+  },
+  {
+    "id": "peer_launched_micro_venture",
+    "pattern": "A close friend recruits a teenager into a small joint venture requiring modest capital and weekend labour, with a plausible break-even timeline and one named early customer.",
+    "category": "career",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "peer_launched_micro_venture"
+    ],
+    "typical_effects": "Branch point: joining builds entrepreneurial identity and a small income stream but surrenders free time; declining preserves leisure but may generate mild regret or social distance from the friend. Pending event: if joined, fire a summer outcome event at season's end.",
+    "rarity": "common",
+    "note": "The venture type should vary by setting; the structural shape is shared risk, shared labour, and the identity question of whether the player becomes 'someone who runs something'.",
+    "source": "harvested"
+  },
+  {
+    "id": "charismatic_senior_mentor_ethical_ambigu_2",
+    "pattern": "A high-achieving older peer recruits a newcomer into a prestigious activity while casually normalising a cynical or ethically loose attitude, making the mentorship feel like an opportunity and a warning simultaneously.",
+    "category": "career",
+    "life_stage": [
+      17,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "charismatic_senior_mentor_ethical_ambiguity"
+    ],
+    "typical_effects": "Branch point: attaching to the mentor accelerates status and skill but risks adopting compromised values; finding independent footing is slower but safer. Should create a pending_event that tests the player's ethical alignment later in the same life stage.",
+    "rarity": "uncommon",
+    "note": "The activity domain should vary; the load-bearing element is the mentor's charm paired with an offhand remark that signals moral flexibility.",
+    "source": "harvested"
+  },
+  {
+    "id": "parent_subsidised_skill_course_2",
+    "pattern": "A parent leaves evidence of a structured learning opportunity and offers to cover half the cost contingent on the teenager completing it, trading open summer time for a concrete credential.",
+    "category": "career",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "parent_subsidised_skill_course"
+    ],
+    "typical_effects": "Branch point: committing yields a skill flag and parental approval but closes the unstructured summer; declining preserves freedom but may leave the player without a differentiating credential at a later application or interview event.",
+    "rarity": "common",
+    "note": "The skill domain should be randomised; the structural shape is the conditional subsidy and the cost-of-commitment framing.",
+    "source": "harvested"
+  },
+  {
+    "id": "parent_arranged_residential_enrichment",
+    "pattern": "A parent unilaterally decides a teenager should attend a residential academic programme, presenting it as settled while leaving just enough room for the teenager to refuse.",
+    "category": "family",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "parent_arranged_residential_enrichment"
+    ],
+    "typical_effects": "Branch point: attending may yield skill flags, new social connections, and parental goodwill; refusing asserts autonomy but may create friction and a missed opportunity flag. The discomfort of living among competitive strangers should be surfaced as a real cost.",
+    "rarity": "uncommon",
+    "note": "The programme subject should vary; the structural tension is parental authority versus adolescent self-determination.",
+    "source": "harvested"
+  },
+  {
+    "id": "friend_commits_you_to_extracurricular",
+    "pattern": "A peer signs a teenager up for a competitive extracurricular without asking, leaving the teenager to either ratify the commitment or back out and disappoint both the friend and the gatekeeper.",
+    "category": "career",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "friend_commits_you_to_extracurricular"
+    ],
+    "typical_effects": "Branch point: committing sacrifices free weekends but builds a credential and deepens the friendship; backing out preserves leisure but may damage the relationship and signal low follow-through. Should create a pending social event with the friend.",
+    "rarity": "common",
+    "note": "The activity type should vary; the key shape is the social pressure created by a third party's presumptuous act of goodwill.",
+    "source": "harvested"
+  },
+  {
+    "id": "low_barrier_activity_fills_idle",
+    "pattern": "After missing or abandoning one activity, a teenager is offered an unrelated low-stakes opportunity that requires no audition or prior commitment and would fill the resulting empty time.",
+    "category": "career",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "low_barrier_activity_fills_idle_gap"
+    ],
+    "typical_effects": "Soft branch: joining provides a social outlet and mild identity expansion; ignoring it leaves the idle gap open, which may feed into a later restlessness or risk-taking event. Low stakes means consequences are gentle either way.",
+    "rarity": "common",
+    "note": "Best fired shortly after a missed opportunity event to give the idle gap narrative meaning.",
+    "source": "harvested"
+  },
+  {
+    "id": "inherited_vehicle_conditional_independen",
+    "pattern": "A parent hands over a vehicle they have outgrown, covering costs only temporarily, so that the teenager must soon decide whether to absorb the ongoing expense or surrender the freedom.",
+    "category": "money",
+    "life_stage": [
+      16,
+      20
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "inherited_vehicle_conditional_independence"
+    ],
+    "typical_effects": "Creates a pending_event at the cost-transfer deadline: accepting ongoing costs builds financial responsibility but strains budget; returning the vehicle is honest but sacrifices mobility. Should interact with any existing car-fund or savings flags.",
+    "rarity": "common",
+    "note": "The structural shape is the gift with an expiry date; the vehicle type is incidental.",
+    "source": "harvested"
+  },
+  {
+    "id": "debt_financed_first_independence_asset",
+    "pattern": "A parent offers to co-sign a loan for a first major asset, making independence accessible immediately but binding the teenager to repayments they must fund entirely alone.",
+    "category": "money",
+    "life_stage": [
+      16,
+      21
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "debt_financed_first_independence_asset"
+    ],
+    "typical_effects": "Branch point: taking the debt accelerates independence but creates financial pressure and a pending_event for each repayment period; declining is cautious but delays the milestone. Should set a debt flag that gates future financial events.",
+    "rarity": "common",
+    "note": "Distinct from the matching-savings pattern: here the asset is acquired via obligation rather than accumulation.",
+    "source": "harvested"
+  },
+  {
+    "id": "adolescent_identity_branch_sleep_in",
+    "pattern": "A teenager faces a recurring low-glamour commitment that would fill their summers or weekends, forcing an early self-definition between disciplined participation and preserving unstructured freedom.",
+    "category": "career",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [],
+    "typical_effects": "The choice sets a character-trait flag (industrious vs. leisure-oriented) that should influence the probability of later career and money events. Not a single branch but a temperament signal worth tracking across the life.",
+    "rarity": "common",
+    "note": "This pattern underlies several others in this set; it can fire as a standalone moment of self-reflection or be embedded in a more specific event.",
+    "source": "harvested"
   }
 ]
