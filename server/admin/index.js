@@ -17,7 +17,7 @@ import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } fr
 import { generateSeedDrafts } from '../seed-generation.js';
 import { runHarvest, HARVEST_DEFAULTS } from '../harvest.js';
 import { computeNamePoolHealth } from '../name-pool-health.js';
-import { hasKey, MODEL } from '../anthropic.js';
+import { hasKey, MODEL } from '../provider.js';
 import { queryLogs, getLogEntry, getLogSummary } from '../log-store.js';
 import { EXTRACTED, HAND_AUTHORED, SOURCES, tallySources, harvestedShare } from '../../shared/provenance.js';
 import { US_REGIONS } from '../../shared/regions.js';

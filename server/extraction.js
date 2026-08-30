@@ -9,7 +9,7 @@
 // What this module does NOT do, ever: write to server/situation-library.json.
 // Extraction produces DRAFTS. A person decides what enters the library.
 
-import { complete, extractJson, MODEL } from './anthropic.js';
+import { complete, extractJson, MODEL } from './provider.js';
 
 export const CATEGORIES = new Set(['career', 'romance', 'family', 'money', 'health', 'chaos']);
 export const RARITIES = new Set(['common', 'uncommon', 'rare']);

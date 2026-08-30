@@ -23,7 +23,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
-import { hasKey } from '../server/anthropic.js';
+import { hasKey } from '../server/provider.js';
 import { loadSeeds } from './coverage.js';
 import { generateSeedDrafts, DEFAULT_TARGET_FIRST, DEFAULT_TARGET_OTHER } from '../server/seed-generation.js';
 

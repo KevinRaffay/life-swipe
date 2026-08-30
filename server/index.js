@@ -1,7 +1,8 @@
 // Life Swipe server.
 //
-// Two jobs: serve the built client, and proxy Anthropic so the API key stays
-// on this side of the wire. Every model response is validated before it is
+// Two jobs: serve the built client, and proxy the LLM provider (Anthropic or
+// a local Ollama - see server/provider.js) so no key or endpoint ships to the
+// browser. Every model response is validated before it is
 // allowed anywhere near the game; malformed batches get exactly one retry and
 // then the client is told to fall back to seed content.
 
@@ -11,7 +12,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 
-import { complete, extractJson, hasKey, MODEL } from './anthropic.js';
+import { complete, extractJson, hasKey, MODEL, PROVIDER } from './provider.js';
 import { callLLM, AnthropicError } from './llm.js';
 import {
   buildSystemPrompt, buildUserPrompt, OBITUARY_SYSTEM, buildObituaryPrompt,
@@ -386,7 +387,7 @@ if (fs.existsSync(DIST)) {
 
 const server = app.listen(PORT, HOST, () => {
   console.log(`\n  Life Swipe listening on http://localhost:${PORT}  (bound to ${HOST})`);
-  console.log(`  storyteller: ${hasKey() ? MODEL : 'OFFLINE (no ANTHROPIC_API_KEY - seed content only)'}`);
+  console.log(`  storyteller: ${hasKey() ? `${MODEL} (provider: ${PROVIDER})` : 'OFFLINE (no ANTHROPIC_API_KEY - seed content only)'}`);
   console.log(`  client build: ${fs.existsSync(DIST) ? 'dist/' : 'MISSING (run npm start)'}`);
   if (isLoopback) {
     console.log(`  admin:        http://localhost:${PORT}/admin  ` +

@@ -39,7 +39,7 @@
 // What this module does NOT do: touch generation, the engine, effect
 // resolution or the referee. It reads a log file and writes two draft files.
 
-import { extractJson } from './anthropic.js';
+import { extractJson } from './provider.js';
 import { queryEntries } from './log-store.js';
 import { shapeSeedRecord } from './seed-generation.js';
 import {
