@@ -155,3 +155,40 @@ export function markSeedSeen(id) {
 export function resetSeenSeedIds() {
   try { window.localStorage.removeItem(SEED_STORE_KEY); } catch { /* ignore */ }
 }
+
+/* ------------------------------------------------------------- theme ---- */
+
+// Explicit theme override, persisted like other preferences.
+// null = follow OS via prefers-color-scheme
+// 'light' = force light theme
+// 'dark' = force dark theme
+const THEME_KEY = 'lifeswipe.theme';
+
+export function getTheme() {
+  const stored = read(THEME_KEY);
+  if (stored === 'light' || stored === 'dark') return stored;
+  return null; // null = auto (follow OS)
+}
+
+export function setTheme(theme) {
+  if (theme === 'light' || theme === 'dark') {
+    write(THEME_KEY, theme);
+  } else {
+    // null or undefined = reset to auto
+    try { window.localStorage.removeItem(THEME_KEY); } catch { /* ignore */ }
+  }
+}
+
+/**
+ * The effective theme: the player's override, or OS preference via
+ * prefers-color-scheme, or 'dark' as the ultimate fallback.
+ */
+export function getActiveTheme() {
+  const override = getTheme();
+  if (override) return override;
+
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light';
+  }
+  return 'dark';
+}

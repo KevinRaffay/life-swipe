@@ -12,7 +12,7 @@ import { buildIdentityCard, fallbackGroundingBeat, INTRO_CARD_ORDER, pickFraming
 import { fetchScenarios, getConfig, fetchRegion, fetchIntroBeat } from './api.js';
 import {
   getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen, beginLife,
-  getActiveRegion, getDetectedRegion, setDetectedRegion,
+  getActiveRegion, getDetectedRegion, setDetectedRegion, getActiveTheme,
 } from './prefs.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import { classifyConsequence } from './severity.js';
@@ -54,6 +54,17 @@ export default function App() {
   introStepRef.current = introStep;
 
   useEffect(() => { getConfig().then(setConfig); }, []);
+
+  // Apply theme class to document root, update when theme preference changes.
+  useEffect(() => {
+    const root = document.documentElement;
+    const theme = getActiveTheme();
+    if (theme === 'dark') {
+      root.classList.add('dark-theme');
+    } else {
+      root.classList.remove('dark-theme');
+    }
+  }, []);
 
   // Ask the server where this player probably is, once, and only if we have
   // not already been told. The answer is a suggested default that the settings
@@ -112,13 +123,19 @@ export default function App() {
     const framing = pickFramingLine(rng);
     setState(fresh);
     setIntroCards(identityCards);
-    setIntroStep(0);
+    setIntroStep(-1);
     setIntroBeat(null);
     setIntroFraming(framing);
     setEvents([]);
     setSeverity('standard');
     setPhase('intro');
   }, [makeDeck]);
+
+  // Dismiss the opening framing modal and advance to the first identity card.
+  const dismissFraming = useCallback(() => {
+    if (phaseRef.current !== 'intro') return;
+    setIntroStep(0);
+  }, []);
 
   // The identity cards go through the exact same applyChoice/normalizeEffects
   // path as any real card (invariant 1) - this only decides what happens
@@ -228,6 +245,7 @@ export default function App() {
           beat={introBeat}
           framing={introFraming}
           onDecide={decideIntro}
+          onDismissFraming={dismissFraming}
           onContinue={completeIntro}
         />
       </main>
