@@ -12,3 +12,8 @@ server/logs/
 *.vsidx
 CopilotIndices/
 .vs/
+
+# SSA archive is committed (data/ssa/namesbystate.zip); its extracted
+# contents are not - 155MB of derived files rebuildable by unzipping.
+data/ssa/*.TXT
+data/ssa/*.pdf

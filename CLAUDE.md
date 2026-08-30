@@ -78,11 +78,13 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/scenario-format.js` | weight tiers and which narrative fields each carries. |
 | `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check, pool-wide activation filtering. |
 | `shared/regions.js` | region codes and labels, shared by the server resolver and the settings dropdown. |
-| `server/name-pool.json` | 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. Data only. |
+| `server/name-pool.json` | 994 names across 49 origins, generated from SSA birth records, with era, gender, per-region frequency and an `active` flag. Data only. |
 | `server/name-pool-controls.json` | pool-wide deactivation lists (category / region / gender_assoc), each entry carrying a required reason and timestamp. Data only. |
 | `server/name-pool-health.js` | pool-health measurements (spread, era gaps, zero-candidate combinations) shared by `npm run names` and the admin's Name Pool health panel. |
 | `server/geo.js` | offline IP → region. Holds the privacy contract; read it before touching location. |
-| `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps. |
+| `scripts/build-name-pool.js` | generates the pool CANDIDATES from SSA birth records: top-N per state/era/gender, merged into the existing pool, never deleting. |
+| `scripts/name-categories.json` | folded name → category, for SSA-sourced names. An organisational label, not a weight. Data only. |
+| `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps for names already in the pool. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
 | `shared/intro.js` | the two authored identity choices shown at the start of every life, and the offline fallback text for the grounding beat that follows them. Not generated content: excluded from seen_patterns/seen_seed_ids and from LLM request logging. |
 | `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
@@ -128,7 +130,7 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
 | `server/harvest.js` | the content harvester: reads `server/logs/llm-requests.jsonl`, filters it to server-key calls that passed validation, puts the cast's name tags back into the cards, drops the ones that only make sense inside one life, and proposes seed-deck and situation-library drafts. Never writes a content file - the admin route does the appending. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
-| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. |
+| `server/name-pool.json` | data only: 994 names across 49 origins, generated from SSA birth records, with era, gender, per-region frequency and an `active` flag. |
 | `server/name-pool-controls.json` | data only: pool-wide deactivation lists for category / region / gender_assoc, each entry requiring a reason. |
 | `server/name-pool-health.js` | pool-health measurements (category spread, era gaps, zero-eligible-candidate warnings), shared by `npm run names` and the admin's health panel. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
@@ -168,6 +170,7 @@ npm run dev                            # vite :5173 + api :8787
 npm run simulate -- 300 seed --mode=both
 npm run coverage                       # seed coverage per bucket/mode
 npm run names                          # validate the name pool + measure its spread
+npm run build-name-pool -- <dir>       # generate pool candidates from SSA birth records
 npm run build-region-weights -- <dir>  # regenerate region_frequency from SSA data
 npm run extract-patterns -- source.txt # draft library patterns (never auto-merges)
 npm run generate-seeds -- --mode=both --target=15  # draft seed scenarios for thin buckets (never auto-merges)
@@ -263,8 +266,23 @@ authoring value. The admin's Stats tab shows the **harvested share** of the deck
 and the library. Watch it; nothing enforces it. A deck that becomes mostly
 harvested from itself narrows toward the model's own most common outputs.
 
-**Names** — 187 names across 49 cultural origins in `server/name-pool.json`,
-each carrying the era it was in use and any gender it reads as. The engine
+**Names** — 994 names across 49 cultural origins in `server/name-pool.json`,
+each carrying the era it was in use and any gender it reads as.
+
+The pool is **generated from SSA birth records**, not authored. It used to be
+an authored list: 187 names written to satisfy the spec's "at least 150 names,
+diverse origins", which `build-region-weights.js` then scored. Nothing had ever
+asked the data WHICH names Americans actually have, so the pool carried Ignacio
+and Rocío but not **Jose, Maria or Juan** — among the most frequently registered
+given names in the country. `scripts/build-name-pool.js` now pulls the top 75
+names per state, per 20-year era bucket, per gender straight out of the archive.
+An authored list scored by real data is still an authored list.
+
+It only ever ADDS. All 187 original entries survive byte-for-byte, including the
+deliberately rare flavour names (Siobhan, Struan, Aino) — being uncommon is not
+a defect, being absent-because-nobody-looked is. `npm run names` hard-fails if
+Jose, Maria, Juan, Guadalupe, James, Mary or Robert goes missing, which is the
+regression check against this exact bug returning. The engine
 filters by the character's implied birth year (`PRESENT_YEAR` in `balance.js`,
 plus a per-role age offset) and then samples **category first**, weighted
 `1/(1+used)^1.5` against origins this life has already spent — a uniform draw
@@ -321,8 +339,9 @@ Three rules hold the design together, and all three are the same rule:
   unusual. People move; a Minnesotan pool of only Minnesotan names would be a
   worse lie than the one this feature set out to fix.
 - **Absence means no signal, not exclusion.** A missing region, a missing name
-  entry, anywhere outside the US, or Florida (absent from the published SSA
-  archive) all score exactly 1 and change nothing.
+  entry, or anywhere outside the US all score exactly 1 and change nothing.
+  (Florida used to be listed here as missing from the archive. It is not
+  missing — see the gotcha below.)
 - **The data describes reality; we do not.** Every number is counted from birth
   records. Hand-writing weights is how you encode a stereotype instead of a
   demographic — see the warning under "Measure, don't assume".
@@ -465,14 +484,28 @@ confirm it fails before trusting it.
 - **The Bash tool truncates around 8KB**, which silently breaks long heredocs —
   the terminator is lost and bash reports "unexpected EOF". Write in chunks.
 - **`PATH` needs exporting** in the Bash tool before node/git/coreutils resolve.
-- **The SSA source data is not committed.** 114MB extracted, and
-  `scripts/build-region-weights.js` only needs it once. Get it from
-  <https://www.ssa.gov/oact/babynames/limits.html> ("State-specific data"), unzip
-  anywhere, pass the directory. Two things about the archive that surprised us:
-  **Florida is missing** from it, and it stops at 2015 — both degrade to
-  no-regional-signal rather than to anything wrong. Note also that ssa.gov
-  blocks some automated egress with a 403; the same archive is mirrored on
-  GitHub, and `npm run names` will tell you if what you fed it was wrong.
+- **The SSA source archive IS committed**, at `data/ssa/namesbystate.zip`
+  (24MB, ~155MB extracted). It used to be kept out of the repo, which is how
+  the project ended up unable to answer "which names do Americans actually
+  have" for as long as it did — the one dataset that could settle it was the
+  one nobody had. Unzip it anywhere and pass the directory to
+  `npm run build-name-pool` / `npm run build-region-weights`.
+  **Two things this file's earlier notes got wrong**, both corrected by direct
+  audit of the committed archive (`STATE,SEX,YEAR,NAME,COUNT`; 6,696,687 rows;
+  331M births):
+  - **Florida is present.** 51 files = 50 states + DC. The old note said it was
+    missing; entries authored before this rebuild simply have no `US-FL` key
+    because the vintage in use then predated it.
+  - **The data runs 1910–2025**, not "stops at 2015".
+  Note also that ssa.gov blocks automated egress with a 403 (confirmed again,
+  with and without browser headers) — which is why the archive is committed
+  rather than fetched. `npm run names` will tell you if what you fed it was wrong.
+- **The pool spans two archive vintages.** The 807 SSA-sourced entries carry
+  `region_frequency` measured from the committed 2025 archive; the 102 original
+  entries that have a map still carry theirs from the older vintage, so none of
+  them has a `US-FL` key. Harmless — a missing region reads as no signal, never
+  as exclusion — but `npm run build-region-weights -- <dir>` over the whole pool
+  is what would put every entry on one vintage.
 - **JSON imported from `shared/` needs the import attribute.** `shared/` runs in
   the browser, the server and the simulator, and a vite alias like `@library`
   means nothing to the last two. Use
@@ -562,6 +595,7 @@ without stating you checked all three.
 | Name Pool tab: bulk select for group controls | shipped | on `dev` — each of the three group-control tabs (Category/Region/Gender association) gained the same bulk-select toolbar shape the Names tab's own table already had: a checkbox per row, "Select all", a selected count, and "Activate selected"/"Deactivate selected" buttons that act only on the applicable subset of the current selection (already-deactivated rows for activate, still-active rows for deactivate - mixing both in one selection is fine, each button just ignores the rows it doesn't apply to). Bulk deactivate opens the same reason-required confirm step the single-row flow uses, once, covering every selected row. **This DOES touch the API**, unlike every other Name Pool layout change above: `POST /api/name-pool-controls/:kind/bulk` (`server/admin/index.js`, inside the existing `groupControlRoutes` factory so all three kinds get it for free) takes `{ values, active, reason, version, force }` and writes the whole selection in one atomic call, the same shape `/api/name-pool/bulk-active` already established for the main table. This is not a style choice: a client-side loop calling the existing single-value `onDeactivate`/`onReactivate` props N times would race itself, because each of those closures (`admin/src/App.jsx`) captures `boot.nameControlsVersion` from whatever render created it, and nothing re-renders between synchronous loop iterations to hand it the version the *previous* iteration's write just produced - every call after the first would arrive with a stale version and hit the store's conflict check. `GroupControls.jsx` computes an exact (not summed) affected-name count for the bulk-deactivate confirmation by reusing its own `namePool`/`matchNames` - summing each row's `count` would double-count a name that carries several selected regions, since region membership isn't exclusive the way category and gender_assoc are. No change to `name-pool-controls.json`'s shape or `assignName`'s selection/filtering logic; the single-row add/remove routes and the Names tab's own bulk-active endpoint are untouched. |
 | Grounding beat as a popup modal | shipped | on `dev` — the intro's grounding beat was a full screen that replaced the identity cards; it is a popup over them now. `GroundingBeat.jsx` renders `.grounding-backdrop` + `.grounding-modal` — the same backdrop/centered-dialog shape as `ConsequenceModal.jsx` (scrim, blur, `toast-in` entry, `z-index: 100`) rather than a second modal idiom for the same job — while the panel itself keeps the card gradient and `--card-ink`, because its body is major-tier `.scene` content whose colours are card colours. `Intro.jsx` keeps the framing line and the emptied `CardStack` mounted underneath and passes `disabled` while the dialog is up: the backdrop swallows pointers but not keys, so without that the card stack's window-level ArrowLeft/ArrowRight handler still fires under the dialog. The gesture moved from the panel to the backdrop, so a tap or drag anywhere continues — the consequence modal's click-outside-to-dismiss, where dismissing IS the continue. Keyboard continue is new: Enter/Space/Escape/ArrowLeft/ArrowRight, the arrows included because the player has just used them on both identity cards and they were the one input that silently did nothing here. `role="dialog"`, `aria-modal`, focus-on-mount and an `aria-live` body follow `ConsequenceModal` too; `aria-modal` is what takes the dimmed intro out of the accessibility tree, so nothing behind it is marked `aria-hidden` by hand. Every input is still ignored while `beat` is null (the fetch is in flight), which is why the backdrop carries its own `--loading` cursor state. Presentation only: no engine, validator, prompt, content, `/api/intro` or fallback-path changes. |
 | Radix Colors color system + theme toggle | shipped | on dev branch — replaces hardcoded Electric-dusk palette with Radix UI Mauve neutral scale (pairs light/dark) plus Radix CSS imports. Semantic tokens (`--color-bg`, `--color-text`, `--color-text-muted`, `--color-border`, `--color-accent`, `--color-accent-text`) map to Radix steps, redeclared under `.dark-theme` class. Brand accents (--left, --right, --violet, --gold) preserved. Theme toggle in `StartScreen`: defaults to OS preference (`prefers-color-scheme`), explicit override persisted via `prefs.js` (same pattern as region/mode). `App.jsx` applies `.dark-theme` class to `<html>` on mount. Contrast verification: all text/background pairs exceed WCAG AA (EventToast #eeeef0 on #121113: 8.3:1 AAA; ConsequenceModal 5.34:1 AA; card text on light card 8.13:1 AAA). No engine/logic changes; presentation-only per Definition of done. |
+| SSA-sourced name pool | shipped | on `dev` — the pool is GENERATED from real birth records now, not authored. Root cause: the original 187 entries were written to satisfy the spec's "at least 150 names, diverse origins" and `build-region-weights.js` only ever scored names that already existed, so nothing ever asked the SSA archive which names Americans actually have — the pool carried Ignacio and Rocío but not Jose, Maria or Juan. New `scripts/build-name-pool.js` pulls the top 75 names per state, per 20-year era bucket, per gender (two passes: one to pick candidates a state at a time so peak memory is one state's table, one to measure only the survivors), derives `gender_assoc` from each name's own national F/M split (neutral at ≥25% minority share) and `era_start`/`era_end` from the years it sits at ≥10% of its own peak, snapped to the 5-year boundaries the pool already used, and computes `region_frequency` with the SAME location quotient, constants, era windowing and neutral band as `build-region-weights.js` — the method is untouched, it is just applied to real-frequency-sourced candidates instead of an authored list. **Additive only**: all 187 originals verified byte-for-byte identical afterwards, including the rare flavour names (Siobhan, Struan, Aino), and dedup is on the FOLDED name so "Rocio" cannot shadow "Rocío". 187 → 994 entries, 909 with real regional data. `scripts/name-categories.json` (181 explicit mappings) labels the non-mainstream clusters; everything else takes the `anglo` default, which is the correct label for most of the SSA top-N and is reported as a count rather than a warning. Category is an ORGANISATIONAL label now, not a selection weight, so `server/name-pool-health.js` exempts that default bucket from the 8% share cap — it legitimately holds ~64% of a data-sourced pool, and a permanent false warning is exactly what taught nobody to read the harvester's anonymity sweep. `npm run names` gained the before/after pool line and a HARD regression check on Jose/Maria/Juan/Guadalupe/James/Mary/Robert. Measured: same-origin repeat within one life 5.3% → 2.7%, regional lift 1.3-1.6x → 1.3-2.0x, all 49 categories reachable (was 48), era-coverage gaps GONE and zero-candidate era+gender combinations 24 → 6 (the archive reaches back to 1910). Costs +72KB gzipped in the player bundle (134 → 206KB), since the pool is inlined by vite. The archive itself is now committed at `data/ssa/namesbystate.zip`. No change to era-filtering logic, deactivation controls, the diversity/region sampling algorithm, or how `region_frequency` is calculated. |
 
 ---
 

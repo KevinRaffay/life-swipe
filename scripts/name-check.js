@@ -29,6 +29,30 @@ const MIN_ENTRIES = 150;
 const MAX_CATEGORY_SHARE = 0.08;
 const GENDERS = new Set(GENDER_ASSOCS);
 
+// What the pool held before scripts/build-name-pool.js generated candidates
+// from the SSA data. Reported, not enforced - the floor that actually fails is
+// MIN_ENTRIES. It is here so the size of that rebuild stays visible in the
+// output rather than being something you have to remember.
+const AUTHORED_BASELINE = 187;
+
+// The bug this pool had for its whole life: it was authored to satisfy "at
+// least 150 names, diverse origins" and never asked the SSA data which names
+// Americans actually have, so it carried Ignacio and Rocio but not Jose, Maria
+// or Juan. These are among the most frequently registered given names in the
+// country - if any of them is missing, candidate generation has regressed to
+// an authored list again. A HARD failure, because it is silent otherwise.
+const MUST_INCLUDE = {
+  'latin-american': ['Jose', 'Maria', 'Juan', 'Guadalupe'],
+  anglo: ['James', 'Mary', 'Robert'],
+};
+
+// Compare names the way the pool builder does, so "Rocio" and "Rocío" are one
+// name here too - otherwise the regression check below could be satisfied by
+// an accented near-duplicate.
+const fold = (s) => [...String(s).normalize('NFD')]
+  .filter((c) => { const n = c.codePointAt(0); return n < 0x0300 || n > 0x036f; })
+  .join('').toLowerCase();
+
 /* ------------------------------------------------------------ structure */
 
 const errors = [];
@@ -81,7 +105,29 @@ pool.forEach((e, i) => {
 const categories = new Map();
 for (const e of pool) categories.set(e.category, (categories.get(e.category) || 0) + 1);
 
-console.log(`pool: ${pool.length} names, ${categories.size} categories`);
+const withRegion = pool.filter((e) => e.region_frequency).length;
+const growth = pool.length - AUTHORED_BASELINE;
+console.log(
+  `pool: ${pool.length} names, ${categories.size} categories, ${withRegion} with region_frequency`
+  + `\n      (authored baseline ${AUTHORED_BASELINE}, ${growth >= 0 ? '+' : ''}${growth} from the SSA-sourced rebuild)`,
+);
+
+// Regression check: the real high-frequency names must actually be in here.
+const haveFolded = new Set(pool.map((e) => fold(e.name)));
+const missingByCategory = [];
+for (const [category, names] of Object.entries(MUST_INCLUDE)) {
+  const gone = names.filter((n) => !haveFolded.has(fold(n)));
+  if (gone.length) missingByCategory.push(`${category}: ${gone.join(', ')}`);
+}
+if (missingByCategory.length) {
+  errors.push(
+    `high-frequency names missing from the pool - candidate generation has regressed to an `
+    + `authored list (rerun: npm run build-name-pool -- ../ssa-state). ${missingByCategory.join(' | ')}`,
+  );
+} else {
+  const checked = Object.values(MUST_INCLUDE).flat().length;
+  console.log(`high-frequency regression check: all ${checked} present`);
+}
 
 /* ------------------------------------------------------- the seed deck */
 
