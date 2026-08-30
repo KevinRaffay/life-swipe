@@ -14,6 +14,23 @@ import { complete, extractJson, MODEL } from './provider.js';
 export const CATEGORIES = new Set(['career', 'romance', 'family', 'money', 'health', 'chaos']);
 export const RARITIES = new Set(['common', 'uncommon', 'rare']);
 
+// The prompt names the six categories, but a smaller model reaches for the
+// obvious label anyway - a harvest run filed three school-shaped patterns
+// under "education", which validatePattern rightly rejects and which then
+// sits in the draft queue unapprovable. Where a stray label has ONE clear
+// home in the vocabulary (the live library files every education-shaped
+// pattern under career), take it there at parse time; anything not in this
+// map stays as written for validatePattern to flag, because guessing a home
+// for an ambiguous label would be worse than an honest problem report.
+export const CATEGORY_ALIASES = {
+  education: 'career', school: 'career', work: 'career', job: 'career',
+  finance: 'money', financial: 'money',
+  relationships: 'romance', relationship: 'romance',
+};
+
+export const normalizeCategory = (p) =>
+  (p && typeof p === 'object' && CATEGORY_ALIASES[p.category] ? { ...p, category: CATEGORY_ALIASES[p.category] } : p);
+
 // How much source text the model sees. Beyond this it stops being an extraction
 // and starts being a summary of a summary.
 export const MAX_SOURCE_CHARS = 60000;
@@ -149,9 +166,11 @@ export async function extractPatterns(source, { maxTokens = 6000, temperature = 
     throw err;
   }
 
+  const patterns = parsed.map(normalizeCategory);
+
   return {
-    patterns: parsed,
-    problems: parsed.flatMap((p, i) => validatePattern(p, i)),
+    patterns,
+    problems: patterns.flatMap((p, i) => validatePattern(p, i)),
     raw: reply,
     model: MODEL,
     ms: Date.now() - t0,
