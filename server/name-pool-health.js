@@ -13,6 +13,20 @@ import { BAL } from '../shared/balance.js';
 
 const MAX_CATEGORY_SHARE = 0.08;
 
+// The category every SSA-sourced name lands in when scripts/name-categories.json
+// has nothing more specific to say - see scripts/build-name-pool.js's
+// FALLBACK_CATEGORY, which this must agree with.
+//
+// It is EXEMPT from the share cap, and that is not a fudge. The cap exists to
+// catch one origin accidentally swamping the pool. Since the pool is generated
+// from real birth records, the default bucket legitimately holds most of it
+// (~64%), because most of the SSA top-N really is mainstream American naming
+// stock. Flagging that every single run would be a permanent false warning,
+// and this project has already learned what those cost: the harvester's
+// anonymity sweep flagged Tuesday, Kmart and Dad until nobody read it. The cap
+// stays sharp for every other category, where it still means something.
+const FALLBACK_CATEGORY = 'anglo';
+
 // A birth-year sweep wide enough to cover every role this game ever names -
 // the oldest grandparent of a 16-year-old down to a newborn late in a long
 // mature life - at a resolution fine enough to catch a gap a decade-only
@@ -52,7 +66,7 @@ export function computeNamePoolHealth({ pool, controls }) {
       category,
       count,
       share: count / total,
-      overrepresented: count / total > MAX_CATEGORY_SHARE,
+      overrepresented: category !== FALLBACK_CATEGORY && count / total > MAX_CATEGORY_SHARE,
       deactivated: deactivatedCategorySet.has(category),
     }))
     .sort((a, b) => b.count - a.count);

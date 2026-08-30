@@ -78,11 +78,13 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/scenario-format.js` | weight tiers and which narrative fields each carries. |
 | `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check, pool-wide activation filtering. |
 | `shared/regions.js` | region codes and labels, shared by the server resolver and the settings dropdown. |
-| `server/name-pool.json` | 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. Data only. |
+| `server/name-pool.json` | 993 names across 49 origins, generated from SSA birth records, with era, gender, national births, per-region frequency (all on the 2025 archive vintage) and an `active` flag. Data only. |
 | `server/name-pool-controls.json` | pool-wide deactivation lists (category / region / gender_assoc), each entry carrying a required reason and timestamp. Data only. |
 | `server/name-pool-health.js` | pool-health measurements (spread, era gaps, zero-candidate combinations) shared by `npm run names` and the admin's Name Pool health panel. |
 | `server/geo.js` | offline IP → region. Holds the privacy contract; read it before touching location. |
-| `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps. |
+| `scripts/build-name-pool.js` | generates the pool CANDIDATES from SSA birth records: top-N per state/era/gender, merged into the existing pool, never deleting. |
+| `scripts/name-categories.json` | folded name → category, for SSA-sourced names. An organisational label, not a weight. Data only. |
+| `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps for names already in the pool. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
 | `shared/intro.js` | the two authored identity choices shown at the start of every life, and the offline fallback text for the grounding beat that follows them. Not generated content: excluded from seen_patterns/seen_seed_ids and from LLM request logging. |
 | `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
@@ -100,6 +102,8 @@ Breaking any of these is a bug regardless of what the tests say.
 | `server/harvest.js` | mining the LLM request log for content worth keeping: eligibility, de-personalisation, generalisability, both draft paths. Reads the log, writes nothing. |
 | `shared/provenance.js` | the authoring-provenance vocabulary (`hand-authored`/`extracted`/`generated`/`harvested`) and the harvested-share maths. |
 | `admin/` | the admin React app. Its own Vite root; never an input to the player build. |
+| `client/src/styles.css` | all styles: Radix Mauve neutral scale imports, semantic token definitions, theme-aware CSS variables, Electric-dusk brand accent preservation. Applies `.dark-theme` class via `App.jsx` for dark mode. |
+| `@radix-ui/colors` | Radix UI color system: Mauve light/dark scales for neutral palette, paired variables (`--mauve-1` through `--mauve-12`). CSS imports in `styles.css`: `mauve.css` (light) and `mauve-dark.css` (dark). |
 
 `shared/` runs in both the browser and Node — the simulator exercises the same
 engine that ships.
@@ -126,7 +130,7 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
 | `server/harvest.js` | the content harvester: reads `server/logs/llm-requests.jsonl`, filters it to server-key calls that passed validation, puts the cast's name tags back into the cards, drops the ones that only make sense inside one life, and proposes seed-deck and situation-library drafts. Never writes a content file - the admin route does the appending. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
-| `server/name-pool.json` | data only: 187 names across 49 origins, with era, gender, per-region frequency and an `active` flag. |
+| `server/name-pool.json` | data only: 993 names across 49 origins, generated from SSA birth records, with era, gender, national births, per-region frequency (all on the 2025 archive vintage) and an `active` flag. |
 | `server/name-pool-controls.json` | data only: pool-wide deactivation lists for category / region / gender_assoc, each entry requiring a reason. |
 | `server/name-pool-health.js` | pool-health measurements (category spread, era gaps, zero-eligible-candidate warnings), shared by `npm run names` and the admin's health panel. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
@@ -142,15 +146,15 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | --- | --- |
 | `client/index.html` | the Vite HTML entry. |
 | `client/src/main.jsx` | mounts the React root. |
-| `client/src/App.jsx` | the root component: the game loop (title → intro → playing → ended), the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`) and which screen is showing. |
+| `client/src/App.jsx` | the root component: the game loop (title → intro → playing → ended), the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`), which screen is showing, and theme class application (`.dark-theme` on `<html>` root). |
 | `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently, including the intro grounding beat (`fetchIntroBeat`). |
-| `client/src/prefs.js` | per-player cross-life memory in `localStorage` (content mode, age gate, region choice, `seen_patterns`/`seen_seed_ids`), every access wrapped. |
-| `client/src/styles.css` | all styles. |
+| `client/src/prefs.js` | per-player cross-life memory in `localStorage` (content mode, age gate, region choice, theme override, `seen_patterns`/`seen_seed_ids`), every access wrapped. Theme functions: `getTheme()` (explicit override or null), `setTheme()`, `getActiveTheme()` (override or OS preference). |
+| `client/src/styles.css` | all styles: Radix Mauve imports, semantic color tokens, light/dark theme declarations, component styles. Applies theme variables via `.dark-theme` selector. |
 | `client/src/components/CardStack.jsx` | the swipe gesture (pointer events), tiered card rendering, and `useFitToCard` — the measure-and-shrink pass that keeps a long card inside its box so it never scrolls. |
 | `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. |
-| `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice. |
-| `client/src/components/Intro.jsx` | the opening sequence between StartScreen and the first `deck.draw()` card: two authored identity choices (`shared/intro.js`) rendered through the same `CardStack`, then the grounding beat. Presentational only - `App.jsx` owns the state and the `applyChoice` calls. |
-| `client/src/components/GroundingBeat.jsx` | the intro's one non-interactive screen: a generated (or, on failure/timeout, authored-fallback) establishing scene, shown once, reusing the major-tier card's `.scene__setting`/`.scene__beat` visual treatment. Tap or swipe (via `pointerup`, not `click`, so a drag still registers) to continue - there is no choice to make. |
+| `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice, theme toggle (light/dark/auto). |
+| `client/src/components/Intro.jsx` | the opening sequence between StartScreen and the first `deck.draw()` card: two authored identity choices (`shared/intro.js`) rendered through the same `CardStack`, then the grounding beat as a modal over that same screen (the framing line and the emptied card slot stay mounted underneath; the choice buttons do not, since the card they belonged to has been swiped away). Presentational only - `App.jsx` owns the state and the `applyChoice` calls. |
+| `client/src/components/GroundingBeat.jsx` | the intro's one non-interactive step: a generated (or, on failure/timeout, authored-fallback) establishing scene, shown once as a popup modal over the intro screen - the same backdrop + centered-dialog shape as `ConsequenceModal.jsx`, with the major-tier card's `.scene__setting`/`.scene__beat` treatment inside the panel. Tap, drag (via `pointerup`, not `click`, so a drag still registers) or press a key anywhere to continue - there is no choice to make. Inputs are ignored until the beat lands. |
 | `client/src/severity.js` | classifies a turn's consequences as `major` or `standard` for EventToast - the one place the toast/modal threshold is tuned. |
 | `client/src/components/EventToast.jsx` | the toast of what the engine did to the player after the last swipe: fixed ~3-4s duration, paused while a pointer is down, tap to dismiss early. Routes `major` turns to `ConsequenceModal` instead. |
 | `client/src/components/ConsequenceModal.jsx` | the dismissible dialog for major-tier consequences (a pending event resolving, a significant new flag, a large stat swing). Same centered-dialog pattern as `admin/src/components/Modal.jsx`, reimplemented client-side since admin never ships to players. |
@@ -166,6 +170,7 @@ npm run dev                            # vite :5173 + api :8787
 npm run simulate -- 300 seed --mode=both
 npm run coverage                       # seed coverage per bucket/mode
 npm run names                          # validate the name pool + measure its spread
+npm run build-name-pool -- <dir>       # generate pool candidates from SSA birth records
 npm run build-region-weights -- <dir>  # regenerate region_frequency from SSA data
 npm run extract-patterns -- source.txt # draft library patterns (never auto-merges)
 npm run generate-seeds -- --mode=both --target=15  # draft seed scenarios for thin buckets (never auto-merges)
@@ -261,13 +266,84 @@ authoring value. The admin's Stats tab shows the **harvested share** of the deck
 and the library. Watch it; nothing enforces it. A deck that becomes mostly
 harvested from itself narrows toward the model's own most common outputs.
 
-**Names** — 187 names across 49 cultural origins in `server/name-pool.json`,
-each carrying the era it was in use and any gender it reads as. The engine
+**Names** — 993 names across 49 cultural origins in `server/name-pool.json`,
+each carrying the era it was in use and any gender it reads as.
+
+The pool is **generated from SSA birth records**, not authored. It used to be
+an authored list: 187 names written to satisfy the spec's "at least 150 names,
+diverse origins", which `build-region-weights.js` then scored. Nothing had ever
+asked the data WHICH names Americans actually have, so the pool carried Ignacio
+and Rocío but not **Jose, Maria or Juan** — among the most frequently registered
+given names in the country. `scripts/build-name-pool.js` now pulls the top 75
+names per state, per 20-year era bucket, per gender straight out of the archive.
+An authored list scored by real data is still an authored list.
+
+It only ever ADDS. All 187 original entries survive byte-for-byte, including the
+deliberately rare flavour names (Siobhan, Struan, Aino) — being uncommon is not
+a defect, being absent-because-nobody-looked is. `npm run names` hard-fails if
+Jose, Maria, Juan, Guadalupe, James, Mary or Robert goes missing, which is the
+regression check against this exact bug returning. The engine
 filters by the character's implied birth year (`PRESENT_YEAR` in `balance.js`,
-plus a per-role age offset) and then samples **category first**, weighted
-`1/(1+used)^1.5` against origins this life has already spent — a uniform draw
-over the whole pool would just hand out names in proportion to how many of each
-origin the file happens to contain.
+plus a per-role age offset) and then samples **category first**, on three
+factors multiplied together:
+
+| factor | scope | what it says |
+| --- | --- | --- |
+| frequency | fixed | how many Americans actually carry these names (`national_births`, summed over the surviving candidates, raised to `BAL.NAMES.categoryPower`) |
+| diversity | per life | `1/(1+used)^1.5` against origins this life has already spent |
+| affinity | per session | the player's region, via `region_frequency` |
+
+...and then **again inside the chosen origin**, where a name's own
+`national_births` (raised to `BAL.NAMES.nameFrequencyPower`) multiplies its
+region weight. Both halves are needed and neither is sufficient. Weighting only
+the category left the flatness one level down: anglo's share spread evenly over
+633 names while irish's spread over 23, so an individual Irish name stayed
+likelier than an individual anglo one and the most-drawn name in the pool was
+**Fiona**. With the inner weight, irish yields Brian/Ryan/Sean/Patrick and
+latin-american yields Jose/Maria/Manuel/Juan.
+
+`nameFrequencyPower` is **0.5, and region is what sets it.** The inner draw is
+the one place region is supposed to pick *which* name — "Minnesota's
+Scandinavian name is more often the one Minnesota actually registers". At 1.0
+(raw births) that stops being true: the birth spread inside a category exceeds
+`regionCeiling` and region can no longer reorder irish-in-MA or
+scandinavian-in-MN at all. At 0.5 it still reorders every case tested. Variety
+barely moves across the range (780 → 747 distinct names drawn), so region, not
+variety, is the binding constraint.
+
+**Frequency weighting is why the category draw is not flat**, and its absence
+used to be load-bearing: with 49 origins weighted equally, a player was exactly
+as likely to meet a `maori`-named character (2 names) as an `anglo` one (633).
+Region could not supply it — a location quotient is a *ratio to the national
+rate*, so it carries where a name is used and divides out how much.
+
+`categoryPower` is **0.35, and that is a ceiling, not a preference.** Measured
+over 400 lives: at 0.35 anglo takes 14.9% of draws, same-origin repeat within
+one life is 8.6% and all 49 origins stay reachable; at 0.5 it is 23.1%/16.3%
+and at 1.0 it is 56.7%/47.8%. Both higher settings **fail `npm run names`** on
+`US-CA did not lift its own origins` — region affinity is capped at
+`regionCeiling` (6) and anglo outweighs California's own origins by ~460x in
+births, so past ~0.35 no regional signal survives the frequency term and
+regional weighting stops working. Raising it does not turn region down, it
+turns region off. Picking a state barely moves the anglo share either way
+(54–59% across every state at 1.0, 14–17% at 0.35); what region moves is the
+*rest* of the draw.
+
+A category with no SSA presence at all (`maori`, `thai` — suppressed under 5
+births per state-year) is credited `BAL.NAMES.categoryBirthsFloor` rather than
+zero. Zero weight is never-drawn, which would make this a **filter**, and
+`npm run names` asserts that outcome directly rather than trusting the
+constant.
+
+**A name may not itself be a mature-content keyword.** "Molly" is a top-75
+girl's name in several states and also slang for MDMA, so cards naming her
+tripped the engine's own content backstop — the simulator's mature-in-safe
+assertion failed 5 times on one card. Fixed in the *pool*, not in
+`shared/content.js`: the backstop is one of three independent gates
+(invariant 9) and is meant to be blunt, so teaching it to ignore words that
+are also cast names would open a hole a card could aim at deliberately.
+`scripts/build-name-pool.js` drops such candidates at generation and
+`npm run names` fails if one arrives any other way.
 
 **Activation controls** sit ahead of all of that. Every entry carries an
 `active` flag (default true), and `server/name-pool-controls.json` adds three
@@ -319,8 +395,12 @@ Three rules hold the design together, and all three are the same rule:
   unusual. People move; a Minnesotan pool of only Minnesotan names would be a
   worse lie than the one this feature set out to fix.
 - **Absence means no signal, not exclusion.** A missing region, a missing name
-  entry, anywhere outside the US, or Florida (absent from the published SSA
-  archive) all score exactly 1 and change nothing.
+  entry, or anywhere outside the US all score exactly 1 and change nothing.
+  (Florida used to be listed here as absent from the archive. It is not: 360
+  entries carry a `US-FL` weight. Its signal is genuinely mild though — 16
+  entries above 2x against Minnesota's 48, and 253 of its 360 below 0.8x —
+  which is what a high-migration state whose naming profile sits near the
+  national average looks like.)
 - **The data describes reality; we do not.** Every number is counted from birth
   records. Hand-writing weights is how you encode a stereotype instead of a
   demographic — see the warning under "Measure, don't assume".
@@ -363,10 +443,18 @@ Between `StartScreen` (content mode, age confirmation, region) and the first
    `validateScenario`'s prompt/decision-shape rules, since this content has no
    decision by design. Same "cannot fail" guarantee as `deck.draw`: a failed
    or slow (15s timeout) call falls back to one of `shared/intro.js`'s two
-   authored beats, keyed by the financial-tier flag only. Reuses the
-   major-tier card's `.scene__setting`/`.scene__beat` visual weight, since
-   this is the first thing a player reads; tap or swipe (via `pointerup`) to
-   continue - there is no choice.
+   authored beats, keyed by the financial-tier flag only. Shown as a **popup
+   modal over the intro screen**, not a screen of its own: the same backdrop +
+   centered-dialog shape as `ConsequenceModal.jsx`, with the major-tier card's
+   `.scene__setting`/`.scene__beat` weight inside the panel, since this is the
+   first thing a player reads. The framing line and the (now empty) card slot
+   stay mounted and dimmed underneath, inert - `CardStack` is passed
+   `disabled` so its window-level arrow-key handler cannot fire under the
+   dialog, since the backdrop only swallows pointers. Tap, drag (via
+   `pointerup`, not `click`, so a deliberate drag still registers) or press a
+   key anywhere to continue - there is no choice, so every plausible "go on"
+   key is accepted, including the two arrows the player has just used on both
+   identity cards.
 3. **Hand-off**: `App.jsx`'s `completeIntro` draws the first two real cards
    from the already-constructed `Deck` and switches to `phase === 'playing'`,
    exactly what `start()` used to do directly before this sequence existed.
@@ -455,14 +543,30 @@ confirm it fails before trusting it.
 - **The Bash tool truncates around 8KB**, which silently breaks long heredocs —
   the terminator is lost and bash reports "unexpected EOF". Write in chunks.
 - **`PATH` needs exporting** in the Bash tool before node/git/coreutils resolve.
-- **The SSA source data is not committed.** 114MB extracted, and
-  `scripts/build-region-weights.js` only needs it once. Get it from
-  <https://www.ssa.gov/oact/babynames/limits.html> ("State-specific data"), unzip
-  anywhere, pass the directory. Two things about the archive that surprised us:
-  **Florida is missing** from it, and it stops at 2015 — both degrade to
-  no-regional-signal rather than to anything wrong. Note also that ssa.gov
-  blocks some automated egress with a 403; the same archive is mirrored on
-  GitHub, and `npm run names` will tell you if what you fed it was wrong.
+- **The SSA source archive IS committed**, at `data/ssa/namesbystate.zip`
+  (24MB, ~155MB extracted). It used to be kept out of the repo, which is how
+  the project ended up unable to answer "which names do Americans actually
+  have" for as long as it did — the one dataset that could settle it was the
+  one nobody had. Unzip it anywhere and pass the directory to
+  `npm run build-name-pool` / `npm run build-region-weights`.
+  **Two things this file's earlier notes got wrong**, both corrected by direct
+  audit of the committed archive (`STATE,SEX,YEAR,NAME,COUNT`; 6,696,687 rows;
+  331M births):
+  - **Florida is present.** 51 files = 50 states + DC. The old note said it was
+    missing; entries authored before this rebuild simply have no `US-FL` key
+    because the vintage in use then predated it.
+  - **The data runs 1910–2025**, not "stops at 2015".
+  Note also that ssa.gov blocks automated egress with a 403 (confirmed again,
+  with and without browser headers) — which is why the archive is committed
+  rather than fetched. `npm run names` will tell you if what you fed it was wrong.
+- **The whole pool is on ONE archive vintage** (the committed 2025 one), after
+  `npm run build-region-weights -- <dir>` was run across all 993 entries. It
+  briefly was not: the SSA-sourced entries were measured against 2025 while the
+  187 originals kept maps from an older archive that had no Florida in it, so
+  none of them carried a `US-FL` key. If you ever regenerate part of the pool,
+  re-run that command over all of it — a half-updated pool is not wrong exactly
+  (a missing region reads as no signal, never as exclusion) but it silently
+  answers "how common is this name here" from two different decades.
 - **JSON imported from `shared/` needs the import attribute.** `shared/` runs in
   the browser, the server and the simulator, and a vite alias like `@library`
   means nothing to the last two. Use
@@ -499,8 +603,18 @@ out loud, in your final message on that branch — all three:
 1. CLAUDE.md's Feature Status table includes this feature.
 2. Any changed invariant, architecture-map entry, or file-structure
    entry is updated to match.
-3. The verification commands (npm run simulate / coverage / names)
-   still exit 0.
+3. Verification, scaled to what changed:
+   - PRESENTATION-ONLY (the diff touches only client/src/components,
+     client/src/styles.css, admin/src/components, admin/src/*.css —
+     no changes to shared/, server/, any *.json data file, or any API
+     route/contract): run the build (`npm run build`) and confirm it
+     exits 0. The simulate/coverage/names suite is optional.
+   - ANYTHING ELSE (touches shared/, server/, engine logic, content
+     data, name pool, balance.js, or any API contract): the full
+     verification commands (npm run simulate / coverage / names) must
+     exit 0, as before.
+   State which category applied and why in the final message — the
+   classification should be visible, not assumed silently.
 If any of these fail, the feature is not done — fix it in the same
 session, not as a follow-up. Do not report a feature as finished
 without stating you checked all three.
@@ -537,9 +651,15 @@ without stating you checked all three.
 | Narrative truncation stops on a boundary | shipped | on `main` — `cleanNarrative` capped each field with a bare `slice(0, FIELD_LIMITS[field])`, so an over-long field was cut mid-word: a live card read "The super is not answering. Someone n". Measured before changing anything: 0 of 339 fields in the seed deck overrun a limit, but 23 of 285 generated cards do (~8%, `setting` and `beat` only), and 15 of those landed mid-word. `truncateNarrative` now prefers the last COMPLETE SENTENCE inside the budget, and falls back to a word boundary plus an ellipsis when there is no sentence end worth keeping (below 60% of the budget, obeying one would gut the text). Abbreviations and initials are not sentence ends, so "Dr. Okonkwo" and "J. K." do not cut there. Across all 23 real cases: 0 still cut mid-word, 0 exceed their limit, 7 end on a full sentence. The seed deck renders byte-identically — this only ever fires on live generation. |
 | American English spelling enforcement | shipped | on `dev` — explicit spelling instruction added to the generation system prompt, the obituary prompt and the extraction prompt (all three previously said nothing about it); `britishSpellingWarnings`/`BRITISH_SPELLINGS` added to `shared/scenario-format.js` and wired into `validateBatch` as a log-only warning across every tier. Also fixed British spellings that had crept into the prompts' own instructional text ("cheques", "ageing", "labelled", "ANONYMISE", "GENERALISE"). One-off audit of the live content flagged 15/91 library patterns and 18/239 seed scenarios, left for the admin edit flow — see Content model above. No tier budgets, structure or engine/effect changes |
 | Name pool activation controls + admin manager | shipped | on `dev` — every `server/name-pool.json` entry gained an `active` flag (default true), and a new `server/name-pool-controls.json` holds three pool-wide deactivation lists (category, region, gender_assoc), each entry requiring a `reason`. `shared/names.js`'s `assignName` filters out inactive/deactivated-category/deactivated-gender_assoc candidates before era filtering and before any `nextRandom` draw (deactivation never changes how many randoms a selection consumes, same rule region already followed), then degrades in a fixed order exactly as before, with one new final tier — reuse a name already in play among the still-eligible names, logged — ahead of the existing null/role-word fallback. `regionalWeight` treats a deactivated region exactly like the pre-existing no-signal case; region remains a weight, never a filter, so it cannot independently empty the eligible pool. `scripts/build-region-weights.js` needed no change: it already mutates each pool entry's `region_frequency` in place rather than replacing the record, so `active` (and any other field) already survives a rebuild untouched. New admin "Name pool" tab (`admin/src/components/NamePool.jsx`, `NamePoolForm.jsx`, `GroupControls.jsx`, `NamePoolHealth.jsx`): a filterable/searchable table with bulk multi-select + "select all matching filter" (the individual `active` flag is how an ad-hoc grouping like an era range is deactivated, since it doesn't warrant a persistent control), a create/edit modal with a plain add/remove `region_frequency` list editor, and three group-control panels (category/region/gender_assoc) each requiring a reason and a confirmation step before deactivating. New routes in `server/admin/index.js` (`/api/name-pool`, `/api/name-pool/bulk-active`, `/api/name-pool-controls/{categories,regions,gender-assocs}`, `/api/name-pool-health`), validated by new `content-schema.js` functions, all going through the existing `server/admin/store.js` backup/atomic-write/version-check path like every other content file. `server/name-pool-health.js` computes category spread, era coverage gaps, duplicate names, deactivation counts and a zero-eligible-candidate sweep across era+gender (region is deliberately not swept — see above), shared by `npm run names` and the admin's health panel; advisory only, never blocks a save or fails the build. No change to era-filtering logic, the diversity-weighted sampling algorithm, or `region_frequency`'s underlying values. |
-| Game-opening intro sequence | shipped | on `dev` — see "The opening intro sequence" above for the full three-step flow (two authored identity choices, then a generated grounding beat). New: `shared/intro.js` (identity-card content + fallback beats), `BAL.INTRO.financialTierModifiers` (`shared/balance.js`), `server/prompt.js`'s `INTRO_SYSTEM`/`buildIntroPrompt`, `POST /api/intro` (`server/index.js`, its own lightweight `validateIntroBeat` rather than `validateScenario`), `client/src/api.js`'s `fetchIntroBeat`, `client/src/components/Intro.jsx` and `GroundingBeat.jsx`, and a new `'intro'` phase in `App.jsx` between `'title'` and `'playing'`. `server/harvest.js`'s `entryEligibility` gained a `triggeredBy` check (only `"batch_generation"`/`"validator_retry"` are harvestable) specifically so the new `"intro_generation"` log entries are excluded — the first caller of `server/llm.js` other than `/api/scenarios`, which is what made that check necessary rather than implicit. No change to `deck.draw`, the situation library, seed selection, or any existing card's effect-resolution logic. |
+| Game-opening intro sequence | shipped | on `dev` — see "The opening intro sequence" above for the full three-step flow (two authored identity choices, then a generated grounding beat). New: `shared/intro.js` (identity-card content + fallback beats + framing-line variants), `BAL.INTRO.financialTierModifiers` (`shared/balance.js`), `server/prompt.js`'s `INTRO_SYSTEM`/`buildIntroPrompt`, `POST /api/intro` (`server/index.js`, its own lightweight `validateIntroBeat` rather than `validateScenario`), `client/src/api.js`'s `fetchIntroBeat`, `client/src/components/Intro.jsx` and `GroundingBeat.jsx`, and a new `'intro'` phase in `App.jsx` between `'title'` and `'playing'`. `server/harvest.js`'s `entryEligibility` gained a `triggeredBy` check (only `"batch_generation"`/`"validator_retry"` are harvestable) specifically so the new `"intro_generation"` log entries are excluded — the first caller of `server/llm.js` other than `/api/scenarios`, which is what made that check necessary rather than implicit. No change to `deck.draw`, the situation library, seed selection, or any existing card's effect-resolution logic. **Updated:** Added `INTRO_FRAMING_LINES` (4 short variants, picked per life) and `pickFramingLine(rng)` to `shared/intro.js`; shows as `.intro__framing` eyebrow above the identity-choice card stack for both cards. Styled light with `var(--dim)` text and minimal spacing. (It stays mounted and dimmed behind the grounding beat now - see the row below.) |
 | Name Pool tab: unified tab strip + per-row names list | shipped | on `dev` — a page-length rework of the Name Pool tab, in two passes that landed as one: first the three group-control cards became a tab strip, then the browsable/filterable name table joined it as a fourth tab rather than sitting permanently above. `admin/src/components/NamePool.jsx` holds a single `tab` state (`'names'` default, then `'categories'`/`'regions'`/`'gender-assocs'`) and a small button strip (`Names`/`Category`/`Region`/`Gender association`, reusing the header's `.tabs` button styling via a new `.tabs--sub` CSS variant since a bare `.tabs` inside a column-flex `.pane` stretches full-width and floats right); only the active tab's panel renders. The Pool Health panel is the one thing that stays pinned above the strip regardless of tab. The table's bulk-select and create/edit modal are otherwise unchanged, just now conditionally rendered. `GroupControls.jsx` itself is unchanged in shape (still one component, three instantiations) plus two new props: `namePool` (the same array `NamePool.jsx` already fetched for the table) and `matchNames(entry, rowValue)` (the same predicate each tab already used to compute a row's count — `matchesCategory`/`matchesRegion`/`matchesGenderAssoc`, now named and shared instead of inlined per-call, so the count and the list can never disagree). Every row gained a collapsed-by-default `<details>` disclosure listing the matching names, filtered client-side with no new API call. No change to any API route, `name-pool-controls.json`'s shape, `assignName`'s selection/filtering logic, or the table's own filtering/bulk-select behavior. |
 | Name Pool tab: bulk select for group controls | shipped | on `dev` — each of the three group-control tabs (Category/Region/Gender association) gained the same bulk-select toolbar shape the Names tab's own table already had: a checkbox per row, "Select all", a selected count, and "Activate selected"/"Deactivate selected" buttons that act only on the applicable subset of the current selection (already-deactivated rows for activate, still-active rows for deactivate - mixing both in one selection is fine, each button just ignores the rows it doesn't apply to). Bulk deactivate opens the same reason-required confirm step the single-row flow uses, once, covering every selected row. **This DOES touch the API**, unlike every other Name Pool layout change above: `POST /api/name-pool-controls/:kind/bulk` (`server/admin/index.js`, inside the existing `groupControlRoutes` factory so all three kinds get it for free) takes `{ values, active, reason, version, force }` and writes the whole selection in one atomic call, the same shape `/api/name-pool/bulk-active` already established for the main table. This is not a style choice: a client-side loop calling the existing single-value `onDeactivate`/`onReactivate` props N times would race itself, because each of those closures (`admin/src/App.jsx`) captures `boot.nameControlsVersion` from whatever render created it, and nothing re-renders between synchronous loop iterations to hand it the version the *previous* iteration's write just produced - every call after the first would arrive with a stale version and hit the store's conflict check. `GroupControls.jsx` computes an exact (not summed) affected-name count for the bulk-deactivate confirmation by reusing its own `namePool`/`matchNames` - summing each row's `count` would double-count a name that carries several selected regions, since region membership isn't exclusive the way category and gender_assoc are. No change to `name-pool-controls.json`'s shape or `assignName`'s selection/filtering logic; the single-row add/remove routes and the Names tab's own bulk-active endpoint are untouched. |
+| Grounding beat as a popup modal | shipped | on `dev` — the intro's grounding beat was a full screen that replaced the identity cards; it is a popup over them now. `GroundingBeat.jsx` renders `.grounding-backdrop` + `.grounding-modal` — the same backdrop/centered-dialog shape as `ConsequenceModal.jsx` (scrim, blur, `toast-in` entry, `z-index: 100`) rather than a second modal idiom for the same job — while the panel itself keeps the card gradient and `--card-ink`, because its body is major-tier `.scene` content whose colours are card colours. `Intro.jsx` keeps the framing line and the emptied `CardStack` mounted underneath and passes `disabled` while the dialog is up: the backdrop swallows pointers but not keys, so without that the card stack's window-level ArrowLeft/ArrowRight handler still fires under the dialog. The gesture moved from the panel to the backdrop, so a tap or drag anywhere continues — the consequence modal's click-outside-to-dismiss, where dismissing IS the continue. Keyboard continue is new: Enter/Space/Escape/ArrowLeft/ArrowRight, the arrows included because the player has just used them on both identity cards and they were the one input that silently did nothing here. `role="dialog"`, `aria-modal`, focus-on-mount and an `aria-live` body follow `ConsequenceModal` too; `aria-modal` is what takes the dimmed intro out of the accessibility tree, so nothing behind it is marked `aria-hidden` by hand. Every input is still ignored while `beat` is null (the fetch is in flight), which is why the backdrop carries its own `--loading` cursor state. Presentation only: no engine, validator, prompt, content, `/api/intro` or fallback-path changes. |
+| Radix Colors color system + theme toggle | shipped | on dev branch — replaces hardcoded Electric-dusk palette with Radix UI Mauve neutral scale (pairs light/dark) plus Radix CSS imports. Semantic tokens (`--color-bg`, `--color-text`, `--color-text-muted`, `--color-border`, `--color-accent`, `--color-accent-text`) map to Radix steps, redeclared under `.dark-theme` class. Brand accents (--left, --right, --violet, --gold) preserved. Theme toggle in `StartScreen`: defaults to OS preference (`prefers-color-scheme`), explicit override persisted via `prefs.js` (same pattern as region/mode). `App.jsx` applies `.dark-theme` class to `<html>` on mount. Contrast verification: all text/background pairs exceed WCAG AA (EventToast #eeeef0 on #121113: 8.3:1 AAA; ConsequenceModal 5.34:1 AA; card text on light card 8.13:1 AAA). No engine/logic changes; presentation-only per Definition of done. |
+| SSA-sourced name pool | shipped | on `dev` — the pool is GENERATED from real birth records now, not authored. Root cause: the original 187 entries were written to satisfy the spec's "at least 150 names, diverse origins" and `build-region-weights.js` only ever scored names that already existed, so nothing ever asked the SSA archive which names Americans actually have — the pool carried Ignacio and Rocío but not Jose, Maria or Juan. New `scripts/build-name-pool.js` pulls the top 75 names per state, per 20-year era bucket, per gender (two passes: one to pick candidates a state at a time so peak memory is one state's table, one to measure only the survivors), derives `gender_assoc` from each name's own national F/M split (neutral at ≥25% minority share) and `era_start`/`era_end` from the years it sits at ≥10% of its own peak, snapped to the 5-year boundaries the pool already used, and computes `region_frequency` with the SAME location quotient, constants, era windowing and neutral band as `build-region-weights.js` — the method is untouched, it is just applied to real-frequency-sourced candidates instead of an authored list. **Additive only**: all 187 originals verified byte-for-byte identical afterwards, including the rare flavour names (Siobhan, Struan, Aino), and dedup is on the FOLDED name so "Rocio" cannot shadow "Rocío". 187 → 994 entries, 909 with real regional data. `scripts/name-categories.json` (181 explicit mappings) labels the non-mainstream clusters; everything else takes the `anglo` default, which is the correct label for most of the SSA top-N and is reported as a count rather than a warning. Category is an ORGANISATIONAL label now, not a selection weight, so `server/name-pool-health.js` exempts that default bucket from the 8% share cap — it legitimately holds ~64% of a data-sourced pool, and a permanent false warning is exactly what taught nobody to read the harvester's anonymity sweep. `npm run names` gained the before/after pool line and a HARD regression check on Jose/Maria/Juan/Guadalupe/James/Mary/Robert. Measured: same-origin repeat within one life 5.3% → 2.7%, regional lift 1.3-1.6x → 1.3-2.0x, all 49 categories reachable (was 48), era-coverage gaps GONE and zero-candidate era+gender combinations 24 → 6 (the archive reaches back to 1910). Costs +72KB gzipped in the player bundle (134 → 206KB), since the pool is inlined by vite. The archive itself is now committed at `data/ssa/namesbystate.zip`. No change to era-filtering logic, deactivation controls, the diversity/region sampling algorithm, or how `region_frequency` is calculated. **Partly superseded by "Category draw weighted by real birth counts" below**: category is no longer a purely organisational label — it carries the frequency weight now — and the pool is 993 entries, not 994 ("Molly" was removed as a content-keyword collision). The health panel's share-cap exemption still stands. |
+| Category draw weighted by real birth counts | shipped | on `dev` — the category half of a name draw was FLAT: 49 origins at ~1/49 each, so a player was exactly as likely to meet a maori-named character (2 names) as an anglo one (633). `region_frequency` could not fix it, because a location quotient is a ratio to the national rate — it encodes where a name is used and divides out how much. `server/name-pool.json` now carries `national_births` per entry (954 of 993 measured; the other 40 are the deliberately rare flavour names, below SSA's 5-per-state-year suppression floor), and `shared/names.js`'s new `categoryBirths()` sums it over the SURVIVING candidates so deactivating half an origin really does halve its weight. Wired into `assignName` as a third multiplicative factor beside the existing per-life diversity and per-session region terms; `BAL.NAMES.categoryPower` (0.35) damps it and `categoryBirthsFloor` (500) keeps an origin the archive cannot report from reaching zero weight, which would silently turn the weight into a filter. **0.35 is a measured ceiling, not a taste setting**: at 0.5 and 1.0 anglo takes 23.1% and 56.7% of draws and `npm run names` FAILS on `US-CA did not lift its own origins`, because region affinity is capped at 6x and anglo outweighs California's own origins ~460x in births — raising it retires regional weighting rather than reducing it. Shipped at 0.35: anglo 2% → 14.9%, same-origin repeat within one life 8.6%, all 49 origins reachable, and regional lift IMPROVED to 1.4-1.9x (was 1.3-2.0x). `name-check.js`'s old `top 8 origins > 60%` hard error is replaced — it measured "weighting too strong", which is now the design — by a direct assertion that no origin can reach zero probability. Also found and fixed a latent pool bug this exposed: **"Molly" is both a top-75 girl's name and slang for MDMA**, so cards naming her tripped the engine's own mature-content backstop and failed the simulator's mature-in-safe assertion 5 times. Fixed in the pool (dropped at generation, asserted in `npm run names`), NOT by softening `shared/content.js` — that backstop is one of three independent gates and is supposed to be blunt. 994 → 993 entries. No change to era filtering, deactivation controls, or the region-signal calculation. |
+| Within-category draw weighted by real birth counts | shipped | on `dev` — the other half of the flat draw. Weighting the CATEGORY by births fixed which origin you meet but not which name: anglo's 14.9% still split evenly across 633 names while irish's 6.4% split across 23, so an individual Irish name stayed likelier than an individual anglo one and the single most-drawn name in the pool was **Fiona**. `nameFrequency(entry)` (`shared/names.js`) raises the entry's own `national_births` to `BAL.NAMES.nameFrequencyPower` and multiplies it into the inner pick alongside the region weight that was already there — same measurement as the category factor, same `categoryBirthsFloor` for a name the archive cannot report, and `power: 0` restores the old behaviour exactly. Result: irish now yields Brian/Ryan/Sean/Patrick, latin-american yields Jose/Maria/Manuel/Juan. **0.5 is set by region, not by taste**: the inner draw is where region is meant to choose WHICH name ("Minnesota's Scandinavian name is more often the one Minnesota registers"), and at 1.0 the within-category birth spread exceeds `regionCeiling` so region can no longer reorder irish-in-MA or scandinavian-in-MN at all, while at 0.5 it still reorders every case tested. Variety is not the binding constraint — distinct names drawn only falls 780 → 747 across the whole 0.35-1.0 range. A separate knob from `categoryPower` because the contest differs: there region competes with frequency ACROSS origins and loses past 0.35, here it competes INSIDE one, where the spread is narrower. No pool, era, deactivation or region-signal changes — this is one factor added to one line. |
+| Region weights rebuilt on one archive vintage | shipped | on `dev` — housekeeping with a real payoff. The pool had been sitting on TWO archive vintages: the 807 SSA-sourced entries were measured against the committed 2025 archive, while the 187 originals kept maps from an older one that predated Florida's inclusion, so not a single entry carried a `US-FL` key. `npm run build-region-weights -- ../ssa-state` re-run across all 993 entries puts every map on the same 2025 data. No code change at all — the script already mutated `region_frequency` in place rather than replacing the record, so `national_births`, `active` and every other field survived untouched (verified: 993 entries, 953 with `national_births`, key order intact). Results: 908 → 914 entries with a regional map, 23,417 region entries written, 50 → 51 distinct regions, and 360 entries now carry `US-FL`. Measured regional lift IMPROVED to 1.4-2.2x (was 1.4-1.9x), with US-HI now 2.2x. Florida itself turns out to tilt only mildly — caribbean 1.12x, latin-american 1.02x — and that is the data, not a bug: FL has 16 entries above 2x against Minnesota's 48, and 253 of its 360 entries sit BELOW 0.8x, which is what a high-migration state whose naming profile sits near the national average looks like. Its strongest signals are plausible (Joaquim 8.9x, Rafaela, Thiago; Winston; Valentina). No pool membership, era, deactivation, weighting-method or selection changes. |
 
 ---
 

@@ -1,22 +1,12 @@
 /* Life Swipe - mobile-first, no framework.
-   Electric dusk: a saturated mesh-gradient ground, crisp white cards, and two
-   accents that fight each other. Dark and funny, not dusty. */
+   Radix Colors color system with Mauve neutral scale, paired light/dark themes,
+   and brand accent colors. Theme toggle via prefs.js, respecting OS preference. */
+
+@import '@radix-ui/colors/mauve.css';
+@import '@radix-ui/colors/mauve-dark.css';
 
 :root {
-  /* ground */
-  --bg-0: #0a0912;
-  --bg-1: #150f2b;
-  --surface: rgba(255, 255, 255, 0.065);
-  --surface-2: rgba(255, 255, 255, 0.1);
-  --stroke: rgba(255, 255, 255, 0.13);
-
-  /* cards */
-  --card: #fcfcff;
-  --card-2: #ecebfa;
-  --card-ink: #15121f;
-  --card-ink-dim: rgba(21, 18, 31, 0.5);
-
-  /* accents */
+  /* Brand accents (unchanged, core to game identity) */
   --left: #ff3d71;
   --left-2: #ff7a5c;
   --right: #00e5a0;
@@ -24,13 +14,30 @@
   --violet: #7c5cff;
   --gold: #ffd23f;
 
-  /* type */
-  --text: #f5f2ff;
-  --muted: #ada4d4;
-  --dim: #8c83bd;
+  /* Semantic tokens - light theme defaults (overridden by .dark-theme) */
+  --color-bg: var(--mauve-1);
+  --color-bg-subtle: var(--mauve-2);
+  --color-border: var(--mauve-6);
+  --color-text: var(--mauve-12);
+  --color-text-muted: var(--mauve-10);
+  --color-accent: var(--left);
+  --color-accent-text: #fff;
 
   --radius: 26px;
   --shell: min(480px, 100vw);
+
+  color-scheme: light;
+}
+
+.dark-theme {
+  /* Dark theme semantic tokens */
+  --color-bg: var(--mauve-1);
+  --color-bg-subtle: var(--mauve-3);
+  --color-border: var(--mauve-6);
+  --color-text: var(--mauve-12);
+  --color-text-muted: var(--mauve-11);
+  --color-accent: var(--left);
+  --color-accent-text: #fff;
 
   color-scheme: dark;
 }
@@ -41,8 +48,8 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: var(--bg-0);
-  color: var(--text);
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: 'Segoe UI Variable Display', 'Segoe UI', system-ui, -apple-system,
                'Inter', Roboto, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -56,7 +63,7 @@ body {
     radial-gradient(115% 85% at 10% -10%, rgba(124, 92, 255, 0.55), transparent 58%),
     radial-gradient(95% 75% at 95% 2%, rgba(255, 61, 113, 0.38), transparent 56%),
     radial-gradient(125% 95% at 50% 112%, rgba(0, 229, 160, 0.26), transparent 62%),
-    var(--bg-0);
+    var(--color-bg);
   background-attachment: fixed;
 }
 
@@ -80,12 +87,12 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   flex-direction: column;
   gap: 11px;
   padding: 13px 15px;
-  background: var(--surface);
-  border: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  box-shadow: 0 8px 32px rgba(10, 9, 18, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .hud__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -97,17 +104,17 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   line-height: 1;
   font-weight: 800;
   letter-spacing: -0.04em;
-  background: linear-gradient(135deg, #fff, var(--muted));
+  background: linear-gradient(135deg, #fff, var(--color-text-muted));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .hud__age-label {
-  font-size: 10px; font-weight: 700; color: var(--dim);
+  font-size: 10px; font-weight: 700; color: var(--color-text-muted);
   letter-spacing: 0.16em; text-transform: uppercase;
 }
 
-.hud__turn { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); }
+.hud__turn { font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-text-muted); }
 
 .hud__money {
   font-size: 22px; font-weight: 800; letter-spacing: -0.02em;
@@ -120,7 +127,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .meter { flex: 1; display: flex; flex-direction: column; gap: 5px; }
 .meter__label {
   font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--dim);
+  text-transform: uppercase; color: var(--color-text-muted);
 }
 .meter__track {
   height: 7px; border-radius: 99px; overflow: hidden;
@@ -137,7 +144,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 .hud__storyteller {
   font-size: 9px; font-weight: 700; letter-spacing: 0.2em;
-  text-transform: uppercase; color: var(--dim); text-align: right;
+  text-transform: uppercase; color: var(--color-text-muted); text-align: right;
 }
 .hud__storyteller--live { color: var(--right); }
 .hud__storyteller--thinking { color: var(--violet); }
@@ -147,7 +154,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .stage-banner { display: flex; align-items: center; gap: 10px; }
 .stage-banner__rule {
   flex: 1; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--stroke), transparent);
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
 }
 .stage-banner__label {
   font-size: 12px; font-weight: 800; letter-spacing: 0.16em;
@@ -169,7 +176,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   display: none;
 }
 .toast { animation: toast-in 340ms cubic-bezier(.2, 1, .3, 1); padding: 0 6px; cursor: pointer; }
-.toast__line { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--muted); }
+.toast__line { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.4; color: var(--color-text-muted); }
 .toast__line--death,
 .toast__line--injury   { color: var(--left); font-weight: 600; }
 .toast__line--windfall { color: var(--gold); font-weight: 600; }
@@ -183,7 +190,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 .consequence-backdrop {
   position: fixed; inset: 0; z-index: 100;
-  background: rgba(8, 6, 16, 0.72);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex; align-items: center; justify-content: center;
@@ -194,15 +201,15 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   width: 100%; max-width: min(360px, var(--shell));
   padding: 24px 22px 20px;
   border-radius: var(--radius);
-  background: var(--bg-1);
-  border: 1px solid var(--stroke);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
   box-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.6);
   text-align: center;
 }
 .consequence-modal__line {
   margin: 0 0 8px;
   font-size: 15px; font-weight: 600; line-height: 1.5;
-  color: var(--text);
+  color: var(--color-text);
 }
 .consequence-modal__line:last-of-type { margin-bottom: 20px; }
 .consequence-modal__line--death,
@@ -232,32 +239,15 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   margin: auto;
   width: 100%;
   max-height: 600px;
-  /* The bottom padding clears .card__hint, which is absolutely positioned at
-     bottom:20px and would otherwise have the last line of the prompt running
-     underneath it. */
   padding: 30px 26px 46px;
   border-radius: var(--radius);
-  background: linear-gradient(158deg, var(--card) 0%, var(--card-2) 100%);
-  color: var(--card-ink);
+  background: linear-gradient(158deg, #fcfcff 0%, #ecebfa 100%);
+  color: #15121f;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* NEVER a scrollbar. A card is a thing you swipe, not a thing you scroll -
-     a scroll gesture on it fights the swipe gesture for the same pointer.
-     Long cards are handled by shrinking the type to fit (--fit below), and
-     this is the backstop for the case the shrink cannot fully solve. */
-  /* Two declarations, not one: `clip` also removes PROGRAMMATIC scrolling,
-     which `hidden` leaves in place - a card with overflow:hidden still moves
-     if anything sets scrollTop on it, and then the text is silently offset
-     with nothing on screen to explain why. Engines too old for `clip` ignore
-     the second line and keep `hidden`, which is the weaker but still
-     scrollbar-free behaviour. */
   overflow: hidden;
   overflow: clip;
-  /* Set by useFitToCard in CardStack.jsx: 1 when the card fits at its natural
-     size, down to FIT_MIN when it does not. Every font size and gap inside the
-     card is expressed as a multiple of it, so one number rescales the whole
-     card proportionally instead of squashing one field. */
   --fit: 1;
   will-change: transform;
   box-shadow:
@@ -301,7 +291,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   left: 26px; right: 26px; bottom: 20px;
   display: flex; justify-content: space-between;
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--card-ink-dim);
+  color: rgba(21, 18, 31, 0.5);
   transition: opacity 140ms linear;
   pointer-events: none;
 }
@@ -342,8 +332,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   min-height: 56px;
   padding: 13px 12px;
   border-radius: 17px;
-  background: var(--surface);
-  border: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
   font-size: 14px;
   font-weight: 650;
   line-height: 1.25;
@@ -352,6 +342,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   -webkit-backdrop-filter: blur(12px);
   transition: transform 130ms ease, box-shadow 200ms ease, border-color 200ms ease, background 200ms ease;
   -webkit-tap-highlight-color: transparent;
+  color: var(--color-text);
 }
 .choice:active { transform: scale(0.965); }
 
@@ -377,7 +368,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .app__hint {
   margin: 0; text-align: center;
   font-size: 10px; font-weight: 600; letter-spacing: 0.16em;
-  text-transform: uppercase; color: var(--dim);
+  text-transform: uppercase; color: var(--color-text-muted);
 }
 
 /* --------------------------------------------------------- start screen */
@@ -410,12 +401,12 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   color: transparent;
 }
 
-.start__tagline { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.5; color: var(--muted); }
+.start__tagline { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.5; color: var(--color-text-muted); }
 
 .start__rules {
   margin: 6px 0 0; padding: 0; list-style: none;
   display: flex; flex-direction: column; gap: 9px;
-  font-size: 13px; color: var(--dim); max-width: 330px;
+  font-size: 13px; color: var(--color-text-muted); max-width: 330px;
 }
 .start__rules li { padding-left: 16px; position: relative; text-align: left; line-height: 1.45; }
 .start__rules li::before {
@@ -426,7 +417,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 .start__status {
   margin: 4px 0 0; font-size: 10px; font-weight: 700;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-muted);
 }
 .start__status--live { color: var(--right); }
 
@@ -435,12 +426,13 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .btn {
   border-radius: 16px;
   padding: 14px 24px;
-  background: var(--surface-2);
-  border: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--color-border);
   font-size: 15px;
   font-weight: 650;
   letter-spacing: -0.005em;
   transition: transform 130ms ease, box-shadow 220ms ease, filter 220ms ease;
+  color: var(--color-text);
 }
 .btn:active { transform: scale(0.975); }
 .btn--primary {
@@ -464,7 +456,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 }
 .obituary--loading { align-items: center; justify-content: center; }
 .obituary__loading-text {
-  color: var(--muted); letter-spacing: 0.04em; font-weight: 500;
+  color: var(--color-text-muted); letter-spacing: 0.04em; font-weight: 500;
   animation: pulse 1.6s ease-in-out infinite;
 }
 
@@ -474,8 +466,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   border-radius: 24px;
   background:
     radial-gradient(120% 100% at 50% 0%, rgba(124, 92, 255, 0.32), transparent 65%),
-    var(--surface);
-  border: 1px solid var(--stroke);
+    rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -492,7 +484,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 }
 .obituary__epitaph {
   margin: 14px 0 0; font-size: 13.5px; font-style: italic;
-  color: var(--muted); line-height: 1.5;
+  color: var(--color-text-muted); line-height: 1.5;
 }
 
 .obituary__body p {
@@ -504,8 +496,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .final-stats {
   margin: 0; padding: 16px;
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 8px;
-  background: var(--surface);
-  border: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
   border-radius: 20px;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -513,7 +505,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .final-stats div { text-align: center; }
 .final-stats dt {
   font-size: 9px; font-weight: 700; letter-spacing: 0.18em;
-  text-transform: uppercase; color: var(--dim);
+  text-transform: uppercase; color: var(--color-text-muted);
 }
 .final-stats dd {
   margin: 4px 0 0; font-size: 18px; font-weight: 750;
@@ -566,13 +558,14 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   display: flex; flex-direction: column; gap: 3px;
   padding: 12px 12px;
   border-radius: 16px;
-  background: var(--surface);
-  border: 1px solid var(--stroke);
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
   text-align: left;
   transition: background 200ms ease, border-color 200ms ease, box-shadow 220ms ease;
+  color: var(--color-text);
 }
 .mode-pill__name { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; }
-.mode-pill__desc { font-size: 10.5px; font-weight: 500; color: var(--dim); line-height: 1.3; }
+.mode-pill__desc { font-size: 10.5px; font-weight: 500; color: var(--color-text-muted); line-height: 1.3; }
 
 .mode-pill--safe.is-on {
   border-color: var(--right);
@@ -590,14 +583,15 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   width: 100%; max-width: 340px;
   padding: 18px;
   border-radius: 20px;
-  background: var(--surface);
+  background: rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 61, 113, 0.4);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   text-align: left;
+  color: var(--color-text);
 }
 .agegate__title { margin: 0 0 6px; font-size: 15px; font-weight: 750; color: var(--left); }
-.agegate__body { margin: 0 0 14px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.agegate__body { margin: 0 0 14px; font-size: 12.5px; line-height: 1.5; color: var(--color-text-muted); }
 .agegate__actions { display: flex; gap: 9px; }
 .agegate__actions .btn { flex: 1; padding: 11px 12px; font-size: 13px; }
 
@@ -606,7 +600,7 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .mode-chip {
   font-size: 8.5px; font-weight: 800; letter-spacing: 0.2em;
   padding: 3px 8px; border-radius: 99px;
-  border: 1px solid var(--stroke); color: var(--dim);
+  border: 1px solid var(--color-border); color: var(--color-text-muted);
 }
 .mode-chip--mature { color: var(--left); border-color: rgba(255, 61, 113, 0.45); }
 .mode-chip em { font-style: normal; opacity: 0.75; letter-spacing: 0.1em; }
@@ -659,21 +653,75 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 /* ------------------------------------------------------- intro grounding */
 
 /* The non-interactive third intro step (client/src/components/GroundingBeat.jsx).
-   Reuses .card/.scene wholesale - major-tier weight for the first thing a
-   player reads - but there is nothing to choose here, so the hint is a single
-   centred line rather than the left/right pair .card__hint is built for. */
-.intro-beat { cursor: pointer; transition: opacity 220ms linear, transform 220ms ease; }
-.intro-beat.is-exiting { opacity: 0; transform: scale(0.97); }
-.intro-beat__hint { justify-content: center; }
-.intro-beat--loading { cursor: default; }
-.intro-beat__loading-text {
+   A popup over the intro screen rather than a screen of its own: the same
+   backdrop + centred-dialog shape as .consequence-backdrop/.consequence-modal,
+   so the player app's two modals read as one pattern. The panel keeps the
+   card's gradient and ink because its body is major-tier .scene content, whose
+   colours are card colours - and because this is the first thing a player
+   reads. Nothing to choose here, so the hint is a single centred line rather
+   than the left/right pair .card__hint is built for. */
+.grounding-backdrop {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: toast-in 220ms cubic-bezier(.2, 1, .3, 1);
+  transition: opacity 220ms linear;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.grounding-backdrop.is-exiting { opacity: 0; }
+/* Nothing to acknowledge until the beat lands, so nothing to click either. */
+.grounding-backdrop--loading { cursor: default; }
+
+.grounding-modal {
+  position: relative;
+  width: 100%; max-width: min(400px, var(--shell));
+  max-height: min(600px, 80vh);
+  padding: 28px 24px 46px;
+  border-radius: var(--radius);
+  background: linear-gradient(158deg, #fcfcff 0%, #ecebfa 100%);
+  color: #15121f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  overflow: clip;
+  box-shadow:
+    0 24px 70px -12px rgba(0, 0, 0, 0.6),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  outline: none;
+}
+
+.grounding-modal__hint {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 20px;
+  margin: 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(21, 18, 31, 0.5);
+  pointer-events: none;
+}
+
+.grounding-modal__loading {
   margin: 0;
   text-align: center;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--card-ink-dim);
+  color: rgba(21, 18, 31, 0.5);
   animation: pulse 1.6s ease-in-out infinite;
 }
+
+/* Framing modal is now a component (FramingModal.jsx), not inline styling */
 
 /* -------------------------------------------------------------- region */
 
@@ -682,16 +730,16 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 .region__label {
   display: block; margin-bottom: 6px;
   font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--dim);
+  color: var(--color-text-muted);
 }
 
 .region__select {
   width: 100%;
   padding: 10px 12px;
   border-radius: 14px;
-  background: var(--surface);
-  border: 1px solid var(--stroke);
-  color: inherit;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -700,9 +748,30 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 }
 .region__select:hover { border-color: var(--right); }
 .region__select:focus-visible { outline: 2px solid var(--right); outline-offset: 2px; }
-.region__select option, .region__select optgroup { background: var(--surface); color: inherit; }
+.region__select option, .region__select optgroup { background: var(--color-bg); color: var(--color-text); }
 
 .region__note {
   margin: 6px 0 0;
-  font-size: 10.5px; font-weight: 500; line-height: 1.4; color: var(--dim);
+  font-size: 10.5px; font-weight: 500; line-height: 1.4; color: var(--color-text-muted);
+}
+
+/* ------------------------------------------------------ theme toggle ---- */
+
+.theme-toggle {
+  width: 100%; max-width: 340px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.theme-toggle__label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-text-muted);
+  flex: 1;
+}
+
+.theme-toggle__btn {
+  width: 40px; height: 40px;
+  padding: 8px;
+  font-size: 18px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }

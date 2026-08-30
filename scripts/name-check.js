@@ -11,10 +11,11 @@
 
 import fs from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
-import { assignName, createNameLedger, impliedBirthYear, GENDER_ASSOCS } from '../shared/names.js';
+import { assignName, categoryBirths, createNameLedger, impliedBirthYear, GENDER_ASSOCS } from '../shared/names.js';
 import { BAL } from '../shared/balance.js';
 import { seedFrom, nextRandom } from '../shared/rng.js';
 import { computeNamePoolHealth } from '../server/name-pool-health.js';
+import { detectMature } from '../shared/content.js';
 
 const POOL_PATH = fileURLToPath(new URL('../server/name-pool.json', import.meta.url));
 const CONTROLS_PATH = fileURLToPath(new URL('../server/name-pool-controls.json', import.meta.url));
@@ -28,6 +29,30 @@ const NAMES_PER_LIFE = 8;
 const MIN_ENTRIES = 150;
 const MAX_CATEGORY_SHARE = 0.08;
 const GENDERS = new Set(GENDER_ASSOCS);
+
+// What the pool held before scripts/build-name-pool.js generated candidates
+// from the SSA data. Reported, not enforced - the floor that actually fails is
+// MIN_ENTRIES. It is here so the size of that rebuild stays visible in the
+// output rather than being something you have to remember.
+const AUTHORED_BASELINE = 187;
+
+// The bug this pool had for its whole life: it was authored to satisfy "at
+// least 150 names, diverse origins" and never asked the SSA data which names
+// Americans actually have, so it carried Ignacio and Rocio but not Jose, Maria
+// or Juan. These are among the most frequently registered given names in the
+// country - if any of them is missing, candidate generation has regressed to
+// an authored list again. A HARD failure, because it is silent otherwise.
+const MUST_INCLUDE = {
+  'latin-american': ['Jose', 'Maria', 'Juan', 'Guadalupe'],
+  anglo: ['James', 'Mary', 'Robert'],
+};
+
+// Compare names the way the pool builder does, so "Rocio" and "Rocío" are one
+// name here too - otherwise the regression check below could be satisfied by
+// an accented near-duplicate.
+const fold = (s) => [...String(s).normalize('NFD')]
+  .filter((c) => { const n = c.codePointAt(0); return n < 0x0300 || n > 0x036f; })
+  .join('').toLowerCase();
 
 /* ------------------------------------------------------------ structure */
 
@@ -81,7 +106,29 @@ pool.forEach((e, i) => {
 const categories = new Map();
 for (const e of pool) categories.set(e.category, (categories.get(e.category) || 0) + 1);
 
-console.log(`pool: ${pool.length} names, ${categories.size} categories`);
+const withRegion = pool.filter((e) => e.region_frequency).length;
+const growth = pool.length - AUTHORED_BASELINE;
+console.log(
+  `pool: ${pool.length} names, ${categories.size} categories, ${withRegion} with region_frequency`
+  + `\n      (authored baseline ${AUTHORED_BASELINE}, ${growth >= 0 ? '+' : ''}${growth} from the SSA-sourced rebuild)`,
+);
+
+// Regression check: the real high-frequency names must actually be in here.
+const haveFolded = new Set(pool.map((e) => fold(e.name)));
+const missingByCategory = [];
+for (const [category, names] of Object.entries(MUST_INCLUDE)) {
+  const gone = names.filter((n) => !haveFolded.has(fold(n)));
+  if (gone.length) missingByCategory.push(`${category}: ${gone.join(', ')}`);
+}
+if (missingByCategory.length) {
+  errors.push(
+    `high-frequency names missing from the pool - candidate generation has regressed to an `
+    + `authored list (rerun: npm run build-name-pool -- ../ssa-state). ${missingByCategory.join(' | ')}`,
+  );
+} else {
+  const checked = Object.values(MUST_INCLUDE).flat().length;
+  console.log(`high-frequency regression check: all ${checked} present`);
+}
 
 /* ------------------------------------------------------- the seed deck */
 
@@ -170,9 +217,11 @@ for (const [cat, n] of top) {
 
 if (unnamed) errors.push(`${unnamed} assignments came back empty - the pool ran dry`);
 if (eraMisses.length) errors.push(`${eraMisses.length} era violations, e.g. ${eraMisses[0]}`);
-// A uniform draw over 49 categories would put ~16% in the top 8. Anything near
-// half means the weighting has stopped working and one origin is dominating.
-if (topShare > 0.5) warnings.push(`top 8 categories hold ${(topShare * 100).toFixed(1)}% - weighting looks weak`);
+// A concentrated top 8 used to mean the weighting had broken. It does not any
+// more: BAL.NAMES.categoryPower deliberately weights each origin by its real
+// national birth count, so anglo taking most of the draw is the design, not a
+// fault. Reported so the number stays in front of whoever tunes that knob.
+console.log(`top 8 categories hold ${(topShare * 100).toFixed(1)}% (categoryPower ${BAL.NAMES.categoryPower})`);
 
 /* ------------------------------------------------------- regional weighting */
 
@@ -247,7 +296,11 @@ for (const [region, cats] of PROBES) {
   console.log(`  ${region}    ${cats.join('/').padEnd(38)} ${(here * 100).toFixed(1)}%  ${lift.toFixed(1)}x   ${(top8 * 100).toFixed(0)}%`);
   if (lift > 1.15) regionMoves++;
   // Weighting must not become a filter: no one origin may take over a region.
-  if (top8 > 0.6) errors.push(`${region}: top 8 origins hold ${(top8 * 100).toFixed(0)}% - weighting is too strong`);
+  // The old assertion here was "top 8 origins may not exceed 60%", guarding
+  // against weighting becoming a de-facto filter. Frequency weighting makes
+  // that number meaningless - it is 91% by design now - so the guard moved to
+  // the property it was really protecting: see the reachability check below,
+  // which asserts no origin can ever reach zero probability.
 }
 if (regionMoves < PROBES.length) {
   errors.push(`${PROBES.length - regionMoves} of ${PROBES.length} regions did not lift their own origins`);
@@ -259,6 +312,70 @@ if (JSON.stringify([...neutral.counts]) !== JSON.stringify([...baseline.counts])
   errors.push('the no-region draw is not reproducible');
 }
 console.log(`  (none)   era-only baseline                       -      1.0x   ${(topShareOf(baseline.counts) * 100).toFixed(0)}%`);
+
+/* --------------------------------------- names that are content keywords */
+
+// A name the mature-content backstop reads as mature content poisons every
+// card it lands on: the engine assigns it, then its own gate flags the result.
+// "Molly" is a top-75 girl's name in several states and also slang for MDMA,
+// and it reached the pool in the SSA rebuild - the simulator's mature-in-safe
+// assertion failed 5 times on one card before this check existed.
+//
+// A HARD failure, and deliberately checked here rather than softened in
+// shared/content.js: the backstop is one of three independent content gates
+// (invariant 9) and is meant to be blunt. Teaching it to ignore words that are
+// also cast names would open a hole a card could aim at on purpose. The pool
+// is generated, so the pool is where an unspeakable name gets excluded -
+// scripts/build-name-pool.js drops these at generation, and this is the net
+// that catches one arriving any other way (an admin edit, a hand-added entry).
+const contentKeywordNames = pool
+  .filter((e) => {
+    const found = detectMature(`Ask ${e.name} about it.`);
+    return Array.isArray(found) ? found.length > 0 : Boolean(found);
+  })
+  .map((e) => e.name);
+if (contentKeywordNames.length) {
+  errors.push(
+    `${contentKeywordNames.length} pool name(s) are themselves mature-content keywords, so every `
+    + `card naming them trips the backstop: ${contentKeywordNames.join(', ')}`,
+  );
+} else {
+  console.log('content-keyword collision: none of the pool trips the mature backstop');
+}
+
+/* ------------------------------------------------ weight, never a filter */
+
+// The invariant frequency weighting could most easily break. An origin the SSA
+// archive cannot report (Aroha, Somchai - suppressed under 5 births per
+// state-year) sums to zero births, and zero weight means NEVER DRAWN: the pool
+// would have gained a silent exclusion by arithmetic, without anyone deciding
+// to add one. BAL.NAMES.categoryBirthsFloor is what stops that, so this
+// asserts the outcome rather than trusting the constant - set the floor to 0
+// and this fails, which is the point.
+//
+// Asserted directly, not sampled: at categoryPower 1 these origins sit near
+// 0.0001% and would never show up in a few thousand simulated draws, so a
+// count-based check here would pass while proving nothing.
+const zeroWeight = [];
+const byCategoryEntries = new Map();
+for (const e of pool) {
+  if (!byCategoryEntries.has(e.category)) byCategoryEntries.set(e.category, []);
+  byCategoryEntries.get(e.category).push(e);
+}
+for (const [category, members] of byCategoryEntries) {
+  const w = Math.pow(categoryBirths(members), BAL.NAMES.categoryPower);
+  if (!(w > 0) || !Number.isFinite(w)) zeroWeight.push(category);
+}
+if (zeroWeight.length) {
+  errors.push(
+    `${zeroWeight.length} origin(s) have zero or non-finite category weight and can never be `
+    + `drawn - frequency weighting has become a filter: ${zeroWeight.join(', ')}`,
+  );
+} else {
+  const floored = pool.filter((e) => !Number.isFinite(e.national_births)).length;
+  console.log(`\nweight-never-a-filter: all ${byCategoryEntries.size} origins reachable`
+    + ` (${floored} name(s) below the archive's reporting floor, credited ${BAL.NAMES.categoryBirthsFloor} births each)`);
+}
 
 /* ----------------------------------------------------------- pool health */
 

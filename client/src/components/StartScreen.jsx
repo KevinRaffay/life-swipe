@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   getContentMode, setContentMode, hasConfirmedAge, confirmAge,
-  getRegionChoice, setRegionChoice, getDetectedRegion,
+  getRegionChoice, setRegionChoice, getDetectedRegion, getTheme, setTheme, getActiveTheme,
 } from '../prefs.js';
 import { US_REGIONS, labelFor } from '@shared/regions.js';
 
@@ -9,11 +9,25 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
   const [mode, setMode] = useState(getContentMode);
   const [askingAge, setAskingAge] = useState(false);
   const [region, setRegion] = useState(getRegionChoice);
+  const [theme, setThemeLocal] = useState(getTheme);
   const detected = getDetectedRegion();
+  const activeTheme = getActiveTheme();
 
   const chooseRegion = (value) => {
     setRegion(value);
     setRegionChoice(value);
+  };
+
+  const toggleTheme = () => {
+    const next = theme === 'light' ? 'dark' : theme === 'dark' ? null : 'light';
+    setThemeLocal(next);
+    setTheme(next);
+    const root = document.documentElement;
+    if (next === 'dark') {
+      root.classList.add('dark-theme');
+    } else {
+      root.classList.remove('dark-theme');
+    }
   };
 
   const chooseMode = (next) => {
@@ -97,6 +111,21 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
           Nudges what the people you meet are called. Detection is often wrong
           on a VPN or a phone &mdash; set it yourself and it stays set.
         </p>
+      </div>
+
+      <div className="theme-toggle">
+        <label htmlFor="theme-btn" className="theme-toggle__label">
+          {theme === null ? 'Light/dark' : theme === 'light' ? 'Light' : 'Dark'}
+        </label>
+        <button
+          id="theme-btn"
+          className="btn theme-toggle__btn"
+          onClick={toggleTheme}
+          title={`Switch theme (now: ${activeTheme})`}
+          aria-label={`Switch theme (now: ${activeTheme})`}
+        >
+          {activeTheme === 'light' ? '☀️' : '🌙'}
+        </button>
       </div>
 
       <ul className="start__rules">
