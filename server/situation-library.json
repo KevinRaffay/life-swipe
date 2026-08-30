@@ -2034,5 +2034,442 @@
     "typical_effects": "Joining builds a creative-commerce flag and costs savings and weekend time; the outcome should be determined by a pending_event resolving over the summer. Declining preserves both but may create mild FOMO if the friend succeeds alone.",
     "rarity": "common",
     "source": "harvested"
+  },
+  {
+    "id": "career_mentor_commitment",
+    "pattern": "A charismatic senior figure offers a promising early career opportunity that normalizes excessive commitment in exchange for full coverage",
+    "category": "career",
+    "life_stage": [
+      21,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "mentor_commitment"
+    ],
+    "typical_effects": "Creates a pending_event requiring long-term commitment with potential career advancement or entrapment",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "family_financial_dilemma",
+    "pattern": "A parent offers to match savings dollar-for-dollar up to a set amount in exchange for committing funds toward a specific purchase or goal",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "financial_dilemma"
+    ],
+    "typical_effects": "Creates a branch point between financial security and personal freedom with long-term implications",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "early_business_opportunity",
+    "pattern": "A friend proposes a small-scale business venture that requires significant time and capital investment with shared profits and risks",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "business_opportunity"
+    ],
+    "typical_effects": "Creates a branch point between entrepreneurship and maintaining personal freedom with potential for growth or loss",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "educational_investment_choice",
+    "pattern": "An educational opportunity presents itself that requires full-time commitment during summer months in exchange for skill development and partial financial support",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "educational_investment"
+    ],
+    "typical_effects": "Creates a pending_event requiring time sacrifice with potential for career advancement or personal growth",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_car_financing_decision",
+    "pattern": "A parent offers to co-sign a loan for a vehicle in exchange for full payment responsibility and personal independence",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "car_financing_decision"
+    ],
+    "typical_effects": "Creates a branch point between immediate independence and long-term financial responsibility",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "peer_investment_proposal",
+    "pattern": "A peer proposes an investment opportunity in a business venture that requires significant capital and time commitment with shared returns",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "investment_proposal"
+    ],
+    "typical_effects": "Creates a branch point between financial risk and personal freedom with potential for gain or loss",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "early_work_commitment",
+    "pattern": "An opportunity arises to work full-time during summer months in exchange for skill development and partial financial support",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "early_work_commitment"
+    ],
+    "typical_effects": "Creates a pending_event requiring time sacrifice with potential for career advancement or personal growth",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "academic_club_invitation",
+    "pattern": "A peer invites participation in an academic club or team that requires regular time commitment with no cost but significant schedule impact",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "academic_club_invitation"
+    ],
+    "typical_effects": "Creates a branch point between academic engagement and personal freedom with potential for growth or loss",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_vehicle_gift_choice",
+    "pattern": "A parent offers to provide a vehicle as a gift with conditions requiring full payment responsibility and insurance coverage",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "vehicle_gift_choice"
+    ],
+    "typical_effects": "Creates a branch point between immediate freedom and long-term financial responsibility",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "manager_training_commitment",
+    "pattern": "A mentor offers professional development funding contingent on a multi-year employment commitment",
+    "category": "career",
+    "life_stage": [
+      21,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "training_commitment"
+    ],
+    "typical_effects": "Creates a pending event for career trajectory decisions and potential regret if the commitment is broken",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "parental_fund_matching",
+    "pattern": "A parent offers to match savings dollar-for-dollar up to a specific amount toward a major purchase or investment",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "fund_matching"
+    ],
+    "typical_effects": "Creates a branching point between financial prudence and opportunity cost of limited resources",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "friend_business_partnership",
+    "pattern": "A close friend proposes a business venture that requires significant personal investment of time and money",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "business_partnership"
+    ],
+    "typical_effects": "Generates a branching point between entrepreneurial risk and personal freedom",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "early_work_opportunity",
+    "pattern": "A parent or family member offers an opportunity to earn money that requires sacrificing personal time or freedom",
+    "category": "money",
+    "life_stage": [
+      16,
+      20
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "early_work_opportunity"
+    ],
+    "typical_effects": "Creates a branching point between immediate financial gain and future personal development",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "mentor_investment_club",
+    "pattern": "A senior figure offers access to an investment learning experience with significant financial stakes and implicit expectations of loyalty",
+    "category": "money",
+    "life_stage": [
+      18,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "investment_club"
+    ],
+    "typical_effects": "Creates a branching point between early career advancement and potential financial risk",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "educational_program_commitment",
+    "pattern": "A structured educational opportunity requires significant time investment with no guarantee of future returns",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "educational_program"
+    ],
+    "typical_effects": "Creates a branching point between structured learning and personal exploration",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_car_loan_decision",
+    "pattern": "A parent offers to co-sign a loan for a vehicle that would provide independence but requires significant personal financial commitment",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "car_loan_decision"
+    ],
+    "typical_effects": "Creates a branching point between immediate freedom and long-term financial responsibility",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "community_enrichment_program",
+    "pattern": "An educational program or activity is offered with significant time commitment and potential for personal growth or social integration",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "enrichment_program"
+    ],
+    "typical_effects": "Creates a branching point between structured experiences and personal autonomy",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "school_extracurricular_commitment",
+    "pattern": "An extracurricular opportunity is offered with specific time requirements that conflicts with personal schedule",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "extracurricular_commitment"
+    ],
+    "typical_effects": "Creates a branching point between social engagement and personal time management",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_autonomy_decision",
+    "pattern": "A family member offers a significant resource or independence that comes with specific conditions or responsibilities",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "autonomy_decision"
+    ],
+    "typical_effects": "Creates a branching point between immediate benefits and future responsibilities",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "manager_training_commitment_2",
+    "pattern": "A supervisor offers full funding for a professional certification in exchange for a multi-year employment commitment",
+    "category": "career",
+    "life_stage": [
+      21,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "training_commitment"
+    ],
+    "typical_effects": "Creates a branch point that affects career trajectory and financial planning; may generate pending events related to job satisfaction or early departure",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "mentor_investment_opportunity",
+    "pattern": "A charismatic senior figure offers an opportunity to participate in a high-stakes investment activity with potential for significant gain or loss",
+    "category": "money",
+    "life_stage": [
+      18,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "investment_opportunity"
+    ],
+    "typical_effects": "Creates a branch point that affects financial risk tolerance and career trajectory; may generate pending events related to financial outcomes or reputation",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "automotive_independence",
+    "pattern": "A parent offers financial assistance for car purchase with conditions that require personal commitment to payment obligations",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "automotive_independence"
+    ],
+    "typical_effects": "Creates a branch point that affects financial responsibility and independence; may generate pending events related to debt or vehicle ownership",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "parental_financial_support",
+    "pattern": "A parent offers financial assistance for a major expense with conditions that require personal sacrifice or commitment to family needs",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "financial_support"
+    ],
+    "typical_effects": "Creates a branch point that affects personal autonomy and family relationships; may generate pending events related to debt or family dynamics",
+    "rarity": "common",
+    "source": "harvested"
   }
 ]

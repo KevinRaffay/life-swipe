@@ -9562,5 +9562,269 @@
       },
       "timeCostMonths": 0.25
     }
+  },
+  {
+    "id": "early_your_commute_is_55",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your commute is 55 minutes each way on two buses. A coworker mentions a room opening up three blocks from the office.",
+    "leftLabel": "Stay home, save",
+    "rightLabel": "Take the room",
+    "leftEffects": {
+      "happiness": -5,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -800,
+      "happiness": 10,
+      "flags": [
+        "moved_out"
+      ],
+      "clearFlags": [
+        "lives_with_parents"
+      ],
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate"
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_the_certification_would_look",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "A Wednesday evening in March, the open-plan office after everyone else has left.",
+    "beat": "Your manager floats the idea of enrolling you in a $2,200 digital marketing certification, billed to the department's training budget.",
+    "dialogue": "She says the company will cover it fully, but only if you commit to staying on for at least eighteen more months.",
+    "prompt": "The certification would look good anywhere - but eighteen months is a long time to promise when you are not sure this is where you want to be.",
+    "leftLabel": "Decline, stay flexible",
+    "rightLabel": "Commit, take cert",
+    "leftEffects": {
+      "happiness": 5,
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "money": 2200,
+      "happiness": 8,
+      "flags": [
+        "company_cert_obligation",
+        "white_collar_experience"
+      ],
+      "education": "Digital marketing certification",
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "early_she_mentions_very_casually",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Your childhood bedroom, a Saturday morning. Your mom - who has been quietly tallying months since you graduated - sets down a cup of coffee in front of you.",
+    "prompt": "She mentions, very casually, that a family friend is hiring entry-level at his logistics firm. The pay is roughly the same as your current job. She has already told him you might call.",
+    "leftLabel": "Politely decline",
+    "rightLabel": "Follow the lead",
+    "leftEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_your_best_friend_is",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend, is driving eight hours to see a band you both loved at 17. He has a spare ticket and expects you to say yes without being asked twice.",
+    "leftLabel": "Skip it, save money",
+    "rightLabel": "Go with your best friend",
+    "leftEffects": {
+      "money": 200,
+      "happiness": -8,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "money": -350,
+      "happiness": 14,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "early_a_recruiter_from_a",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The parking lot of your office building, a Friday in late April.",
+    "prompt": "A recruiter from a startup downtown has emailed twice this week. The role pays $51,000 - nine thousand more than your current salary - but the company has existed for eleven months.",
+    "leftLabel": "Stay put",
+    "rightLabel": "Take the interview",
+    "leftEffects": {
+      "happiness": -3,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "flags": [
+        "startup_curious"
+      ],
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_do_you_take_the",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Do you take the job offer in Portland, or stay in your current city?",
+    "leftLabel": "Portland",
+    "rightLabel": "Stay",
+    "leftEffects": {
+      "money": -1200,
+      "timeCostMonths": 6
+    },
+    "rightEffects": {}
+  },
+  {
+    "id": "early_you_have_420_right",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "The living room, a Tuesday in March. Dad has been quiet all week.",
+    "beat": "He says he's worried about the state of your finances and offers to help with rent.",
+    "dialogue": "Dad says he will match whatever you save, dollar for dollar, up to eight hundred.",
+    "prompt": "You have $420 right now. Do you commit to the car fund and start saying no to everything, or keep your money loose?",
+    "leftLabel": "Save Up",
+    "rightLabel": "Spend Now",
+    "leftEffects": {
+      "money": -420,
+      "happiness": -10,
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "money": 200,
+      "happiness": 15
+    }
+  },
+  {
+    "id": "early_do_you_accept_the",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Do you accept the promotion to Senior Coordinator or pass on it?",
+    "leftLabel": "Accept",
+    "rightLabel": "Decline",
+    "leftEffects": {
+      "career": {
+        "title": "Senior Marketing Coordinator",
+        "salary": 48000
+      },
+      "timeCostMonths": 3
+    },
+    "rightEffects": {}
   }
 ]
