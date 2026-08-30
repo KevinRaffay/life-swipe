@@ -24,6 +24,10 @@ export const getBootstrap = () => json(`${base}/bootstrap`);
 export const getValidation = () => json(`${base}/validate`);
 export const getStats = () => json(`${base}/stats`);
 
+// The storyteller toggle. Server-wide and runtime-only: LLM_PROVIDER stays
+// the boot default, a restart reverts to it.
+export const setProvider = (provider) => json(`${base}/provider`, { method: 'PUT', body: { provider } });
+
 export const createRecord = (kind, record, version, force = false) =>
   json(`${base}/${kind}`, { method: 'POST', body: { record, version, force } });
 export const updateRecord = (kind, id, record, version, force = false) =>

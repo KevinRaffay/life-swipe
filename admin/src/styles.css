@@ -39,6 +39,15 @@ body {
   cursor: help;
 }
 
+/* The storyteller (LLM provider) switch in the header. The active provider's
+   button is disabled - it is already running, there is nothing to ask - but
+   must not read as unavailable, so it opts out of .btn:disabled's dimming. */
+.provider-toggle { display: flex; align-items: center; gap: 6px; }
+.provider-toggle .btn.is-on {
+  background: var(--surface-2); color: var(--text); border-color: var(--dim);
+  cursor: default; opacity: 1;
+}
+
 .tabs { display: flex; gap: 4px; margin-left: auto; }
 .tabs button {
   padding: 7px 13px; border-radius: 9px; border: 1px solid transparent;

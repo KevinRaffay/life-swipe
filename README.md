@@ -49,7 +49,7 @@ instead of `Storyteller offline`.
 | `PORT` | `8787` | Server port. |
 | `LIFESWIPE_MODEL` | `claude-sonnet-4-6` | Anthropic model used for both scenarios and obituaries. |
 | `ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | Override for a gateway or a mock. |
-| `LLM_PROVIDER` | `anthropic` | Which backend writes the content: `anthropic` or `ollama` (a local Ollama instance). Server-wide. |
+| `LLM_PROVIDER` | `anthropic` | Which backend writes the content: `anthropic` or `ollama` (a local Ollama instance). Server-wide; the boot default for the admin header's runtime "storyteller" toggle. |
 | `OLLAMA_MODEL` | *(none)* | Required when `LLM_PROVIDER=ollama`; must be a model you have pulled (`ollama list`). No default on purpose — the server refuses to start rather than guess. |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Where the Ollama server lives. |
 | `OLLAMA_TIMEOUT_MS` | `120000` | Floor on per-call timeouts for local inference, which is slower than a hosted API. |

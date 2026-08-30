@@ -118,6 +118,11 @@ async function ensureReady() {
   return readiness;
 }
 
+// Exposed for provider.js's runtime switch: the same memoized handshake the
+// first completion runs, so the admin's storyteller toggle fails loudly right
+// there if Ollama is down or the model isn't pulled.
+export const verifyReady = ensureReady;
+
 // The strongest constraint the running server supports, given what the caller
 // expects back. A minimal top-level schema is enough: shared/schema.js remains
 // the real validator either way, this only stops prose and code fences.

@@ -12,6 +12,7 @@ import Preview from './components/Preview.jsx';
 import Stats from './components/Stats.jsx';
 import Logs from './components/Logs.jsx';
 import NamePool from './components/NamePool.jsx';
+import ProviderToggle from './components/ProviderToggle.jsx';
 
 const TABS = [
   ['library', 'Library'],
@@ -219,6 +220,23 @@ export default function App() {
     return true;
   };
 
+  // The storyteller toggle. Not routed through `save`: there is no content
+  // file and no version behind it, so the conflict path does not apply - a
+  // failed switch (Ollama down, model not pulled, no key) is just its error
+  // message, and the server keeps whichever provider was already active.
+  const switchProvider = async (name) => {
+    setBusy(true);
+    try {
+      const status = await api.setProvider(name);
+      patch({ provider: status, llmEnabled: true, model: status.model });
+      setToast({ kind: 'ok', text: `Storyteller is now ${status.model} (${status.provider}) - server-wide, reverts to LLM_PROVIDER on restart` });
+    } catch (err) {
+      setToast({ kind: 'error', text: `Could not switch storyteller: ${err.message}` });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const bulkSetGroupControlActive = async (kind, values, active, reason) => {
     const res = await save(
       (force) => api.bulkSetGroupControlActive(kind, values, active, reason, boot.nameControlsVersion, force),
@@ -239,6 +257,7 @@ export default function App() {
         >
           localhost only &middot; no auth
         </span>
+        <ProviderToggle status={boot.provider} busy={busy} onSwitch={switchProvider} />
         <nav className="tabs">
           {TABS.map(([key, label]) => (
             <button
