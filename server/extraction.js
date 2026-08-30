@@ -125,6 +125,10 @@ export async function extractPatterns(source, { maxTokens = 6000, temperature = 
   const { text: reply } = await complete({
     system: SYSTEM,
     user: buildUserPrompt(text),
+    // Every array-expecting caller passes this, and on Ollama it is load-bearing,
+    // not a nudge: the prefill is what tells formatFor to grammar-constrain the
+    // output to an array instead of an object the array check below would reject.
+    prefill: '[',
     maxTokens,
     temperature,
     // A 15-pattern extraction is a long generation; the 30s default is not enough.
