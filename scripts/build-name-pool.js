@@ -27,6 +27,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
+import { detectMature } from '../shared/content.js';
 
 const POOL_PATH = fileURLToPath(new URL('../server/name-pool.json', import.meta.url));
 const CATEGORY_PATH = fileURLToPath(new URL('./name-categories.json', import.meta.url));
@@ -139,10 +140,16 @@ console.log(`        ${candidates.size} distinct candidate names`);
 // national births per year per sex (gender_assoc + the era window), and births
 // per state per year (the location quotient). stateYear is every birth in the
 // file, candidate or not, because it is the LQ's denominator.
+// Keyed by FOLDED name throughout, and covering the candidates UNION every
+// name already in the pool - the originals need national_births measured too,
+// and an accented one ("Rocío") only matches the archive's ASCII once folded.
+const measureKeys = new Set([...candidates].map(fold));
+for (const e of pool) measureKeys.add(fold(e.name));
+
 const stateYear = new Map();                     // state -> year -> all births
-const natSex = new Map();                        // name -> {F, M}
-const natYear = new Map();                       // name -> year -> births
-const byState = new Map();                       // name -> state -> year -> births
+const natSex = new Map();                        // folded -> {F, M}
+const natYear = new Map();                       // folded -> year -> births
+const byState = new Map();                       // folded -> state -> year -> births
 let minYear = Infinity;
 let maxYear = -Infinity;
 
@@ -163,20 +170,20 @@ for (const file of files) {
     if (year > maxYear) maxYear = year;
     years.set(year, (years.get(year) || 0) + count);
 
-    const name = p[3];
-    if (!candidates.has(name)) continue;
+    const key = fold(p[3]);
+    if (!measureKeys.has(key)) continue;
     const sex = p[1];
 
-    let s = natSex.get(name);
-    if (!s) { s = { F: 0, M: 0 }; natSex.set(name, s); }
+    let s = natSex.get(key);
+    if (!s) { s = { F: 0, M: 0 }; natSex.set(key, s); }
     s[sex] = (s[sex] || 0) + count;
 
-    let ny = natYear.get(name);
-    if (!ny) { ny = new Map(); natYear.set(name, ny); }
+    let ny = natYear.get(key);
+    if (!ny) { ny = new Map(); natYear.set(key, ny); }
     ny.set(year, (ny.get(year) || 0) + count);
 
-    let st = byState.get(name);
-    if (!st) { st = new Map(); byState.set(name, st); }
+    let st = byState.get(key);
+    if (!st) { st = new Map(); byState.set(key, st); }
     let sy = st.get(state);
     if (!sy) { sy = new Map(); st.set(state, sy); }
     sy.set(year, (sy.get(year) || 0) + count);
@@ -205,7 +212,7 @@ const ceilTo = (y, step) => Math.ceil(y / step) * step;
 // Which gender the name reads as, from its own national split. A name whose
 // minority sex holds >= NEUTRAL_MIN_SHARE of births is 'neutral'.
 function genderAssoc(name) {
-  const s = natSex.get(name) || { F: 0, M: 0 };
+  const s = natSex.get(fold(name)) || { F: 0, M: 0 };
   const total = s.F + s.M;
   if (!total) return null;
   const minority = Math.min(s.F, s.M) / total;
@@ -218,7 +225,7 @@ function genderAssoc(name) {
 // pool's existing hand-set windows. A name still in use at the end of the
 // data gets NO era_end, which the engine reads as open-ended.
 function eraWindow(name) {
-  const ny = natYear.get(name);
+  const ny = natYear.get(fold(name));
   if (!ny || !ny.size) return null;
   let peak = 0;
   for (const n of ny.values()) if (n > peak) peak = n;
@@ -238,7 +245,7 @@ function eraWindow(name) {
 // state's births over its share of national births, measured across the
 // name's own era window, with the same rarity floors, clamp and neutral band.
 function regionFrequency(name, era) {
-  const st = byState.get(name);
+  const st = byState.get(fold(name));
   if (!st) return undefined;
   const lo = Math.max(minYear, era.era_start ?? minYear);
   const hi = Math.min(maxYear, era.era_end ?? maxYear);
@@ -285,7 +292,25 @@ const unknownCategoryValues = new Set();
 
 const added = [];
 const skippedExisting = [];
+const contentCollisions = [];
 const rejected = { noGender: 0, noEra: 0 };
+
+// A name that IS a mature-content keyword poisons every card it lands on.
+// "Molly" is a top-75 girl's name in several states and also slang for MDMA,
+// so a safe-mode life could deal "Ask Molly about it" and the keyword backstop
+// would correctly flag its own engine's output as drug content - which is
+// exactly what it did: the simulator's mature-in-safe assertion failed 5 times
+// on one synthesised card once frequency weighting started reaching that name.
+//
+// Fixed HERE rather than in shared/content.js on purpose. The backstop is one
+// of three independent content gates and is supposed to be blunt; teaching it
+// to ignore words that happen to be cast names would put a hole in it that a
+// card could aim at deliberately. The pool is generated, so the pool is where
+// a name that cannot be safely spoken gets filtered out.
+const tripsContentBackstop = (name) => {
+  const found = detectMature(`Ask ${name} about it.`);
+  return Array.isArray(found) ? found.length > 0 : Boolean(found);
+};
 
 for (const name of [...candidates].sort()) {
   const key = fold(name);
@@ -293,6 +318,8 @@ for (const name of [...candidates].sort()) {
   // accenting - is left exactly as authored, which is what keeps Rocio from
   // quietly overwriting Rocío and Siobhan from being "corrected".
   if (taken.has(key)) { skippedExisting.push(name); continue; }
+
+  if (tripsContentBackstop(name)) { contentCollisions.push(name); continue; }
 
   const gender_assoc = genderAssoc(name);
   if (!gender_assoc) { rejected.noGender++; continue; }
@@ -314,10 +341,55 @@ for (const name of [...candidates].sort()) {
   added.push(entry);
 }
 
+/* ------------------------------------------- national births, every entry */
+
+// How many Americans actually carry this name, summed across the whole
+// archive. This is the number the location quotient DIVIDES OUT: an LQ says
+// "2.4x commoner in Massachusetts than nationally" for Aino and for James
+// alike, so it carries where a name is used and never how much. Without this
+// the category draw had no idea that anglo is not the same size as maori.
+//
+// Stored per NAME rather than per category so it composes with the pool's own
+// controls: deactivate half of anglo and anglo's weight falls, because
+// shared/names.js sums this over the candidates that actually survived
+// filtering rather than reading a fixed per-category total.
+//
+// Applied to EVERY entry, the original 187 included - it is a measurement
+// being attached, not an authored value, and an entry without it would read
+// as a category with no people in it.
+let measured = 0;
+let unmeasured = 0;
+for (const entry of pool) {
+  const ny = natYear.get(fold(entry.name));
+  let total = 0;
+  if (ny) for (const n of ny.values()) total += n;
+  if (total > 0) { entry.national_births = total; measured++; }
+  else { delete entry.national_births; unmeasured++; }
+}
+console.log(`national_births: measured for ${measured} of ${pool.length} entries`
+  + `, ${unmeasured} below the archive's reporting floor (they take BAL.NAMES.categoryBirthsFloor)`);
+
+// One key order for every entry, new and original alike, so national_births
+// lands in a readable spot rather than trailing after region_frequency's
+// fifty-key object. Same motive as scripts/normalise-content.js has for the
+// library and the seed deck: a stable order keeps the diffs legible.
+const KEY_ORDER = ['name', 'category', 'gender_assoc', 'active', 'era_start', 'era_end',
+  'national_births', 'region_frequency'];
+for (let i = 0; i < pool.length; i++) {
+  const e = pool[i];
+  const ordered = {};
+  for (const k of KEY_ORDER) if (e[k] !== undefined) ordered[k] = e[k];
+  for (const k of Object.keys(e)) if (!(k in ordered)) ordered[k] = e[k];   // never drop a field
+  pool[i] = ordered;
+}
+
 /* ---------------------------------------------------------------- report */
 
 console.log(`\ncandidates already in the pool: ${skippedExisting.length}`);
 console.log(`dropped: ${rejected.noGender} with no usable sex split, ${rejected.noEra} with no usable era window`);
+if (contentCollisions.length) {
+  console.log(`dropped ${contentCollisions.length} name(s) that ARE mature-content keywords: ${contentCollisions.join(', ')}`);
+}
 console.log(`added: ${added.length}   (${added.filter((e) => e.region_frequency).length} with region_frequency)`);
 console.log(`pool: ${before} -> ${pool.length} entries`);
 if (uncategorised.length) {
