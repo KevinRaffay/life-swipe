@@ -95,10 +95,17 @@ const STOPWORDS = new Set(['The', 'A', 'An', 'In', 'At', 'On', 'When', 'After', 
   'Set', 'Create', 'Money', 'Happiness', 'Health', 'Requires', 'Effects', 'Note']);
 
 export function identityWarnings(p) {
-  const text = [p.pattern, p.typical_effects, p.note || ''].join(' ');
+  const fields = [p.pattern, p.typical_effects, p.note || ''];
   // Ignore sentence-initial capitals - they are grammar, not identity. Only a
-  // capitalised word sitting mid-sentence is a candidate proper noun.
-  const midSentence = text.replace(/(^|[.!?;:][ \t]+)[A-Z]/g, (m) => m.toLowerCase());
+  // capitalised word sitting mid-sentence is a candidate proper noun. Each
+  // field starts a sentence of its own ("Creates a branch point..."), so the
+  // decapitalising pass runs per field, BEFORE joining - joined, a field's
+  // opening word sits "mid-sentence" whenever the previous field ends without
+  // punctuation, which is how "Creates" got flagged as a name.
+  const midSentence = fields
+    .map((f) => String(f).replace(/(^|[.!?;:][ \t]+)[A-Z]/g, (m) => m.toLowerCase()))
+    .join(' ');
+  const text = fields.join(' ');
   const names = [...new Set((midSentence.match(/[A-Z][a-z]{2,}/g) || []).filter((w) => !STOPWORDS.has(w)))];
   const years = [...new Set(text.match(/(18|19|20)[0-9][0-9]/g) || [])];
   const out = [];
