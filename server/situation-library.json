@@ -2471,5 +2471,62 @@
     "typical_effects": "Creates a branch point that affects personal autonomy and family relationships; may generate pending events related to debt or family dynamics",
     "rarity": "common",
     "source": "harvested"
+  },
+  {
+    "id": "summer_enrichment_program",
+    "pattern": "A structured educational program is offered during summer with significant cost but potential for long-term benefits, requiring full-time commitment",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "summer_program"
+    ],
+    "typical_effects": "Creates a branch point that affects academic and career development; may generate pending events related to skill acquisition or missed opportunities",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "community_college_course",
+    "pattern": "A community college course is offered with significant cost but structured learning outcomes that require full-time commitment during summer",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "college_course"
+    ],
+    "typical_effects": "Creates a branch point that affects educational path and time management; may generate pending events related to skill development or academic progress",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "extracurricular_commitment",
+    "pattern": "An extracurricular activity is offered with no cost but requires regular commitment that conflicts with personal free time",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "extracurricular_commitment"
+    ],
+    "typical_effects": "Creates a branch point that affects social life and personal interests; may generate pending events related to stress or skill development",
+    "rarity": "uncommon",
+    "source": "harvested"
   }
 ]
