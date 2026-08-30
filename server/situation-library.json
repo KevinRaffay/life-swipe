@@ -1779,5 +1779,260 @@
     "rarity": "common",
     "note": "This pattern underlies several others in this set; it can fire as a standalone moment of self-reflection or be embedded in a more specific event.",
     "source": "harvested"
+  },
+  {
+    "id": "teen_peer_microventure_partner",
+    "pattern": "A friend pitches a small joint venture requiring modest cash and weekend time, framing the choice as the difference between becoming someone who builds things and someone who stays comfortable.",
+    "category": "money",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "teen_peer_microventure_partner_done"
+    ],
+    "typical_effects": "Branch point: joining builds early entrepreneurial and partnership flags but costs leisure time and seed money; declining preserves both but may create mild regret flag. Should create a pending_event for business outcome 4–8 weeks later.",
+    "rarity": "common",
+    "note": "Fires well when the character has some savings but not enough to be cavalier about losing them.",
+    "source": "harvested"
+  },
+  {
+    "id": "parent_matched_savings_goal",
+    "pattern": "A parent offers to match the character's savings dollar-for-dollar toward a significant purchase, turning a distant goal into an achievable one if the character is willing to forgo other spending.",
+    "category": "money",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "parent_matched_savings_goal_done"
+    ],
+    "typical_effects": "Branch point: committing creates a discipline flag and a deferred-gratification trait; declining keeps options open but delays independence milestones. Should set a pending_event for whether the goal is reached within a season.",
+    "rarity": "common",
+    "note": "Works best when the character has partial savings already, making the goal feel close but not easy.",
+    "source": "harvested"
+  },
+  {
+    "id": "neighbor_odd_job_offer",
+    "pattern": "A parent arranges a recurring local job on the character's behalf before asking permission, creating mild social pressure to accept work that pays reliably but costs leisure time.",
+    "category": "career",
+    "life_stage": [
+      13,
+      17
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "neighbor_odd_job_offer_done"
+    ],
+    "typical_effects": "Accepting builds a work-ethic flag and small steady income; declining risks a minor family-tension flag. Low drama either way; primarily shapes later money and responsibility flags.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "family_financial_ask_teen_savings",
+    "pattern": "A parent quietly signals a household financial shortfall to a teenager who has savings, framing it as information rather than a request while making the emotional weight of inaction clear.",
+    "category": "family",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [
+      "has_savings"
+    ],
+    "excludes": [
+      "family_financial_ask_teen_savings_done"
+    ],
+    "typical_effects": "Branch point: contributing creates a family-loyalty flag and reduces savings; withholding preserves financial autonomy but may create a guilt flag. Should note whether the money is later repaid via a pending_event.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "teen_debt_and_independence_tradeoff",
+    "pattern": "A parent offers to co-sign a loan for a first vehicle, making independence immediately available but tying the teenager to ongoing financial obligations they must meet entirely on their own.",
+    "category": "money",
+    "life_stage": [
+      15,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "teen_debt_and_independence_tradeoff_done"
+    ],
+    "typical_effects": "Accepting creates a debt flag and a mobility/independence flag; declining preserves financial simplicity but delays autonomy milestones. Pending_event should check payment reliability after two to three months.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "inherited_vehicle_conditional_gift",
+    "pattern": "A parent hands over a used vehicle with a defined expiration on the subsidy, framing the gift as a bridge to self-sufficiency rather than a permanent arrangement.",
+    "category": "family",
+    "life_stage": [
+      15,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "inherited_vehicle_conditional_gift_done"
+    ],
+    "typical_effects": "Accepting creates a mobility flag and a pending financial responsibility; the character may also accept or reject on principle if they want something chosen for themselves. Should set a pending_event around the subsidy expiry date.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "structured_summer_skill_program",
+    "pattern": "A low-cost structured learning program over a summer is offered with a parental co-payment contingent on completion, forcing the character to trade unscheduled time for a credential and a partial subsidy.",
+    "category": "career",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "structured_summer_skill_program_done"
+    ],
+    "typical_effects": "Completing builds a skill flag and a follow-through trait; dropping out forfeits the subsidy and may create a mild shame flag. Branch point at enrollment; pending_event at program end.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "residential_enrichment_program_pressure",
+    "pattern": "Parents enroll a teenager in a residential academic enrichment program before fully consulting them, presenting it as decided rather than proposed, and the teenager must choose whether to comply or push back.",
+    "category": "family",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "residential_enrichment_program_pressure_done"
+    ],
+    "typical_effects": "Going creates an academic-exposure flag and possible new-peer connections; resisting creates a family-tension flag but a stronger autonomy trait. Should generate a pending_event for social or academic outcome after the program.",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "extracurricular_social_pressure_signup",
+    "pattern": "A peer signs the character up for a competitive extracurricular activity without asking, and an authority figure closes the window before the character can deliberate properly.",
+    "category": "career",
+    "life_stage": [
+      13,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "extracurricular_social_pressure_signup_done"
+    ],
+    "typical_effects": "Committing builds a public-speaking or team flag and costs weekend time; declining may create a minor social friction with the friend who vouched for them. Low-stakes branch point with downstream effects on confidence flags.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "low_barrier_club_fills_idle",
+    "pattern": "After missing out on a competitive activity, a character is invited into a no-audition creative or performance group that would fill the gap with low stakes and immediate belonging.",
+    "category": "career",
+    "life_stage": [
+      13,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "low_barrier_club_fills_idle_time_done"
+    ],
+    "typical_effects": "Joining creates a community-belonging flag and may reveal a latent interest; declining leaves the idle-time gap open. Primarily a flavor and trait-shaping event rather than a high-stakes branch.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "campus_gray_market_operation",
+    "pattern": "A close friend recruits a college-aged character as the on-site partner in a small resale operation that sits in a policy gray area, asking them to weigh modest profit against institutional risk.",
+    "category": "career",
+    "life_stage": [
+      18,
+      23
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "campus_gray_market_operation_done"
+    ],
+    "typical_effects": "Joining creates an entrepreneurial flag and a minor rule-bending flag; if discovered, creates an institutional-trouble flag. Declining preserves a clean record. Should set a low-probability pending_event for discovery if the character joins.",
+    "rarity": "uncommon",
+    "note": "Keep depiction focused on the decision and its institutional risk, not on operational details.",
+    "source": "harvested"
+  },
+  {
+    "id": "charismatic_senior_mentor_orbit",
+    "pattern": "A charming, high-status upperclassman invites a first-year student into an exclusive mentorship or project role, signaling that ethical caution is a mark of mediocrity.",
+    "category": "career",
+    "life_stage": [
+      17,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "charismatic_senior_mentor_orbit_done"
+    ],
+    "typical_effects": "Attaching to the mentor accelerates access and confidence but builds a risk-normalization flag; the mentor's later conduct may create a scandal-adjacency event. Declining is slower but leaves the character's reputation unentangled. Should set a pending_event for mentor conduct revelation within one to two years.",
+    "rarity": "uncommon",
+    "note": "This is the entry point for a longer arc; the mentor's ethics should surface gradually, not immediately.",
+    "source": "harvested"
+  },
+  {
+    "id": "teen_creative_microventure_partner",
+    "pattern": "A peer proposes a small creative product business requiring shared startup costs and recurring time, citing a prior proof of concept as evidence the market exists.",
+    "category": "money",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "teen_creative_microventure_partner_done"
+    ],
+    "typical_effects": "Joining builds a creative-commerce flag and costs savings and weekend time; the outcome should be determined by a pending_event resolving over the summer. Declining preserves both but may create mild FOMO if the friend succeeds alone.",
+    "rarity": "common",
+    "source": "harvested"
   }
 ]
