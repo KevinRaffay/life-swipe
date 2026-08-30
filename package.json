@@ -15,6 +15,7 @@
     "coverage": "node scripts/coverage.js",
     "names": "node scripts/name-check.js",
     "build-region-weights": "node scripts/build-region-weights.js",
+    "build-name-pool": "node scripts/build-name-pool.js",
     "build:admin": "vite build --config vite.admin.config.js",
     "admin": "npm run build:admin && node server/index.js",
     "dev:admin": "concurrently -k -n admin,api -c cyan,magenta \"vite --config vite.admin.config.js\" \"node --watch server/index.js\"",

@@ -233,6 +233,53 @@ export function regionalWeight(entry, region, {
 }
 
 /**
+ * How many Americans carry the names in this candidate list, from the SSA
+ * birth records stored per entry as `national_births`.
+ *
+ * A name the archive cannot report - it is suppressed below 5 births per
+ * state-year - contributes `categoryBirthsFloor` rather than nothing. That
+ * floor is what keeps this a WEIGHT: at zero, an origin with no SSA presence
+ * (maori, thai) would become undrawable, and the pool would have acquired a
+ * silent filter by arithmetic rather than by anyone deciding to add one.
+ *
+ * Never returns 0, so a category can always be picked and the total below can
+ * never be NaN, however the pool is edited.
+ */
+export function categoryBirths(members, { floor = BAL.NAMES.categoryBirthsFloor } = {}) {
+  let total = 0;
+  for (const entry of members) {
+    const n = entry && entry.national_births;
+    total += Number.isFinite(n) && n > 0 ? n : floor;
+  }
+  return total || floor;
+}
+
+/**
+ * How much this ONE name's real frequency favours it inside its own category.
+ *
+ * The category draw knowing that anglo is bigger than maori only fixes half
+ * the problem: anglo's share was still split evenly across 633 names while
+ * irish's split across 23, so an individual Irish name stayed commoner than
+ * an individual anglo one and the single most-drawn name in the pool was
+ * Fiona rather than James. This is the same measurement applied one level
+ * down, and it uses the same floor - a name the archive cannot report is rare,
+ * never impossible.
+ *
+ * Its own exponent, not categoryPower's: the ceiling on that one comes from
+ * region competing with frequency ACROSS categories, which is a different
+ * contest from region competing with it INSIDE one.
+ */
+export function nameFrequency(entry, {
+  power = BAL.NAMES.nameFrequencyPower,
+  floor = BAL.NAMES.categoryBirthsFloor,
+} = {}) {
+  if (!power) return 1;
+  const n = entry && entry.national_births;
+  const births = Number.isFinite(n) && n > 0 ? n : floor;
+  return Math.pow(births, power);
+}
+
+/**
  * Pick a name.
  *
  * Category first, then a name inside it - NOT a uniform draw over the whole
@@ -317,12 +364,28 @@ export function assignName({
   // origins come up, not about which Somali name you get.
   const regionOf = (entry) => regionalWeight(entry, region, { controls });
 
+  // Three independent factors, multiplied:
+  //   frequency - how many Americans actually carry these names (national)
+  //   diversity - how much THIS life has already leaned on the origin
+  //   affinity  - how much the player's region favours it
+  //
+  // `frequency` is the one that was missing, and its absence was load-bearing:
+  // with a flat category draw, `maori` (2 names) came up as often as `anglo`
+  // (633). Region could not supply it - a location quotient is a ratio to the
+  // national rate, so it says WHERE a name is used and divides out HOW MUCH.
+  //
+  // Summed over the surviving candidates, not read from a fixed per-category
+  // table, so deactivating half of anglo really does halve anglo's weight.
+  // Note this makes the count of live names matter, which the region average
+  // below deliberately does not - authoring more names into an origin now
+  // raises it only insofar as those names are genuinely common.
   const categories = [...byCategory.keys()];
   const weights = categories.map((c) => {
     const members = byCategory.get(c);
+    const frequency = Math.pow(categoryBirths(members), BAL.NAMES.categoryPower);
     const diversity = 1 / Math.pow(1 + (categoryUse[c] || 0), 1.5);
     const affinity = members.reduce((sum, e) => sum + regionOf(e), 0) / members.length;
-    return diversity * affinity;
+    return frequency * diversity * affinity;
   });
   const total = weights.reduce((a, b) => a + b, 0);
 
@@ -336,7 +399,7 @@ export function assignName({
   // ...and again inside the chosen category, so Minnesota's Somali name is
   // more often the one Minnesota actually registers.
   const bucket = byCategory.get(chosen);
-  const inner = bucket.map(regionOf);
+  const inner = bucket.map((e) => nameFrequency(e) * regionOf(e));
   const innerTotal = inner.reduce((a, b) => a + b, 0);
   let pick = rng() * innerTotal;
   let entry = bucket[bucket.length - 1];

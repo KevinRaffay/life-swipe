@@ -33,6 +33,56 @@ export const BAL = {
     // No single name may end up more than this much likelier than a
     // neutral one, however extreme its regional signal.
     regionCeiling: 6,
+
+    // How hard REAL NATIONAL FREQUENCY tilts which origin a character gets.
+    //
+    // The category draw used to be flat: 49 origins, ~1/49 each, so a player
+    // was exactly as likely to meet a Maori-named character as an anglo one.
+    // region_frequency could not fix that, because a location quotient is a
+    // RATIO to the national rate - it says where a name is used and divides
+    // out how much. name-pool.json now carries national_births per name, and
+    // a category's weight is the sum of that over its live candidates.
+    //   0    = flat, every origin equally likely (the old behaviour)
+    //   0.35 = the real ordering, damped                   <- shipped
+    //   0.5  = anglo 23%, but US-CA stops lifting its own origins
+    //   1    = raw birth counts; anglo 57%, regional weighting dead
+    //
+    // 0.35 is not a taste setting, it is the CEILING. Measured, at 400 lives:
+    //
+    //   power  anglo   same-origin repeat   origins seen   npm run names
+    //   0.35   14.9%     8.6%                49/49         passes
+    //   0.5    23.1%    16.3%                47/49         FAILS
+    //   1      56.7%    47.8%                25/49         FAILS
+    //
+    // Both failures are the same one: `US-CA did not lift its own origins`.
+    // Region affinity is a multiplier capped at regionCeiling (6), and anglo
+    // outweighs vietnamese/persian/armenian by ~460x in births, so past ~0.35
+    // no regional signal can survive the frequency term and California draws
+    // its own origins 0.0% of the time. Raising this trades away regional
+    // weighting entirely; it does not merely turn it down.
+    categoryPower: 0.35,
+    // Births credited to a name the archive cannot report - SSA suppresses
+    // counts under 5 per state-year, so Aroha and Somchai come back as 0.
+    // Zero would make the weight a FILTER: those origins could never be drawn
+    // again, which is the one thing region weighting was built never to do.
+    // This keeps them legal but genuinely rare, which is what they are.
+    categoryBirthsFloor: 500,
+
+    // The same measurement one level down: how much a name's own national
+    // birth count decides WHICH name you get inside the chosen origin.
+    //
+    // Weighting the category alone left the second half of the flatness in
+    // place - anglo's share spread evenly over 633 names while irish's spread
+    // over 23, so an individual Irish name stayed likelier than an individual
+    // anglo one and the most-drawn name in the whole pool was Fiona.
+    //   0   = flat inside a category (the old behaviour)
+    //   0.5 = the real ordering, damped                    <- shipped
+    //   1   = raw births; the top few names crowd out the rest of the origin
+    // Tuned separately from categoryPower because the contest is different:
+    // there, region competes with frequency ACROSS origins and loses past
+    // 0.35; here it competes INSIDE one, where the birth spread is far
+    // narrower, so region survives a stronger setting.
+    nameFrequencyPower: 0.5,
   },
 
   // You are not 'broke' the moment you are in the red - you are broke when the
