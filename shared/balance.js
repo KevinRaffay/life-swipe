@@ -67,6 +67,22 @@ export const BAL = {
     // again, which is the one thing region weighting was built never to do.
     // This keeps them legal but genuinely rare, which is what they are.
     categoryBirthsFloor: 500,
+
+    // The same measurement one level down: how much a name's own national
+    // birth count decides WHICH name you get inside the chosen origin.
+    //
+    // Weighting the category alone left the second half of the flatness in
+    // place - anglo's share spread evenly over 633 names while irish's spread
+    // over 23, so an individual Irish name stayed likelier than an individual
+    // anglo one and the most-drawn name in the whole pool was Fiona.
+    //   0   = flat inside a category (the old behaviour)
+    //   0.5 = the real ordering, damped                    <- shipped
+    //   1   = raw births; the top few names crowd out the rest of the origin
+    // Tuned separately from categoryPower because the contest is different:
+    // there, region competes with frequency ACROSS origins and loses past
+    // 0.35; here it competes INSIDE one, where the birth spread is far
+    // narrower, so region survives a stronger setting.
+    nameFrequencyPower: 0.5,
   },
 
   // You are not 'broke' the moment you are in the red - you are broke when the

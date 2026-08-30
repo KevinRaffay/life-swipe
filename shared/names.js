@@ -255,6 +255,31 @@ export function categoryBirths(members, { floor = BAL.NAMES.categoryBirthsFloor 
 }
 
 /**
+ * How much this ONE name's real frequency favours it inside its own category.
+ *
+ * The category draw knowing that anglo is bigger than maori only fixes half
+ * the problem: anglo's share was still split evenly across 633 names while
+ * irish's split across 23, so an individual Irish name stayed commoner than
+ * an individual anglo one and the single most-drawn name in the pool was
+ * Fiona rather than James. This is the same measurement applied one level
+ * down, and it uses the same floor - a name the archive cannot report is rare,
+ * never impossible.
+ *
+ * Its own exponent, not categoryPower's: the ceiling on that one comes from
+ * region competing with frequency ACROSS categories, which is a different
+ * contest from region competing with it INSIDE one.
+ */
+export function nameFrequency(entry, {
+  power = BAL.NAMES.nameFrequencyPower,
+  floor = BAL.NAMES.categoryBirthsFloor,
+} = {}) {
+  if (!power) return 1;
+  const n = entry && entry.national_births;
+  const births = Number.isFinite(n) && n > 0 ? n : floor;
+  return Math.pow(births, power);
+}
+
+/**
  * Pick a name.
  *
  * Category first, then a name inside it - NOT a uniform draw over the whole
@@ -374,7 +399,7 @@ export function assignName({
   // ...and again inside the chosen category, so Minnesota's Somali name is
   // more often the one Minnesota actually registers.
   const bucket = byCategory.get(chosen);
-  const inner = bucket.map(regionOf);
+  const inner = bucket.map((e) => nameFrequency(e) * regionOf(e));
   const innerTotal = inner.reduce((a, b) => a + b, 0);
   let pick = rng() * innerTotal;
   let entry = bucket[bucket.length - 1];
