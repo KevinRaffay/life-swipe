@@ -37,13 +37,16 @@ export default function Warnings({ result, onRefresh }) {
           Nothing flagged. Every <code>requires</code> flag can be set somewhere.
         </p>
       ) : (
-        <ul className="warnings__list">
-          {warnings.map((w, i) => (
-            <li key={i} className={`warn warn--${w.severity}`}>
-              <span className="warn__tag">{w.severity}</span> {w.message}
-            </li>
-          ))}
-        </ul>
+        <details>
+          <summary>{warnings.length} warning{warnings.length === 1 ? '' : 's'} — click to expand</summary>
+          <ul className="warnings__list">
+            {warnings.map((w, i) => (
+              <li key={i} className={`warn warn--${w.severity}`}>
+                <span className="warn__tag">{w.severity}</span> {w.message}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       <p className="muted small">

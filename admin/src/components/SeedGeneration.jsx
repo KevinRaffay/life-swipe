@@ -40,6 +40,7 @@ export default function SeedGeneration({ seedDrafts, llmEnabled, onChanged }) {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const [bulkStatus, setBulkStatus] = useState(null);
+  const [bulkPending, setBulkPending] = useState(null); // 'approve' | 'reject' | null
   const controllerRef = useRef(null);
   const logRef = useRef(null);
   const refreshTimerRef = useRef(null);
@@ -114,14 +115,18 @@ export default function SeedGeneration({ seedDrafts, llmEnabled, onChanged }) {
     }
   };
 
+  const cleanSeedDrafts = seedDrafts.filter((d) => !(d.validationWarnings && d.validationWarnings.length));
+  const warnedSeedDrafts = seedDrafts.filter((d) => d.validationWarnings && d.validationWarnings.length);
+
   // Approval has no LLM call in it - it's a validate-and-write - so unlike
   // generation this is fast enough to just loop sequentially rather than
-  // needing a streamed server route. Each approve is still the real
+  // needing a streamed server route. Each approve/reject is still the real
   // single-draft endpoint (id regeneration, schema validation, version-
-  // checked write), so a clean draft that somehow fails still just reports
-  // as a failure rather than corrupting the batch.
-  const approveAllClean = async () => {
-    const targets = seedDrafts.filter((d) => !(d.validationWarnings && d.validationWarnings.length));
+  // checked write), so one bad draft mid-batch just reports as a failure
+  // rather than corrupting the rest.
+  const confirmApproveAllClean = async () => {
+    setBulkPending(null);
+    const targets = cleanSeedDrafts;
     if (!targets.length) return;
     setBusy(true); setError(null); setNotice(null);
     const failures = [];
@@ -145,6 +150,32 @@ export default function SeedGeneration({ seedDrafts, llmEnabled, onChanged }) {
       setError(`Approved ${okCount} of ${targets.length}. Failed: ${failures.join('; ')}`);
     } else {
       setNotice(`Approved ${okCount} draft(s) without warnings.`);
+    }
+  };
+
+  const confirmRejectAllWarned = async () => {
+    setBulkPending(null);
+    const targets = warnedSeedDrafts;
+    if (!targets.length) return;
+    setBusy(true); setError(null); setNotice(null);
+    const failures = [];
+    for (let i = 0; i < targets.length; i++) {
+      const draft = targets[i];
+      setBulkStatus(`Rejecting ${i + 1} of ${targets.length}: ${draft.id}...`);
+      try {
+        const res = await api.rejectDraft('seedDrafts', draft.id, 'bulk reject: draft has craft warnings');
+        onChanged({ seedDrafts: res.seedDrafts, seedDraftsVersion: res.seedDraftsVersion });
+      } catch (err) {
+        failures.push(`${draft.id} (${err.message})`);
+      }
+    }
+    setBulkStatus(null);
+    setBusy(false);
+    const okCount = targets.length - failures.length;
+    if (failures.length) {
+      setError(`Rejected ${okCount} of ${targets.length}. Failed: ${failures.join('; ')}`);
+    } else {
+      setNotice(`Rejected ${okCount} draft(s) with craft warnings.`);
     }
   };
 
@@ -231,17 +262,43 @@ export default function SeedGeneration({ seedDrafts, llmEnabled, onChanged }) {
         <section className="card">
           <div className="toolbar">
             <span className="muted small">
-              {seedDrafts.filter((d) => !(d.validationWarnings && d.validationWarnings.length)).length} of {seedDrafts.length} draft(s) carry no craft warnings.
+              {cleanSeedDrafts.length} of {seedDrafts.length} draft(s) carry no craft warnings.
             </span>
             <span className="spacer" />
-            <button
-              className="btn btn--primary"
-              onClick={approveAllClean}
-              disabled={busy || !seedDrafts.some((d) => !(d.validationWarnings && d.validationWarnings.length))}
-            >
-              Approve all without warnings
+            <button className="btn btn--primary" onClick={() => setBulkPending('approve')} disabled={busy || !cleanSeedDrafts.length}>
+              Approve all without warnings{cleanSeedDrafts.length ? ` (${cleanSeedDrafts.length})` : ''}
+            </button>
+            <button className="btn btn--danger" onClick={() => setBulkPending('reject')} disabled={busy || !warnedSeedDrafts.length}>
+              Reject all with warnings{warnedSeedDrafts.length ? ` (${warnedSeedDrafts.length})` : ''}
             </button>
           </div>
+
+          {bulkPending === 'approve' && (
+            <div className="draft">
+              <p className="muted small">
+                This approves {cleanSeedDrafts.length} currently-listed draft(s) with no craft warnings, merging
+                each into <code>data/scenarios-seed.json</code>. Anything with a warning is left untouched.
+              </p>
+              <div className="actions">
+                <button className="btn btn--primary" onClick={confirmApproveAllClean} disabled={busy}>Confirm approve all</button>
+                <button className="btn" onClick={() => setBulkPending(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {bulkPending === 'reject' && (
+            <div className="draft">
+              <p className="muted small">
+                This rejects {warnedSeedDrafts.length} currently-listed draft(s) that carry one or more craft
+                warnings. Clean drafts are left untouched.
+              </p>
+              <div className="actions">
+                <button className="btn btn--danger" onClick={confirmRejectAllWarned} disabled={busy}>Confirm reject all</button>
+                <button className="btn" onClick={() => setBulkPending(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
           {bulkStatus && <p className="muted small">{bulkStatus}</p>}
         </section>
       )}

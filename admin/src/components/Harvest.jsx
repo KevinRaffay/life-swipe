@@ -60,6 +60,8 @@ export default function Harvest({ seedDrafts, drafts, library, vocab, llmEnabled
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
+  const [bulkStatus, setBulkStatus] = useState(null);
+  const [bulkPending, setBulkPending] = useState(null); // 'approve' | 'reject' | null
   const controllerRef = useRef(null);
   const logRef = useRef(null);
 
@@ -129,6 +131,71 @@ export default function Harvest({ seedDrafts, drafts, library, vocab, llmEnabled
   // review list would make "where did this come from" unanswerable at a glance.
   const harvestedSeeds = (seedDrafts || []).filter((d) => d.source === 'harvested');
   const harvestedPatterns = (drafts || []).filter((d) => d.source === 'harvested');
+
+  // Craft warnings only exist on seed drafts (validateBatch's per-card
+  // narrativeWarnings) - library/pattern drafts have no equivalent stored
+  // field, so the bulk clean/warned split below applies to the seed queue
+  // only, same scope the "craft warnings" language already has everywhere
+  // else in this file.
+  const cleanHarvestedSeeds = harvestedSeeds.filter((d) => !(d.validationWarnings && d.validationWarnings.length));
+  const warnedHarvestedSeeds = harvestedSeeds.filter((d) => d.validationWarnings && d.validationWarnings.length);
+
+  // Same shape as SeedGeneration.jsx's bulk actions: loop the existing
+  // single-draft approve/reject endpoint rather than a new bulk route.
+  const confirmApproveAllClean = async () => {
+    setBulkPending(null);
+    const targets = cleanHarvestedSeeds;
+    if (!targets.length) return;
+    setBusy(true); setError(null); setNotice(null);
+    const failures = [];
+    for (let i = 0; i < targets.length; i++) {
+      const draft = targets[i];
+      setBulkStatus(`Approving ${i + 1} of ${targets.length}: ${draft.id}...`);
+      try {
+        const res = await api.approveDraft('seedDrafts', draft.id, draft, null, true);
+        onChanged({
+          seeds: res.seeds, seedsVersion: res.seedsVersion,
+          seedDrafts: res.seedDrafts, seedDraftsVersion: res.seedDraftsVersion,
+        });
+      } catch (err) {
+        failures.push(`${draft.id} (${err.problems ? `${err.message}: ${err.problems.join('; ')}` : err.message})`);
+      }
+    }
+    setBulkStatus(null);
+    setBusy(false);
+    const okCount = targets.length - failures.length;
+    if (failures.length) {
+      setError(`Approved ${okCount} of ${targets.length}. Failed: ${failures.join('; ')}`);
+    } else {
+      setNotice(`Approved ${okCount} harvested seed draft(s) without warnings.`);
+    }
+  };
+
+  const confirmRejectAllWarned = async () => {
+    setBulkPending(null);
+    const targets = warnedHarvestedSeeds;
+    if (!targets.length) return;
+    setBusy(true); setError(null); setNotice(null);
+    const failures = [];
+    for (let i = 0; i < targets.length; i++) {
+      const draft = targets[i];
+      setBulkStatus(`Rejecting ${i + 1} of ${targets.length}: ${draft.id}...`);
+      try {
+        const res = await api.rejectDraft('seedDrafts', draft.id, 'bulk reject: draft has craft warnings');
+        onChanged({ seedDrafts: res.seedDrafts, seedDraftsVersion: res.seedDraftsVersion });
+      } catch (err) {
+        failures.push(`${draft.id} (${err.message})`);
+      }
+    }
+    setBulkStatus(null);
+    setBusy(false);
+    const okCount = targets.length - failures.length;
+    if (failures.length) {
+      setError(`Rejected ${okCount} of ${targets.length}. Failed: ${failures.join('; ')}`);
+    } else {
+      setNotice(`Rejected ${okCount} harvested seed draft(s) with craft warnings.`);
+    }
+  };
 
   // Already grouped and sorted by the server (server/harvest.js).
   const rejections = result?.rejections || [];
@@ -270,6 +337,52 @@ export default function Harvest({ seedDrafts, drafts, library, vocab, llmEnabled
           </>
         )}
       </section>
+
+      {harvestedSeeds.length > 0 && (
+        <section className="card">
+          <div className="toolbar">
+            <span className="muted small">
+              {cleanHarvestedSeeds.length} of {harvestedSeeds.length} harvested seed draft(s) carry no craft warnings.
+            </span>
+            <span className="spacer" />
+            <button className="btn btn--primary" onClick={() => setBulkPending('approve')} disabled={busy || !cleanHarvestedSeeds.length}>
+              Approve all without warnings{cleanHarvestedSeeds.length ? ` (${cleanHarvestedSeeds.length})` : ''}
+            </button>
+            <button className="btn btn--danger" onClick={() => setBulkPending('reject')} disabled={busy || !warnedHarvestedSeeds.length}>
+              Reject all with warnings{warnedHarvestedSeeds.length ? ` (${warnedHarvestedSeeds.length})` : ''}
+            </button>
+          </div>
+
+          {bulkPending === 'approve' && (
+            <div className="draft">
+              <p className="muted small">
+                This approves {cleanHarvestedSeeds.length} currently-listed harvested seed draft(s) with no craft
+                warnings, merging each into <code>data/scenarios-seed.json</code>. Anything with a warning is left
+                untouched.
+              </p>
+              <div className="actions">
+                <button className="btn btn--primary" onClick={confirmApproveAllClean} disabled={busy}>Confirm approve all</button>
+                <button className="btn" onClick={() => setBulkPending(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {bulkPending === 'reject' && (
+            <div className="draft">
+              <p className="muted small">
+                This rejects {warnedHarvestedSeeds.length} currently-listed harvested seed draft(s) that carry one
+                or more craft warnings. Clean drafts are left untouched.
+              </p>
+              <div className="actions">
+                <button className="btn btn--danger" onClick={confirmRejectAllWarned} disabled={busy}>Confirm reject all</button>
+                <button className="btn" onClick={() => setBulkPending(null)}>Cancel</button>
+              </div>
+            </div>
+          )}
+
+          {bulkStatus && <p className="muted small">{bulkStatus}</p>}
+        </section>
+      )}
 
       <DraftQueue
         title="Harvested seed drafts"
