@@ -9,10 +9,27 @@
 // What this module does NOT do, ever: write to server/situation-library.json.
 // Extraction produces DRAFTS. A person decides what enters the library.
 
-import { complete, extractJson, MODEL } from './anthropic.js';
+import { complete, extractJson, MODEL } from './provider.js';
 
 export const CATEGORIES = new Set(['career', 'romance', 'family', 'money', 'health', 'chaos']);
 export const RARITIES = new Set(['common', 'uncommon', 'rare']);
+
+// The prompt names the six categories, but a smaller model reaches for the
+// obvious label anyway - a harvest run filed three school-shaped patterns
+// under "education", which validatePattern rightly rejects and which then
+// sits in the draft queue unapprovable. Where a stray label has ONE clear
+// home in the vocabulary (the live library files every education-shaped
+// pattern under career), take it there at parse time; anything not in this
+// map stays as written for validatePattern to flag, because guessing a home
+// for an ambiguous label would be worse than an honest problem report.
+export const CATEGORY_ALIASES = {
+  education: 'career', school: 'career', work: 'career', job: 'career',
+  finance: 'money', financial: 'money',
+  relationships: 'romance', relationship: 'romance',
+};
+
+export const normalizeCategory = (p) =>
+  (p && typeof p === 'object' && CATEGORY_ALIASES[p.category] ? { ...p, category: CATEGORY_ALIASES[p.category] } : p);
 
 // How much source text the model sees. Beyond this it stops being an extraction
 // and starts being a summary of a summary.
@@ -95,10 +112,17 @@ const STOPWORDS = new Set(['The', 'A', 'An', 'In', 'At', 'On', 'When', 'After', 
   'Set', 'Create', 'Money', 'Happiness', 'Health', 'Requires', 'Effects', 'Note']);
 
 export function identityWarnings(p) {
-  const text = [p.pattern, p.typical_effects, p.note || ''].join(' ');
+  const fields = [p.pattern, p.typical_effects, p.note || ''];
   // Ignore sentence-initial capitals - they are grammar, not identity. Only a
-  // capitalised word sitting mid-sentence is a candidate proper noun.
-  const midSentence = text.replace(/(^|[.!?;:][ \t]+)[A-Z]/g, (m) => m.toLowerCase());
+  // capitalised word sitting mid-sentence is a candidate proper noun. Each
+  // field starts a sentence of its own ("Creates a branch point..."), so the
+  // decapitalising pass runs per field, BEFORE joining - joined, a field's
+  // opening word sits "mid-sentence" whenever the previous field ends without
+  // punctuation, which is how "Creates" got flagged as a name.
+  const midSentence = fields
+    .map((f) => String(f).replace(/(^|[.!?;:][ \t]+)[A-Z]/g, (m) => m.toLowerCase()))
+    .join(' ');
+  const text = fields.join(' ');
   const names = [...new Set((midSentence.match(/[A-Z][a-z]{2,}/g) || []).filter((w) => !STOPWORDS.has(w)))];
   const years = [...new Set(text.match(/(18|19|20)[0-9][0-9]/g) || [])];
   const out = [];
@@ -125,6 +149,10 @@ export async function extractPatterns(source, { maxTokens = 6000, temperature = 
   const { text: reply } = await complete({
     system: SYSTEM,
     user: buildUserPrompt(text),
+    // Every array-expecting caller passes this, and on Ollama it is load-bearing,
+    // not a nudge: the prefill is what tells formatFor to grammar-constrain the
+    // output to an array instead of an object the array check below would reject.
+    prefill: '[',
     maxTokens,
     temperature,
     // A 15-pattern extraction is a long generation; the 30s default is not enough.
@@ -138,9 +166,11 @@ export async function extractPatterns(source, { maxTokens = 6000, temperature = 
     throw err;
   }
 
+  const patterns = parsed.map(normalizeCategory);
+
   return {
-    patterns: parsed,
-    problems: parsed.flatMap((p, i) => validatePattern(p, i)),
+    patterns,
+    problems: patterns.flatMap((p, i) => validatePattern(p, i)),
     raw: reply,
     model: MODEL,
     ms: Date.now() - t0,

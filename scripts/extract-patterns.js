@@ -17,7 +17,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
-import { hasKey } from '../server/anthropic.js';
+import { hasKey } from '../server/provider.js';
 import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings, MAX_SOURCE_CHARS } from '../server/extraction.js';
 import { EXTRACTED } from '../shared/provenance.js';
 

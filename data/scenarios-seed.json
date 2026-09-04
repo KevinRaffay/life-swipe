@@ -8203,5 +8203,1628 @@
       "happiness": 8,
       "timeCostMonths": 1
     }
+  },
+  {
+    "id": "early_the_supplement_introduced_you",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The supplement {{new:teammate}} introduced you to is still in your gym bag. You have been taking it for eight months. Your last bloodwork came back with two flagged values. Do you stop and ask your doctor, or keep going and assume it evens out?",
+    "leftLabel": "Stop, see doctor",
+    "rightLabel": "Keep going",
+    "leftEffects": {
+      "money": -120,
+      "health": 5,
+      "happiness": -5,
+      "clearFlags": [
+        "performance_substance_use"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "health": -8,
+      "happiness": 3,
+      "flags": [
+        "normalised_excess"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_you_own_one_jacket",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The office kitchen at {{new:senior advisor}}'s firm, a Wednesday morning in March. The coffee machine costs seventy cents and nobody ever has exact change.",
+    "prompt": "You own one jacket. It fits the way it did at 22. Do you buy something that fits before Friday, or show up and hope {{new:senior advisor}} does not notice?",
+    "leftLabel": "Buy the jacket",
+    "rightLabel": "Show up anyway",
+    "leftEffects": {
+      "money": -180,
+      "happiness": 4,
+      "flags": [
+        "client_facing_presentable"
+      ],
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -6,
+      "relationship": {
+        "name": "{{new:senior advisor}}",
+        "role": "boss",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "early_there_is_one_open",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The community college registration portal, a Sunday night in May. The spring semester add/drop deadline is midnight.",
+    "prompt": "There is one open seat in a business communications elective that would put you on track to finish eight months sooner. It meets Monday mornings at seven. Do you add it, or hold your current load and graduate on the slower schedule?",
+    "leftLabel": "Add the elective",
+    "rightLabel": "Keep current load",
+    "leftEffects": {
+      "health": -4,
+      "happiness": -5,
+      "flags": [
+        "accelerated_graduation"
+      ],
+      "timeCostMonths": 4
+    },
+    "rightEffects": {
+      "health": 3,
+      "happiness": 4,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "early_mentions_she_is_thinking",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:roommate}} mentions she is thinking about moving out at the end of the lease — her nursing program placement is across town. Do you start looking for a cheaper solo place now, or wait and see if she actually goes?",
+    "leftLabel": "Start looking now",
+    "rightLabel": "Wait it out",
+    "leftEffects": {
+      "money": -300,
+      "happiness": -3,
+      "flags": [
+        "apartment_hunting"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_the_community_college_posted",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The community college posted your grade: 71. Passing, but {{new:older student}}'s templates carried most of it. Do you keep borrowing his frameworks or start building your own from scratch?",
+    "leftLabel": "Keep using them",
+    "rightLabel": "Build my own",
+    "leftEffects": {
+      "happiness": 5,
+      "flags": [
+        "dependent_on_erik_methods"
+      ]
+    },
+    "rightEffects": {
+      "health": 3,
+      "happiness": -5,
+      "flags": [
+        "independent_study_ethic"
+      ]
+    }
+  },
+  {
+    "id": "early_do_you_start_quietly",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The garden center, a Thursday in December. {{new:neighbor client}}'s handwritten response to your written request is taped to your locker: two sentences, no explanation…",
+    "prompt": "Do you start quietly job-hunting for something to replace the lost shifts, or stay loyal to {{new:neighbor client}} and pick up odd jobs on the side?",
+    "leftLabel": "Start looking",
+    "rightLabel": "Side jobs for now",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "looking_for_second_job"
+      ]
+    },
+    "rightEffects": {
+      "money": -180,
+      "happiness": -3,
+      "flags": [
+        "freelance_patchwork"
+      ]
+    }
+  },
+  {
+    "id": "early_says_she_already_talked",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Tuesday in January, {{new:roommate}}'s kitchen. She has a clinical rotation schedule pinned to the fridge and a night-shift job application open on her laptop.",
+    "prompt": "{{new:roommate}} says she already talked to the landlord and signed the new lease for both of you. Do you commit to the higher rent and find the money, or tell her you need to look at cheaper options?",
+    "leftLabel": "Commit to it",
+    "rightLabel": "Look at options",
+    "leftEffects": {
+      "money": -95,
+      "happiness": 8,
+      "flags": [
+        "rent_stretched"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -10,
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate",
+        "qualityDelta": -12
+      }
+    }
+  },
+  {
+    "id": "early_four_hundred_dollars_would",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Friday night in March, the apartment. {{new:roommate}} is on shift. The fridge holds two beers and a notification from {{new:older student}}.",
+    "prompt": "Four hundred dollars would make the new rent comfortable. {{new:older student}} has been useful and impressive, and the ethically_flexible part has never touched you directly. Until now, maybe. Do you take the work or tell {{new:older student}} it is not for you?",
+    "leftLabel": "Take the work",
+    "rightLabel": "Pass on it",
+    "leftEffects": {
+      "money": 400,
+      "happiness": 5,
+      "flags": [
+        "off_books_work",
+        "deeper_with_erik"
+      ]
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "held_the_line"
+      ],
+      "relationship": {
+        "name": "{{new:older student}}",
+        "role": "mentor",
+        "qualityDelta": -10
+      }
+    }
+  },
+  {
+    "id": "early_the_midterm_you_sat",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The midterm you sat Monday morning after Friday's party came back with a 61. You have not told anyone. Do you go to office hours or let it sit?",
+    "leftLabel": "Go to office hours",
+    "rightLabel": "Let it sit",
+    "leftEffects": {
+      "health": 2,
+      "happiness": 5,
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "health": -3,
+      "happiness": -5,
+      "flags": [
+        "academic_warning_ignored"
+      ],
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "early_the_money_is_real",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The library circulation desk, a Thursday evening in March. {{new:older student}}, your mentor from accounting, is waiting by the reserve shelf with a manila folder.",
+    "prompt": "The money is real and the work fits what you already know. But {{new:older student}}'s contact is {{new:older student}}'s contact, and {{new:older student}}'s ethics have never been entirely transparent.",
+    "leftLabel": "Take the work",
+    "rightLabel": "Pass politely",
+    "leftEffects": {
+      "money": 792,
+      "happiness": 8,
+      "flags": [
+        "mentor_entangled",
+        "informal_bookkeeping"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "relationship": {
+        "name": "{{new:older student}}",
+        "role": "mentor",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "early_your_roommate_mentions_the",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:roommate}}, your roommate, mentions the lease renews in September and the landlord is raising it to $870 split. Do you agree to stay or start looking?",
+    "leftLabel": "Stay, agree",
+    "rightLabel": "Start looking",
+    "leftEffects": {
+      "money": -90,
+      "happiness": 6,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_the_work_study_and",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Sunday in May, the outdoor work circuit - {{new:neighbor client}}'s neighborhood, three lawns in and a pulled muscle starting to make its case.",
+    "prompt": "The work-study and part-time patchwork is technically adding up, but just barely. Full-time landscaping would clear your expenses and leave something over, and you have the outdoor work history to back it up.",
+    "leftLabel": "Pursue the job",
+    "rightLabel": "Stay patched together",
+    "leftEffects": {
+      "money": 1200,
+      "health": -5,
+      "happiness": 4,
+      "flags": [
+        "trade_cert"
+      ],
+      "clearFlags": [
+        "work_study"
+      ],
+      "career": {
+        "title": "Landscaping Crew Member",
+        "salary": 32240
+      },
+      "timeCostMonths": 6
+    },
+    "rightEffects": {
+      "money": -400,
+      "health": 3,
+      "happiness": 3,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "early_the_accounting_course_meets",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The accounting course meets Tuesday evenings. Tonight there is a quiz on cash-flow statements you did not review. The professor is lenient about tardiness but not about empty seats.",
+    "leftLabel": "Go anyway",
+    "rightLabel": "Skip, catch up",
+    "leftEffects": {
+      "happiness": -5,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "flags": [
+        "cut_corners"
+      ],
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "early_fourteen_hours_brings_your",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at the garden center, a Tuesday in November. {{new:neighbor client}} has taped a new schedule to the refrigerator.",
+    "prompt": "Fourteen hours brings your take-home down by roughly $180 a month, which is uncomfortable but not fatal at your current rent. Do you push {{new:neighbor client}} for a reason in writing, or let it go quietly and pick up shifts elsewhere?",
+    "leftLabel": "Ask for it in writing",
+    "rightLabel": "Find extra shifts",
+    "leftEffects": {
+      "money": -180,
+      "happiness": -4,
+      "flags": [
+        "questioned_employer"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "money": -120,
+      "health": -5,
+      "happiness": -3,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "early_your_best_friend_from",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend from before the move, texts asking if you want to grab food this week. You have not seen her since August.",
+    "leftLabel": "Make the plan",
+    "rightLabel": "Rain check again",
+    "leftEffects": {
+      "money": -30,
+      "happiness": 9,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "college_work_study_pays_9",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The Brackwood College financial aid office, a Wednesday in October, the kind of fluorescent lighting that makes everyone look like they owe money.",
+    "prompt": "Work-study pays $9 an hour for twelve hours a week in the library circulation desk. It covers the gap but eats the study time you have been calling your margin. Do you sign, or go home and figure out another way?",
+    "leftLabel": "Sign the form",
+    "rightLabel": "Find another way",
+    "leftEffects": {
+      "money": 1800,
+      "health": -4,
+      "happiness": -8,
+      "flags": [
+        "work_study"
+      ],
+      "timeCostMonths": 8
+    },
+    "rightEffects": {
+      "money": -2200,
+      "happiness": -5,
+      "flags": [
+        "additional_loan_semester"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "college_your_brackwood_roommate_has",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Your dorm room, a Sunday in February, the radiator doing its thing.",
+    "prompt": "Your Brackwood roommate {{new:roommate}} has a car and is driving to a party forty minutes away next Friday. You have a midterm Monday morning and the reading is not done.",
+    "leftLabel": "Go to the party",
+    "rightLabel": "Stay and study",
+    "leftEffects": {
+      "money": -30,
+      "health": -4,
+      "happiness": 10,
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "health": 4,
+      "happiness": -5,
+      "flags": [
+        "academic_discipline"
+      ],
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "college_your_best_friend_from",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend from high school, texts asking if you want to split a spring break sublet with two people you have never met. $180 each for the week. Your bank account currently reads negative.",
+    "leftLabel": "Split the sublet",
+    "rightLabel": "Stay on campus",
+    "leftEffects": {
+      "money": -180,
+      "happiness": 14,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 10
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -8,
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "college_the_garden_center_calls",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The garden center calls asking if you want summer hours before you have figured out what this summer even is.",
+    "leftLabel": "Take the shifts",
+    "rightLabel": "Decline for now",
+    "leftEffects": {
+      "money": 1200,
+      "happiness": -5,
+      "flags": [
+        "part_time_job"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "college_the_personal_finance_course",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The kitchen table, a Thursday in June. The community college's fall enrollment guide is open to the accounting certificate page, which your mom has dog-eared.",
+    "prompt": "The personal-finance course you turned down last summer has an equivalent this fall: twelve weeks, $290, Tuesday evenings. Your mom dog-eared the page herself and has not said anything about it.",
+    "leftLabel": "Enroll this fall",
+    "rightLabel": "Not this year",
+    "leftEffects": {
+      "money": -290,
+      "happiness": 6,
+      "flags": [
+        "in_school",
+        "community_college_enrolled"
+      ],
+      "education": "Community college (in progress)",
+      "timeCostMonths": 4
+    },
+    "rightEffects": {
+      "happiness": -4,
+      "timeCostMonths": 4
+    }
+  },
+  {
+    "id": "college_your_best_friend_from_2",
+    "source": "harvested",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The break room at the garden center, a Tuesday in August. The new seasonal hire is on their phone in the corner.",
+    "prompt": "{{new:best friend}}, your best friend from school who you have barely seen since junior year, texts out of nowhere: she is running a booth at a weekend craft fair and needs someone to handle cash for two days, $15 an hour.",
+    "leftLabel": "Help your best friend out",
+    "rightLabel": "Already booked",
+    "leftEffects": {
+      "money": 240,
+      "happiness": 10,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 15
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_the_sat_prep_instructor",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The SAT prep instructor hands back a practice test. You scored 1190. The course ends in three weeks and you have not missed a Saturday yet.",
+    "leftLabel": "Keep grinding",
+    "rightLabel": "Ease up now",
+    "leftEffects": {
+      "happiness": -3,
+      "flags": [
+        "sat_diligent"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "sat_coasted"
+      ]
+    }
+  },
+  {
+    "id": "highschool_says_the_repair_will",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Sunday in late April, the yard-work client's driveway. The ride-on mower has broken down mid-lawn and {{new:neighbor_client}} is standing in the garage…",
+    "prompt": "{{new:neighbor_client}} says the repair will take two weeks and offers to pay you half-rate to come back and finish by hand. Four hours with a push mower for $18. You had plans to read.",
+    "leftLabel": "Do it by hand",
+    "rightLabel": "Wait for the mower",
+    "leftEffects": {
+      "money": 18,
+      "health": -3,
+      "happiness": -5,
+      "flags": [
+        "neighbor_impressed"
+      ],
+      "relationship": {
+        "name": "{{new:neighbor_client}}",
+        "role": "employer",
+        "qualityDelta": 12
+      }
+    },
+    "rightEffects": {
+      "happiness": 6,
+      "relationship": {
+        "name": "{{new:neighbor_client}}",
+        "role": "employer",
+        "qualityDelta": -5
+      }
+    }
+  },
+  {
+    "id": "highschool_texts_asking_if_you_3",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend#2}} texts asking if you want to split a used graphing calculator she found online for $22 each. The SAT has a math section and yours is library-borrowed.",
+    "leftLabel": "Split it",
+    "rightLabel": "Keep borrowing",
+    "leftEffects": {
+      "money": -22,
+      "happiness": 4,
+      "flags": [
+        "owns_calculator"
+      ],
+      "relationship": {
+        "name": "{{new:best friend#2}}",
+        "role": "best friend",
+        "qualityDelta": 5
+      }
+    },
+    "rightEffects": {
+      "money": 0,
+      "happiness": -2
+    }
+  },
+  {
+    "id": "highschool_your_coworker_mentions_that",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "A Friday afternoon in May, the garden center, the register quiet between a rush of mulch buyers. Your coworker leans against the counter.",
+    "prompt": "Your coworker mentions that the store is taking applications for a full lead cashier role over the summer - more hours, $8.75 an hour, but you would close four nights a week. The extra money is real. The late nights are also real.",
+    "leftLabel": "Apply for lead",
+    "rightLabel": "Stay as-is",
+    "leftEffects": {
+      "money": 900,
+      "health": -4,
+      "happiness": -7,
+      "flags": [
+        "lead_cashier_summer"
+      ],
+      "career": {
+        "title": "Lead Cashier",
+        "salary": 8736
+      }
+    },
+    "rightEffects": {
+      "health": 3,
+      "happiness": 5
+    }
+  },
+  {
+    "id": "highschool_the_drama_sign_up",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The drama sign-up sheet is gone, but there is a flyer for the school newspaper taped over where it was. No tryout, no commitment - just show up Tuesday.",
+    "leftLabel": "Show up Tuesday",
+    "rightLabel": "Leave it alone",
+    "leftEffects": {
+      "happiness": 8,
+      "flags": [
+        "joined_school_paper"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "flags": [
+        "idle_gap_winter"
+      ],
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_the_garden_center_is",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The garden center is offering a $50 end-of-year bonus to anyone who works Christmas Eve. Your knee has been fine this week.",
+    "leftLabel": "Take the shift",
+    "rightLabel": "Keep Christmas Eve",
+    "leftEffects": {
+      "money": 50,
+      "happiness": -4,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 6,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_your_knee_handles_standing",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The school hallway, a Friday in January. {{new:best friend#2}}, your best friend, stops you at your locker with a folded piece of paper.",
+    "prompt": "Your knee handles standing for hours unpredictably. Do you put your name on {{new:best friend#2}}'s list, or tell her you will see next time?",
+    "leftLabel": "I'm in",
+    "rightLabel": "Next time",
+    "leftEffects": {
+      "money": -45,
+      "happiness": 14,
+      "risk": {
+        "probability": 0.08,
+        "outcome": "injury",
+        "description": "Two hours of standing on a concrete floor sets the knee back six weeks."
+      },
+      "relationship": {
+        "name": "{{new:best friend#2}}",
+        "role": "best friend",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:best friend#2}}",
+        "role": "best friend",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "highschool_your_dad_has_left",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your dad has left a library book on your desk: a thick biography of someone who started a business at seventeen. The bookmark is on page one.",
+    "leftLabel": "Actually read it",
+    "rightLabel": "Return it unread",
+    "leftEffects": {
+      "happiness": 4,
+      "flags": [
+        "entrepreneurial_curiosity"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "relationship": {
+        "name": "Dad",
+        "role": "father",
+        "qualityDelta": -3
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_the_school_s_used",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The school's used-book sale has a battered copy of a novel you have been meaning to read for two years. It costs $4.",
+    "leftLabel": "Buy it",
+    "rightLabel": "Library instead",
+    "leftEffects": {
+      "money": -4,
+      "happiness": 6,
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": 3,
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "highschool_there_is_an_optional",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The guidance counselor's office, a Wednesday in February, a motivational poster peeling at one corner.",
+    "prompt": "There is an optional SAT prep course that runs Saturday mornings for eight weeks. It costs $180, which is most of what you have.",
+    "leftLabel": "Sign up",
+    "rightLabel": "Self-study instead",
+    "leftEffects": {
+      "money": -180,
+      "happiness": -4,
+      "flags": [
+        "sat_prep_enrolled"
+      ],
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "flags": [
+        "self_study_sat"
+      ],
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "highschool_your_best_friend_wants_5",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend, wants you to try out for the spring play with her. You would rather read the script than be in it.",
+    "leftLabel": "Audition anyway",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "happiness": 8,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -5
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_the_money_is_real",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "The kitchen on a Saturday morning in March, your mom sliding a flyer across the table before you have finished your cereal.",
+    "beat": "A neighbor two streets over is hiring someone to do yard work every other weekend, $12 an hour, about three hours a visit.",
+    "dialogue": "Your mom says she mentioned your name already, so it would be awkward if you did not at least call.",
+    "prompt": "The money is real and the timing is manageable, but giving up every other Saturday feels like surrendering the only hours that are genuinely yours.",
+    "leftLabel": "Take the job",
+    "rightLabel": "Decline politely",
+    "leftEffects": {
+      "money": 72,
+      "happiness": -5,
+      "flags": [
+        "part_time_job"
+      ],
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 6
+      },
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -4
+      },
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "highschool_you_grew_up_watching",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The public library on a Tuesday after school, a table near the periodicals section.",
+    "prompt": "You grew up watching which bills your parents paid late. There is a personal-finance book on the shelf aimed at teenagers. Checking it out means nothing, but it would mean something.",
+    "leftLabel": "Check it out",
+    "rightLabel": "Leave it there",
+    "leftEffects": {
+      "happiness": 4,
+      "flags": [
+        "financially_curious"
+      ],
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_your_best_friend_wants_6",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend, wants to skip sixth period to get food. It's a Tuesday and you have a free period after anyway.",
+    "leftLabel": "Skip with your best friend",
+    "rightLabel": "Stay put",
+    "leftEffects": {
+      "money": -12,
+      "happiness": 8,
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "happiness": 2,
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "highschool_the_group_chat_is",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The group chat is already forty messages deep about this weekend. You could host - your parents are visiting your aunt - or let someone else deal with it.",
+    "leftLabel": "Host it",
+    "rightLabel": "Let someone else",
+    "leftEffects": {
+      "money": -35,
+      "happiness": 14,
+      "flags": [
+        "hosted_party"
+      ],
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "happiness": 6,
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "highschool_the_stipend_is_8",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The school's main office, a Thursday afternoon in March. A laminated sign on the desk says PEER TUTOR SIGN-UPS - STIPEND AVAILABLE.",
+    "prompt": "The stipend is $8 a session, two sessions a week. The coordinator is looking at you. You have plans most Thursdays, which would have to move.",
+    "leftLabel": "Sign up",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "money": 192,
+      "happiness": -5,
+      "flags": [
+        "peer_tutor"
+      ],
+      "timeCostMonths": 3
+    },
+    "rightEffects": {
+      "happiness": 4,
+      "timeCostMonths": 3
+    }
+  },
+  {
+    "id": "highschool_the_manager_says_twelve",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The grocery store on Route 9, a weekday evening. The HELP WANTED sign has been in the window since September.",
+    "prompt": "The manager says twelve hours a week, $11.50 an hour, mostly weekend evenings. That is about the same hours your social life currently fills.",
+    "leftLabel": "Take the job",
+    "rightLabel": "Decline",
+    "leftEffects": {
+      "money": 716,
+      "happiness": -10,
+      "career": {
+        "title": "Grocery Store Clerk",
+        "salary": 7176
+      },
+      "timeCostMonths": 6
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "highschool_your_best_friend_texts_2",
+    "source": "harvested",
+    "stages": [
+      "highschool"
+    ],
+    "life_stage": [
+      16,
+      18
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend, texts asking if you want to grab food after school. You have calculus notes to finish.",
+    "leftLabel": "Skip out, study",
+    "rightLabel": "Go with your best friend",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "studious_habit"
+      ],
+      "timeCostMonths": 0.25
+    },
+    "rightEffects": {
+      "money": -12,
+      "happiness": 8,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 8
+      },
+      "timeCostMonths": 0.25
+    }
+  },
+  {
+    "id": "early_your_commute_is_55",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your commute is 55 minutes each way on two buses. A coworker mentions a room opening up three blocks from the office.",
+    "leftLabel": "Stay home, save",
+    "rightLabel": "Take the room",
+    "leftEffects": {
+      "happiness": -5,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "money": -800,
+      "happiness": 10,
+      "flags": [
+        "moved_out"
+      ],
+      "clearFlags": [
+        "lives_with_parents"
+      ],
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate"
+      },
+      "timeCostMonths": 1
+    }
+  },
+  {
+    "id": "early_the_certification_would_look",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "A Wednesday evening in March, the open-plan office after everyone else has left.",
+    "beat": "Your manager floats the idea of enrolling you in a $2,200 digital marketing certification, billed to the department's training budget.",
+    "dialogue": "She says the company will cover it fully, but only if you commit to staying on for at least eighteen more months.",
+    "prompt": "The certification would look good anywhere - but eighteen months is a long time to promise when you are not sure this is where you want to be.",
+    "leftLabel": "Decline, stay flexible",
+    "rightLabel": "Commit, take cert",
+    "leftEffects": {
+      "happiness": 5,
+      "timeCostMonths": 2
+    },
+    "rightEffects": {
+      "money": 2200,
+      "happiness": 8,
+      "flags": [
+        "company_cert_obligation",
+        "white_collar_experience"
+      ],
+      "education": "Digital marketing certification",
+      "timeCostMonths": 6
+    }
+  },
+  {
+    "id": "early_she_mentions_very_casually",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "Your childhood bedroom, a Saturday morning. Your mom - who has been quietly tallying months since you graduated - sets down a cup of coffee in front of you.",
+    "prompt": "She mentions, very casually, that a family friend is hiring entry-level at his logistics firm. The pay is roughly the same as your current job. She has already told him you might call.",
+    "leftLabel": "Politely decline",
+    "rightLabel": "Follow the lead",
+    "leftEffects": {
+      "happiness": -5,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": -8
+      },
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": -3,
+      "relationship": {
+        "name": "Mom",
+        "role": "mother",
+        "qualityDelta": 5
+      },
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_your_best_friend_is",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:best friend}}, your best friend, is driving eight hours to see a band you both loved at 17. He has a spare ticket and expects you to say yes without being asked twice.",
+    "leftLabel": "Skip it, save money",
+    "rightLabel": "Go with your best friend",
+    "leftEffects": {
+      "money": 200,
+      "happiness": -8,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": -10
+      },
+      "timeCostMonths": 0.5
+    },
+    "rightEffects": {
+      "money": -350,
+      "happiness": 14,
+      "relationship": {
+        "name": "{{new:best friend}}",
+        "role": "best friend",
+        "qualityDelta": 12
+      },
+      "timeCostMonths": 0.5
+    }
+  },
+  {
+    "id": "early_a_recruiter_from_a",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "standard",
+    "setting": "The parking lot of your office building, a Friday in late April.",
+    "prompt": "A recruiter from a startup downtown has emailed twice this week. The role pays $51,000 - nine thousand more than your current salary - but the company has existed for eleven months.",
+    "leftLabel": "Stay put",
+    "rightLabel": "Take the interview",
+    "leftEffects": {
+      "happiness": -3,
+      "timeCostMonths": 1
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "flags": [
+        "startup_curious"
+      ],
+      "timeCostMonths": 2
+    }
+  },
+  {
+    "id": "early_do_you_take_the",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Do you take the job offer in Portland, or stay in your current city?",
+    "leftLabel": "Portland",
+    "rightLabel": "Stay",
+    "leftEffects": {
+      "money": -1200,
+      "timeCostMonths": 6
+    },
+    "rightEffects": {}
+  },
+  {
+    "id": "early_you_have_420_right",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "major",
+    "setting": "The living room, a Tuesday in March. Dad has been quiet all week.",
+    "beat": "He says he's worried about the state of your finances and offers to help with rent.",
+    "dialogue": "Dad says he will match whatever you save, dollar for dollar, up to eight hundred.",
+    "prompt": "You have $420 right now. Do you commit to the car fund and start saying no to everything, or keep your money loose?",
+    "leftLabel": "Save Up",
+    "rightLabel": "Spend Now",
+    "leftEffects": {
+      "money": -420,
+      "happiness": -10,
+      "timeCostMonths": 12
+    },
+    "rightEffects": {
+      "money": 200,
+      "happiness": 15
+    }
+  },
+  {
+    "id": "early_do_you_accept_the",
+    "source": "harvested",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Do you accept the promotion to Senior Coordinator or pass on it?",
+    "leftLabel": "Accept",
+    "rightLabel": "Decline",
+    "leftEffects": {
+      "career": {
+        "title": "Senior Marketing Coordinator",
+        "salary": 48000
+      },
+      "timeCostMonths": 3
+    },
+    "rightEffects": {}
   }
 ]

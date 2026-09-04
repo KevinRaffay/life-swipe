@@ -10,7 +10,7 @@
 // a game and useless for authoring, so this returns the raw model text and a
 // per-card pass/fail carrying the validator's own error strings.
 
-import { complete, extractJson, hasKey, MODEL } from '../anthropic.js';
+import { complete, extractJson, hasKey, MODEL } from '../provider.js';
 import { buildSystemPrompt, buildUserPrompt } from '../prompt.js';
 import { validateScenario } from '../../shared/schema.js';
 import { effectiveTier } from '../../shared/content.js';

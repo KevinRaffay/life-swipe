@@ -31,6 +31,9 @@ export default function PatternForm({ value, vocab, siblings, onSave, onDelete, 
       found.push('life_stage must be [min, max] with max greater than min');
     }
     if (!draft.modes?.length) found.push('modes must include at least one of safe / mature');
+    if (!vocab.categories.includes(draft.category)) {
+      found.push(`category "${draft.category}" is not in the vocabulary — pick one of ${vocab.categories.join(', ')}`);
+    }
     if (!(draft.typical_effects || '').trim()) found.push('typical_effects is required — it is the storyteller’s brief');
     setProblems(found);
     return found.length === 0;
@@ -60,6 +63,13 @@ export default function PatternForm({ value, vocab, siblings, onSave, onDelete, 
       <div className="row">
         <label>category
           <select value={draft.category} onChange={(e) => set('category', e.target.value)}>
+            {/* A draft can arrive with a category the model invented. A
+                controlled select whose value matches no option renders BLANK,
+                which hides exactly the field the reviewer needs to fix - so
+                the stray value gets a visible, unpickable option instead. */}
+            {!vocab.categories.includes(draft.category) && (
+              <option value={draft.category} disabled>{draft.category} (not in vocabulary)</option>
+            )}
             {vocab.categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </label>

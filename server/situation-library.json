@@ -1779,5 +1779,947 @@
     "rarity": "common",
     "note": "This pattern underlies several others in this set; it can fire as a standalone moment of self-reflection or be embedded in a more specific event.",
     "source": "harvested"
+  },
+  {
+    "id": "teen_peer_microventure_partner",
+    "pattern": "A friend pitches a small joint venture requiring modest cash and weekend time, framing the choice as the difference between becoming someone who builds things and someone who stays comfortable.",
+    "category": "money",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "teen_peer_microventure_partner_done"
+    ],
+    "typical_effects": "Branch point: joining builds early entrepreneurial and partnership flags but costs leisure time and seed money; declining preserves both but may create mild regret flag. Should create a pending_event for business outcome 4–8 weeks later.",
+    "rarity": "common",
+    "note": "Fires well when the character has some savings but not enough to be cavalier about losing them.",
+    "source": "harvested"
+  },
+  {
+    "id": "parent_matched_savings_goal",
+    "pattern": "A parent offers to match the character's savings dollar-for-dollar toward a significant purchase, turning a distant goal into an achievable one if the character is willing to forgo other spending.",
+    "category": "money",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "parent_matched_savings_goal_done"
+    ],
+    "typical_effects": "Branch point: committing creates a discipline flag and a deferred-gratification trait; declining keeps options open but delays independence milestones. Should set a pending_event for whether the goal is reached within a season.",
+    "rarity": "common",
+    "note": "Works best when the character has partial savings already, making the goal feel close but not easy.",
+    "source": "harvested"
+  },
+  {
+    "id": "neighbor_odd_job_offer",
+    "pattern": "A parent arranges a recurring local job on the character's behalf before asking permission, creating mild social pressure to accept work that pays reliably but costs leisure time.",
+    "category": "career",
+    "life_stage": [
+      13,
+      17
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "neighbor_odd_job_offer_done"
+    ],
+    "typical_effects": "Accepting builds a work-ethic flag and small steady income; declining risks a minor family-tension flag. Low drama either way; primarily shapes later money and responsibility flags.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "family_financial_ask_teen_savings",
+    "pattern": "A parent quietly signals a household financial shortfall to a teenager who has savings, framing it as information rather than a request while making the emotional weight of inaction clear.",
+    "category": "family",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [
+      "has_savings"
+    ],
+    "excludes": [
+      "family_financial_ask_teen_savings_done"
+    ],
+    "typical_effects": "Branch point: contributing creates a family-loyalty flag and reduces savings; withholding preserves financial autonomy but may create a guilt flag. Should note whether the money is later repaid via a pending_event.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "teen_debt_and_independence_tradeoff",
+    "pattern": "A parent offers to co-sign a loan for a first vehicle, making independence immediately available but tying the teenager to ongoing financial obligations they must meet entirely on their own.",
+    "category": "money",
+    "life_stage": [
+      15,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "teen_debt_and_independence_tradeoff_done"
+    ],
+    "typical_effects": "Accepting creates a debt flag and a mobility/independence flag; declining preserves financial simplicity but delays autonomy milestones. Pending_event should check payment reliability after two to three months.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "inherited_vehicle_conditional_gift",
+    "pattern": "A parent hands over a used vehicle with a defined expiration on the subsidy, framing the gift as a bridge to self-sufficiency rather than a permanent arrangement.",
+    "category": "family",
+    "life_stage": [
+      15,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "inherited_vehicle_conditional_gift_done"
+    ],
+    "typical_effects": "Accepting creates a mobility flag and a pending financial responsibility; the character may also accept or reject on principle if they want something chosen for themselves. Should set a pending_event around the subsidy expiry date.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "structured_summer_skill_program",
+    "pattern": "A low-cost structured learning program over a summer is offered with a parental co-payment contingent on completion, forcing the character to trade unscheduled time for a credential and a partial subsidy.",
+    "category": "career",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "structured_summer_skill_program_done"
+    ],
+    "typical_effects": "Completing builds a skill flag and a follow-through trait; dropping out forfeits the subsidy and may create a mild shame flag. Branch point at enrollment; pending_event at program end.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "residential_enrichment_program_pressure",
+    "pattern": "Parents enroll a teenager in a residential academic enrichment program before fully consulting them, presenting it as decided rather than proposed, and the teenager must choose whether to comply or push back.",
+    "category": "family",
+    "life_stage": [
+      14,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "residential_enrichment_program_pressure_done"
+    ],
+    "typical_effects": "Going creates an academic-exposure flag and possible new-peer connections; resisting creates a family-tension flag but a stronger autonomy trait. Should generate a pending_event for social or academic outcome after the program.",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "extracurricular_social_pressure_signup",
+    "pattern": "A peer signs the character up for a competitive extracurricular activity without asking, and an authority figure closes the window before the character can deliberate properly.",
+    "category": "career",
+    "life_stage": [
+      13,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "extracurricular_social_pressure_signup_done"
+    ],
+    "typical_effects": "Committing builds a public-speaking or team flag and costs weekend time; declining may create a minor social friction with the friend who vouched for them. Low-stakes branch point with downstream effects on confidence flags.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "low_barrier_club_fills_idle",
+    "pattern": "After missing out on a competitive activity, a character is invited into a no-audition creative or performance group that would fill the gap with low stakes and immediate belonging.",
+    "category": "career",
+    "life_stage": [
+      13,
+      18
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "low_barrier_club_fills_idle_time_done"
+    ],
+    "typical_effects": "Joining creates a community-belonging flag and may reveal a latent interest; declining leaves the idle-time gap open. Primarily a flavor and trait-shaping event rather than a high-stakes branch.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "campus_gray_market_operation",
+    "pattern": "A close friend recruits a college-aged character as the on-site partner in a small resale operation that sits in a policy gray area, asking them to weigh modest profit against institutional risk.",
+    "category": "career",
+    "life_stage": [
+      18,
+      23
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "campus_gray_market_operation_done"
+    ],
+    "typical_effects": "Joining creates an entrepreneurial flag and a minor rule-bending flag; if discovered, creates an institutional-trouble flag. Declining preserves a clean record. Should set a low-probability pending_event for discovery if the character joins.",
+    "rarity": "uncommon",
+    "note": "Keep depiction focused on the decision and its institutional risk, not on operational details.",
+    "source": "harvested"
+  },
+  {
+    "id": "charismatic_senior_mentor_orbit",
+    "pattern": "A charming, high-status upperclassman invites a first-year student into an exclusive mentorship or project role, signaling that ethical caution is a mark of mediocrity.",
+    "category": "career",
+    "life_stage": [
+      17,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "charismatic_senior_mentor_orbit_done"
+    ],
+    "typical_effects": "Attaching to the mentor accelerates access and confidence but builds a risk-normalization flag; the mentor's later conduct may create a scandal-adjacency event. Declining is slower but leaves the character's reputation unentangled. Should set a pending_event for mentor conduct revelation within one to two years.",
+    "rarity": "uncommon",
+    "note": "This is the entry point for a longer arc; the mentor's ethics should surface gradually, not immediately.",
+    "source": "harvested"
+  },
+  {
+    "id": "teen_creative_microventure_partner",
+    "pattern": "A peer proposes a small creative product business requiring shared startup costs and recurring time, citing a prior proof of concept as evidence the market exists.",
+    "category": "money",
+    "life_stage": [
+      14,
+      19
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "teen_creative_microventure_partner_done"
+    ],
+    "typical_effects": "Joining builds a creative-commerce flag and costs savings and weekend time; the outcome should be determined by a pending_event resolving over the summer. Declining preserves both but may create mild FOMO if the friend succeeds alone.",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "career_mentor_commitment",
+    "pattern": "A charismatic senior figure offers a promising early career opportunity that normalizes excessive commitment in exchange for full coverage",
+    "category": "career",
+    "life_stage": [
+      21,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "mentor_commitment"
+    ],
+    "typical_effects": "Creates a pending_event requiring long-term commitment with potential career advancement or entrapment",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "family_financial_dilemma",
+    "pattern": "A parent offers to match savings dollar-for-dollar up to a set amount in exchange for committing funds toward a specific purchase or goal",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "financial_dilemma"
+    ],
+    "typical_effects": "Creates a branch point between financial security and personal freedom with long-term implications",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "early_business_opportunity",
+    "pattern": "A friend proposes a small-scale business venture that requires significant time and capital investment with shared profits and risks",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "business_opportunity"
+    ],
+    "typical_effects": "Creates a branch point between entrepreneurship and maintaining personal freedom with potential for growth or loss",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "educational_investment_choice",
+    "pattern": "An educational opportunity presents itself that requires full-time commitment during summer months in exchange for skill development and partial financial support",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "educational_investment"
+    ],
+    "typical_effects": "Creates a pending_event requiring time sacrifice with potential for career advancement or personal growth",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_car_financing_decision",
+    "pattern": "A parent offers to co-sign a loan for a vehicle in exchange for full payment responsibility and personal independence",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "car_financing_decision"
+    ],
+    "typical_effects": "Creates a branch point between immediate independence and long-term financial responsibility",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "peer_investment_proposal",
+    "pattern": "A peer proposes an investment opportunity in a business venture that requires significant capital and time commitment with shared returns",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "investment_proposal"
+    ],
+    "typical_effects": "Creates a branch point between financial risk and personal freedom with potential for gain or loss",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "early_work_commitment",
+    "pattern": "An opportunity arises to work full-time during summer months in exchange for skill development and partial financial support",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "early_work_commitment"
+    ],
+    "typical_effects": "Creates a pending_event requiring time sacrifice with potential for career advancement or personal growth",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "academic_club_invitation",
+    "pattern": "A peer invites participation in an academic club or team that requires regular time commitment with no cost but significant schedule impact",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "academic_club_invitation"
+    ],
+    "typical_effects": "Creates a branch point between academic engagement and personal freedom with potential for growth or loss",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_vehicle_gift_choice",
+    "pattern": "A parent offers to provide a vehicle as a gift with conditions requiring full payment responsibility and insurance coverage",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "vehicle_gift_choice"
+    ],
+    "typical_effects": "Creates a branch point between immediate freedom and long-term financial responsibility",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "manager_training_commitment",
+    "pattern": "A mentor offers professional development funding contingent on a multi-year employment commitment",
+    "category": "career",
+    "life_stage": [
+      21,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "training_commitment"
+    ],
+    "typical_effects": "Creates a pending event for career trajectory decisions and potential regret if the commitment is broken",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "parental_fund_matching",
+    "pattern": "A parent offers to match savings dollar-for-dollar up to a specific amount toward a major purchase or investment",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "fund_matching"
+    ],
+    "typical_effects": "Creates a branching point between financial prudence and opportunity cost of limited resources",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "friend_business_partnership",
+    "pattern": "A close friend proposes a business venture that requires significant personal investment of time and money",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "business_partnership"
+    ],
+    "typical_effects": "Generates a branching point between entrepreneurial risk and personal freedom",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "early_work_opportunity",
+    "pattern": "A parent or family member offers an opportunity to earn money that requires sacrificing personal time or freedom",
+    "category": "money",
+    "life_stage": [
+      16,
+      20
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "early_work_opportunity"
+    ],
+    "typical_effects": "Creates a branching point between immediate financial gain and future personal development",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "mentor_investment_club",
+    "pattern": "A senior figure offers access to an investment learning experience with significant financial stakes and implicit expectations of loyalty",
+    "category": "money",
+    "life_stage": [
+      18,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "investment_club"
+    ],
+    "typical_effects": "Creates a branching point between early career advancement and potential financial risk",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "educational_program_commitment",
+    "pattern": "A structured educational opportunity requires significant time investment with no guarantee of future returns",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "educational_program"
+    ],
+    "typical_effects": "Creates a branching point between structured learning and personal exploration",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_car_loan_decision",
+    "pattern": "A parent offers to co-sign a loan for a vehicle that would provide independence but requires significant personal financial commitment",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "car_loan_decision"
+    ],
+    "typical_effects": "Creates a branching point between immediate freedom and long-term financial responsibility",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "community_enrichment_program",
+    "pattern": "An educational program or activity is offered with significant time commitment and potential for personal growth or social integration",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "enrichment_program"
+    ],
+    "typical_effects": "Creates a branching point between structured experiences and personal autonomy",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "school_extracurricular_commitment",
+    "pattern": "An extracurricular opportunity is offered with specific time requirements that conflicts with personal schedule",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "extracurricular_commitment"
+    ],
+    "typical_effects": "Creates a branching point between social engagement and personal time management",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "family_autonomy_decision",
+    "pattern": "A family member offers a significant resource or independence that comes with specific conditions or responsibilities",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "autonomy_decision"
+    ],
+    "typical_effects": "Creates a branching point between immediate benefits and future responsibilities",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "manager_training_commitment_2",
+    "pattern": "A supervisor offers full funding for a professional certification in exchange for a multi-year employment commitment",
+    "category": "career",
+    "life_stage": [
+      21,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "training_commitment"
+    ],
+    "typical_effects": "Creates a branch point that affects career trajectory and financial planning; may generate pending events related to job satisfaction or early departure",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "mentor_investment_opportunity",
+    "pattern": "A charismatic senior figure offers an opportunity to participate in a high-stakes investment activity with potential for significant gain or loss",
+    "category": "money",
+    "life_stage": [
+      18,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "investment_opportunity"
+    ],
+    "typical_effects": "Creates a branch point that affects financial risk tolerance and career trajectory; may generate pending events related to financial outcomes or reputation",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "automotive_independence",
+    "pattern": "A parent offers financial assistance for car purchase with conditions that require personal commitment to payment obligations",
+    "category": "money",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "automotive_independence"
+    ],
+    "typical_effects": "Creates a branch point that affects financial responsibility and independence; may generate pending events related to debt or vehicle ownership",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "parental_financial_support",
+    "pattern": "A parent offers financial assistance for a major expense with conditions that require personal sacrifice or commitment to family needs",
+    "category": "family",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "financial_support"
+    ],
+    "typical_effects": "Creates a branch point that affects personal autonomy and family relationships; may generate pending events related to debt or family dynamics",
+    "rarity": "common",
+    "source": "harvested"
+  },
+  {
+    "id": "summer_enrichment_program",
+    "pattern": "A structured educational program is offered during summer with significant cost but potential for long-term benefits, requiring full-time commitment",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "summer_program"
+    ],
+    "typical_effects": "Creates a branch point that affects academic and career development; may generate pending events related to skill acquisition or missed opportunities",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "community_college_course",
+    "pattern": "A community college course is offered with significant cost but structured learning outcomes that require full-time commitment during summer",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "college_course"
+    ],
+    "typical_effects": "Creates a branch point that affects educational path and time management; may generate pending events related to skill development or academic progress",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "extracurricular_commitment",
+    "pattern": "An extracurricular activity is offered with no cost but requires regular commitment that conflicts with personal free time",
+    "category": "career",
+    "life_stage": [
+      16,
+      25
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "extracurricular_commitment"
+    ],
+    "typical_effects": "Creates a branch point that affects social life and personal interests; may generate pending events related to stress or skill development",
+    "rarity": "uncommon",
+    "source": "harvested"
+  },
+  {
+    "id": "early_career_mentorship_with_excess",
+    "pattern": "A promising early career under a charismatic senior figure who normalizes excess and unconventional behavior",
+    "category": "career",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_mentored"
+    ],
+    "typical_effects": "Creates a pending event for the character to either embrace or reject the mentor's influence, potentially leading to a career pivot or ethical conflict",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "scientific_background_to_radical_politic",
+    "pattern": "A person with scientific training transitions to radical political ideology while pursuing entrepreneurial ventures",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_political"
+    ],
+    "typical_effects": "Creates a branch point where the character's political beliefs either drive or conflict with their business decisions",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "romantic_entanglement_with_political_div",
+    "pattern": "A romantic relationship develops between two people with divergent political views, leading to frequent conflict and eventual separation",
+    "category": "romance",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_in_romantic_relationship"
+    ],
+    "typical_effects": "Creates a pending event for relationship resolution or continuation, with potential for character growth or conflict escalation",
+    "rarity": "common",
+    "source": "extracted"
+  },
+  {
+    "id": "entrepreneurial_failure_and_business_rei",
+    "pattern": "An entrepreneur experiences multiple business failures before discovering a new venture that aligns with their ideological beliefs",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_entrepreneur"
+    ],
+    "typical_effects": "Creates a branch point where the character's ideology either propels or hinders their next business venture",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "small_business_ownership_with_part",
+    "pattern": "A person manages a small business with part-time college student employees in a warehouse setting",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_business_owner"
+    ],
+    "typical_effects": "Creates a pending event for business growth or management challenges with staff",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "cryptocurrency_adoption_for_anonymous_tr",
+    "pattern": "A person discovers cryptocurrency and develops a business model that enables anonymous digital transactions",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_used_cryptocurrency"
+    ],
+    "typical_effects": "Creates a major branch point with potential for legal consequences or business success",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "personal_grief_and_life_reflection",
+    "pattern": "A person experiences significant emotional distress and life reflection following a romantic breakup, leading to personal goals reevaluation",
+    "category": "romance",
+    "life_stage": [
+      25,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_heartbroken"
+    ],
+    "typical_effects": "Creates a pending event for personal growth or career pivot following the breakup",
+    "rarity": "common",
+    "source": "extracted"
+  },
+  {
+    "id": "drug_use_influences_business_ideation",
+    "pattern": "A person's interest in psychedelic drugs influences their business ideas, particularly those involving anonymous marketplaces",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_used_drugs"
+    ],
+    "typical_effects": "Creates a major branch point where the character must decide whether to pursue this line of business",
+    "rarity": "rare",
+    "source": "extracted"
+  },
+  {
+    "id": "scientific_precision_in_creating_busines",
+    "pattern": "A person with scientific background applies technical precision and engineering principles to build a business platform",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_scientist"
+    ],
+    "typical_effects": "Creates a pending event for technical success or failure of the business platform",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "early_career_research_to_entrepreneurial",
+    "pattern": "A person transitions from academic research to entrepreneurship, driven by disillusionment with traditional career paths",
+    "category": "career",
+    "life_stage": [
+      25,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_researcher"
+    ],
+    "typical_effects": "Creates a branch point where the character's career path either continues in academia or ventures into business",
+    "rarity": "uncommon",
+    "source": "extracted"
   }
 ]

@@ -1,5 +1,6 @@
-// Wraps the raw Anthropic call (server/anthropic.js) with request/response
-// logging. Every call made through here is written to
+// Wraps the raw LLM call (server/provider.js, which dispatches to Anthropic
+// or Ollama) with request/response logging. Every call made through here is
+// written to
 // server/logs/llm-requests.jsonl exactly once, regardless of outcome - success,
 // validation failure, fallback, or an API error.
 //
@@ -12,10 +13,10 @@
 // it never adds latency to the response already on its way to the player.
 //
 // Nothing about generation, validation or the referee lives here - this only
-// wraps the existing Anthropic call.
+// wraps the existing provider call.
 
 import crypto from 'node:crypto';
-import { complete, AnthropicError } from './anthropic.js';
+import { complete, AnthropicError, PROVIDER } from './provider.js';
 import { appendLog } from './log-store.js';
 
 export { AnthropicError };
@@ -31,7 +32,7 @@ function assemblePromptText(system, user, prefill) {
 }
 
 /**
- * Same contract as anthropic.js's `complete`, plus `meta` describing why this
+ * Same contract as provider.js's `complete`, plus `meta` describing why this
  * call happened (age, contentMode, triggeredBy, librarySlotUsed, threadBeat,
  * playerId, keySource - all optional). Never throws: an API error comes back as
  * `.error` so the caller's existing retry/fallback logic doesn't have to change
@@ -64,9 +65,16 @@ export async function callLLM({
     triggeredBy: meta.triggeredBy ?? null,
     librarySlotUsed: meta.librarySlotUsed ?? null,
     threadBeat: meta.threadBeat ?? null,
-    // WHOSE KEY PAID FOR THIS CALL. Today there is exactly one key path -
-    // anthropic.js reads process.env.ANTHROPIC_API_KEY and nothing else - so
-    // every live call declares 'server'. The field exists because the content
+    // WHICH BACKEND RAN THIS CALL. Not a keySource value: keySource answers
+    // "whose key paid" (a server-run Ollama instance is still the server's
+    // resource, so its calls stay 'server'), this answers "which model wrote
+    // it". Recorded even when the call errored - the provider was still asked.
+    provider: PROVIDER,
+    // WHOSE KEY PAID FOR THIS CALL. Today every backend is a server-owned
+    // resource - anthropic.js reads process.env.ANTHROPIC_API_KEY and nothing
+    // else, and a server-run Ollama instance is the server's compute even
+    // though no key exists - so every live call declares 'server' regardless
+    // of provider. The field exists because the content
     // harvester (server/harvest.js) may only ever mine generations paid for by
     // the server's own key: a player's BYOK session is their content, not the
     // project's, and harvesting it would be taking something that was not
@@ -80,8 +88,10 @@ export async function callLLM({
     keySource: KEY_SOURCES.has(meta.keySource) ? meta.keySource : null,
     assembledPrompt: assemblePromptText(system, user, prefill),
     rawResponse: result ? result.text : null,
+    // provider.js already normalized usage to { input, output }, whichever
+    // backend ran.
     tokenUsage: result?.usage
-      ? { input: result.usage.input_tokens ?? null, output: result.usage.output_tokens ?? null }
+      ? { input: result.usage.input ?? null, output: result.usage.output ?? null }
       : null,
     latencyMs,
     apiError: apiError ? apiError.message : null,

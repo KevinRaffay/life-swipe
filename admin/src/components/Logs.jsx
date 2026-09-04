@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import * as api from '../api.js';
+import Modal from './Modal.jsx';
 
 const PAGE_SIZE = 50;
 
@@ -163,8 +164,8 @@ export default function Logs() {
       </section>
 
       {selectedId && (
-        <section className="card">
-          <h2>Call detail</h2>
+        <Modal title="Call detail" onClose={() => { setSelectedId(null); setDetail(null); }}>
+          <h3>Call detail</h3>
           {!detail ? <p className="muted">Loading…</p> : detail.error ? <p className="error">{detail.error}</p> : (
             <>
               <div className="row">
@@ -199,7 +200,7 @@ export default function Logs() {
               </details>
             </>
           )}
-        </section>
+        </Modal>
       )}
     </div>
   );

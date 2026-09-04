@@ -17,7 +17,7 @@ import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } fr
 import { generateSeedDrafts } from '../seed-generation.js';
 import { runHarvest, HARVEST_DEFAULTS } from '../harvest.js';
 import { computeNamePoolHealth } from '../name-pool-health.js';
-import { hasKey, MODEL } from '../anthropic.js';
+import { hasKey, MODEL, setProvider, providerStatus } from '../provider.js';
 import { queryLogs, getLogEntry, getLogSummary } from '../log-store.js';
 import { EXTRACTED, HAND_AUTHORED, SOURCES, tallySources, harvestedShare } from '../../shared/provenance.js';
 import { US_REGIONS } from '../../shared/regions.js';
@@ -76,6 +76,7 @@ export function createAdminRouter() {
       threadsPresent: exists('threads'),
       llmEnabled: hasKey(),
       model: hasKey() ? MODEL : null,
+      provider: providerStatus(),
       vocab: {
         categories: PATTERN_CATEGORIES, rarities: PATTERN_RARITIES, modes: MODES, sources: SOURCES,
         nameGenderAssocs: NAME_GENDER_ASSOCS,
@@ -87,6 +88,17 @@ export function createAdminRouter() {
         namePool: fileOf('namePool'), nameControls: fileOf('nameControls'),
       },
     });
+  }));
+
+  // Which backend is the storyteller right now, and what a switch could
+  // target. The PUT is the admin header's toggle: server-wide and runtime-only
+  // (LLM_PROVIDER stays the boot default; a restart reverts). setProvider
+  // refuses a target that could not serve the next call - no key, or an Ollama
+  // model that is not actually pulled - so a failed switch is a 4xx/5xx with
+  // the reason, never a silent slide into seed fallback.
+  router.get('/api/provider', asHandler((_req, res) => res.json(providerStatus())));
+  router.put('/api/provider', asHandler(async (req, res) => {
+    res.json(await setProvider(req.body?.provider));
   }));
 
   router.get('/api/validate', asHandler((_req, res) => res.json(crossReference())));

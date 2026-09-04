@@ -20,7 +20,7 @@
 // what enters the seed deck (server/admin/index.js's seed-draft approve
 // route, or a human editing scenarios-seed.draft.json by hand).
 
-import { complete, extractJson, hasKey } from './anthropic.js';
+import { complete, extractJson, hasKey } from './provider.js';
 import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
 import { validateBatch } from '../shared/schema.js';
 import { checkCompliance, effectiveTier } from '../shared/content.js';

@@ -89,10 +89,12 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/intro.js` | the two authored identity choices shown at the start of every life, and the offline fallback text for the grounding beat that follows them. Not generated content: excluded from seen_patterns/seen_seed_ids and from LLM request logging. |
 | `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
 | `shared/fallback.js` | procedural templates so offline play never runs dry. |
-| `server/index.js` | serves `dist/`, proxies Anthropic, resolves the content tier. |
+| `server/index.js` | serves `dist/`, proxies the LLM provider, resolves the content tier. |
 | `server/prompt.js` | system + user prompts. (The spec calls this `llm.js`.) |
-| `server/anthropic.js` | Messages API client, no SDK. |
-| `server/llm.js` | wraps the Anthropic call with request/response logging. The generation endpoint calls this instead of `anthropic.js` directly; obituary, extraction and admin preview do not. |
+| `server/provider.js` | the LLM provider seam: one `complete` dispatched to Anthropic or Ollama (`LLM_PROVIDER` at boot, runtime-switchable via the admin's storyteller toggle), return shape normalized to `{ text, usage: {input, output}, stopReason, provider, model }`. Every server-side LLM caller imports this, never a backend client directly. |
+| `server/anthropic.js` | Anthropic Messages API client, no SDK. Imported only by `provider.js`. |
+| `server/ollama.js` | Ollama client mirroring `anthropic.js`'s interface: model-presence check against `/api/tags`, structured-output detection by server version, usage normalized from eval counts. Imported only by `provider.js`. |
+| `server/llm.js` | wraps the provider call with request/response logging. The generation endpoints call this instead of `provider.js` directly; obituary, extraction and admin preview do not. |
 | `server/log-store.js` | the log file itself: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `client/src/prefs.js` | per-player cross-life memory. |
 | `client/src/components/CardStack.jsx` | the swipe gesture and tiered card rendering. |
@@ -122,8 +124,10 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | file | owns |
 | --- | --- |
 | `server/index.js` | the HTTP server: serves `dist/`, the `/api/*` endpoints (`scenarios`, `intro`, `obituary`, `region`, `coverage`, seed/library/name-pool reads), resolves the content tier, and mounts the admin when bound to loopback. |
-| `server/anthropic.js` | the Messages API client, hand-rolled (no SDK). Holds the API key check, `MODEL`, `complete`, `extractJson`. |
-| `server/llm.js` | wraps the `anthropic.js` call for `/api/scenarios` and `/api/intro` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. |
+| `server/provider.js` | the provider seam every LLM caller imports: dispatches `complete` on the active provider (`LLM_PROVIDER` at boot — "anthropic" default, "ollama" — switchable at runtime via `setProvider`, the admin's storyteller toggle), normalizes the return shape, re-exports `hasKey`/`extractJson`/the error classes and `PROVIDER`/`MODEL` (live bindings, so importers see a switch), and fails at startup on an unknown provider or an unset `OLLAMA_MODEL`. |
+| `server/anthropic.js` | the Anthropic Messages API client, hand-rolled (no SDK). Holds the API key check and `complete`. Imported only by `provider.js`. |
+| `server/ollama.js` | the Ollama client, same external interface as `anthropic.js`. `OLLAMA_BASE_URL` (default `http://localhost:11434`), `OLLAMA_MODEL` (no default, on purpose). First use verifies the model is pulled via `/api/tags` and detects schema-constrained vs basic-`"json"` structured output from the server version; responses are normalized to `{ text, usage: {input, output} }` from `prompt_eval_count`/`eval_count`. Imported only by `provider.js`. |
+| `server/llm.js` | wraps the `provider.js` call for `/api/scenarios` and `/api/intro` with request/response logging; returns a `finalizeLog` closure the caller invokes after validation. Stamps `provider` on every log record. |
 | `server/prompt.js` | builds the system + user storyteller prompts, the intro grounding-beat prompt, and the obituary prompt. (The spec calls this `llm.js`.) |
 | `server/log-store.js` | the LLM log file: append, size/count rotation to gzip, paginated + filtered reads across rotated files, summary stats. |
 | `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
@@ -637,7 +641,7 @@ without stating you checked all three.
 | Regional name weighting | shipped | on `main` — offline geoip, settings override, SSA-derived weights |
 | Content admin module | shipped | on `main` — localhost only, no auth. Thread editor deliberately absent until `thread-templates.json` exists |
 | LLM request/response logging + log viewer | shipped | on `main` — wraps the `/api/scenarios` generation call only (not obituary, extraction or preview); JSON Lines, gzip rotation, `/admin` Logs tab |
-| Admin edit forms open in a modal dialog | shipped | on `main` — library, seed and draft-review forms open in a centered dialog (`admin/src/components/Modal.jsx`) instead of inline below the grid; Esc/backdrop-click/Cancel discard and unmount. The cross-reference warnings panel stays above the grid, not in the dialog. Draft review gained a row-level quick "Approve" alongside "Edit & approve". No data logic, validation or API changes |
+| Admin edit forms open in a modal dialog | shipped | on `main` — library, seed and draft-review forms open in a centered dialog (`admin/src/components/Modal.jsx`) instead of inline below the grid; Esc/backdrop-click/Cancel discard and unmount. The cross-reference warnings panel stays above the grid, not in the dialog. Draft review gained a row-level quick "Approve" alongside "Edit & approve". No data logic, validation or API changes. **Updated:** the Logs tab's row-detail view (assembledPrompt/rawResponse/validationErrors) now opens in this same `Modal.jsx` too, closing the one remaining inline-below-grid holdout an audit of every admin grid turned up — see "Every grid's row detail opens in Modal.jsx" below. No data/logic changes |
 | Extraction content dedup check | shipped | on `main` — `duplicateWarnings` flags likely repeat patterns by word overlap; see the admin module section below |
 | Major-tier exemplar prompt + craft warnings | shipped | on `main` — worked exemplar and per-field word budgets in the system prompt; log-only `validationWarnings` through `validateBatch` → `finalizeLog` → Logs tab; 5 weakest major seeds rewritten (`col_major`, `col_dropout`, `ec_move`, `ec_kid`, `lt_severance_or_stay`) |
 | EventToast timing fix + consequence modal | shipped | on `main` — toast duration fixed at ~3.8s (was a flat 4.2s regardless of read time), paused while a pointer is down anywhere on screen, tap-to-dismiss-early. `client/src/severity.js` classifies each turn's events/new-flags/stat-delta as `major` or `standard`; `major` (a resolved pending event, a significant new flag, or a ±15+ health/happiness swing - all tunable in that one file) routes through `ConsequenceModal` (explicit tap to close) instead of the toast. Presentation-only: no engine/effect changes. |
@@ -659,6 +663,14 @@ without stating you checked all three.
 | SSA-sourced name pool | shipped | on `dev` — the pool is GENERATED from real birth records now, not authored. Root cause: the original 187 entries were written to satisfy the spec's "at least 150 names, diverse origins" and `build-region-weights.js` only ever scored names that already existed, so nothing ever asked the SSA archive which names Americans actually have — the pool carried Ignacio and Rocío but not Jose, Maria or Juan. New `scripts/build-name-pool.js` pulls the top 75 names per state, per 20-year era bucket, per gender (two passes: one to pick candidates a state at a time so peak memory is one state's table, one to measure only the survivors), derives `gender_assoc` from each name's own national F/M split (neutral at ≥25% minority share) and `era_start`/`era_end` from the years it sits at ≥10% of its own peak, snapped to the 5-year boundaries the pool already used, and computes `region_frequency` with the SAME location quotient, constants, era windowing and neutral band as `build-region-weights.js` — the method is untouched, it is just applied to real-frequency-sourced candidates instead of an authored list. **Additive only**: all 187 originals verified byte-for-byte identical afterwards, including the rare flavour names (Siobhan, Struan, Aino), and dedup is on the FOLDED name so "Rocio" cannot shadow "Rocío". 187 → 994 entries, 909 with real regional data. `scripts/name-categories.json` (181 explicit mappings) labels the non-mainstream clusters; everything else takes the `anglo` default, which is the correct label for most of the SSA top-N and is reported as a count rather than a warning. Category is an ORGANISATIONAL label now, not a selection weight, so `server/name-pool-health.js` exempts that default bucket from the 8% share cap — it legitimately holds ~64% of a data-sourced pool, and a permanent false warning is exactly what taught nobody to read the harvester's anonymity sweep. `npm run names` gained the before/after pool line and a HARD regression check on Jose/Maria/Juan/Guadalupe/James/Mary/Robert. Measured: same-origin repeat within one life 5.3% → 2.7%, regional lift 1.3-1.6x → 1.3-2.0x, all 49 categories reachable (was 48), era-coverage gaps GONE and zero-candidate era+gender combinations 24 → 6 (the archive reaches back to 1910). Costs +72KB gzipped in the player bundle (134 → 206KB), since the pool is inlined by vite. The archive itself is now committed at `data/ssa/namesbystate.zip`. No change to era-filtering logic, deactivation controls, the diversity/region sampling algorithm, or how `region_frequency` is calculated. **Partly superseded by "Category draw weighted by real birth counts" below**: category is no longer a purely organisational label — it carries the frequency weight now — and the pool is 993 entries, not 994 ("Molly" was removed as a content-keyword collision). The health panel's share-cap exemption still stands. |
 | Category draw weighted by real birth counts | shipped | on `dev` — the category half of a name draw was FLAT: 49 origins at ~1/49 each, so a player was exactly as likely to meet a maori-named character (2 names) as an anglo one (633). `region_frequency` could not fix it, because a location quotient is a ratio to the national rate — it encodes where a name is used and divides out how much. `server/name-pool.json` now carries `national_births` per entry (954 of 993 measured; the other 40 are the deliberately rare flavour names, below SSA's 5-per-state-year suppression floor), and `shared/names.js`'s new `categoryBirths()` sums it over the SURVIVING candidates so deactivating half an origin really does halve its weight. Wired into `assignName` as a third multiplicative factor beside the existing per-life diversity and per-session region terms; `BAL.NAMES.categoryPower` (0.35) damps it and `categoryBirthsFloor` (500) keeps an origin the archive cannot report from reaching zero weight, which would silently turn the weight into a filter. **0.35 is a measured ceiling, not a taste setting**: at 0.5 and 1.0 anglo takes 23.1% and 56.7% of draws and `npm run names` FAILS on `US-CA did not lift its own origins`, because region affinity is capped at 6x and anglo outweighs California's own origins ~460x in births — raising it retires regional weighting rather than reducing it. Shipped at 0.35: anglo 2% → 14.9%, same-origin repeat within one life 8.6%, all 49 origins reachable, and regional lift IMPROVED to 1.4-1.9x (was 1.3-2.0x). `name-check.js`'s old `top 8 origins > 60%` hard error is replaced — it measured "weighting too strong", which is now the design — by a direct assertion that no origin can reach zero probability. Also found and fixed a latent pool bug this exposed: **"Molly" is both a top-75 girl's name and slang for MDMA**, so cards naming her tripped the engine's own mature-content backstop and failed the simulator's mature-in-safe assertion 5 times. Fixed in the pool (dropped at generation, asserted in `npm run names`), NOT by softening `shared/content.js` — that backstop is one of three independent gates and is supposed to be blunt. 994 → 993 entries. No change to era filtering, deactivation controls, or the region-signal calculation. |
 | Within-category draw weighted by real birth counts | shipped | on `dev` — the other half of the flat draw. Weighting the CATEGORY by births fixed which origin you meet but not which name: anglo's 14.9% still split evenly across 633 names while irish's 6.4% split across 23, so an individual Irish name stayed likelier than an individual anglo one and the single most-drawn name in the pool was **Fiona**. `nameFrequency(entry)` (`shared/names.js`) raises the entry's own `national_births` to `BAL.NAMES.nameFrequencyPower` and multiplies it into the inner pick alongside the region weight that was already there — same measurement as the category factor, same `categoryBirthsFloor` for a name the archive cannot report, and `power: 0` restores the old behaviour exactly. Result: irish now yields Brian/Ryan/Sean/Patrick, latin-american yields Jose/Maria/Manuel/Juan. **0.5 is set by region, not by taste**: the inner draw is where region is meant to choose WHICH name ("Minnesota's Scandinavian name is more often the one Minnesota registers"), and at 1.0 the within-category birth spread exceeds `regionCeiling` so region can no longer reorder irish-in-MA or scandinavian-in-MN at all, while at 0.5 it still reorders every case tested. Variety is not the binding constraint — distinct names drawn only falls 780 → 747 across the whole 0.35-1.0 range. A separate knob from `categoryPower` because the contest differs: there region competes with frequency ACROSS origins and loses past 0.35, here it competes INSIDE one, where the spread is narrower. No pool, era, deactivation or region-signal changes — this is one factor added to one line. |
+| LLM provider abstraction + Ollama backend | shipped | on `dev` — `server/provider.js` is the seam every LLM caller now imports (`/api/scenarios` and `/api/intro` via `server/llm.js`, `/api/obituary`, `server/extraction.js` — and through it `server/harvest.js`'s library path — `server/seed-generation.js`, `server/admin/preview.js`, both CLI scripts' `hasKey` gates); `server/anthropic.js` is imported by nothing else. `complete` keeps anthropic.js's call signature and normalizes the return to `{ text, usage: {input, output}, stopReason, provider, model }` — the one downstream shape change is `server/llm.js`'s `tokenUsage`, which reads the normalized shape now. New `server/ollama.js` mirrors the interface against a local Ollama (`OLLAMA_BASE_URL` default localhost:11434, `OLLAMA_MODEL` required with no default — unset fails at STARTUP by name, unpulled fails at first use naming the model and the pulled list via `/api/tags`; structured-output support detected from the server version: schema-constrained `format` on ≥0.5.0, basic `"json"` below, reported once at handshake). Selection is `LLM_PROVIDER` (`anthropic` default — zero config change for existing deployments), server-wide for the process; per-player selection and player-supplied endpoints are explicitly future work (see "LLM provider abstraction" for the SSRF consideration that gates the latter). Log records gain a `provider` field; `keySource` stays `"server"` for both providers (server-run compute, same ownership reasoning as the server's key). No engine, effect-resolution, referee, schema, content or fallback changes — a malformed Ollama batch verified to hit the same retry-then-seed-fallback path as Anthropic. |
+| Admin storyteller provider toggle | shipped | on `dev` — the admin header gained a "storyteller" switch between Anthropic and Ollama: `admin/src/components/ProviderToggle.jsx` + `GET|PUT /admin/api/provider` (`server/admin/index.js`) + `setProvider`/`providerStatus` in `server/provider.js`, whose `PROVIDER`/`MODEL` became `export let` LIVE BINDINGS so every importer (responses, logs, `/api/config`, `/api/health`) reflects a switch the moment it happens with zero call-site changes. Still server-wide (one storyteller per process — per-player selection remains future work) and runtime-only: `LLM_PROVIDER` is the boot default, a restart reverts, and the UI tags the model label "runtime, reverts on restart" whenever active ≠ boot. A switch is REFUSED with its reason when the target cannot serve — unknown name 400, no key / no `OLLAMA_MODEL` 400, unpulled Ollama model 503 via the same `/api/tags` handshake first use runs — leaving the previous provider active (verified live: toggle both directions in the browser, generation on the switched provider logging `provider: "ollama"`, and both refusal paths). A provider that isn't configured at boot renders as a disabled button with the reason in its tooltip. No engine, schema, content, fallback or player-client changes. |
+| Extraction works on Ollama (array prefill) | shipped | on `dev` — bugfix. `extractPatterns` (`server/extraction.js`) was the ONE array-expecting `complete` caller that passed no `prefill: '['`. Harmless on Anthropic (the prefill is a nudge there; Claude follows the prompt's "return a JSON array" anyway), but on Ollama the prefill is load-bearing: `formatFor` (`server/ollama.js`) reads it to choose the grammar constraint, and no prefill meant `{ type: 'object' }` — schema-constrained decoding that made a top-level array IMPOSSIBLE, so the model returned an object wrapper and extraction's own `Array.isArray` guard reported "model did not return a JSON array". Hit anything through `extractPatterns` with the storyteller on Ollama: the harvest library path, the admin extraction paste box, `npm run extract-patterns`. One-line fix, verified live against Ollama 0.33.2 / qwen3-coder:30b. No prompt, validator, engine or provider-seam changes. |
+| Anonymity sweep ignores field-initial capitals | shipped | on `dev` — bugfix for a false positive the Harvest and Extraction review UIs surfaced as "anonymity: possible proper nouns: Creates". `identityWarnings` (`server/extraction.js`) joined `pattern`/`typical_effects`/`note` with a space and then decapitalized only string-start and after-punctuation capitals — so a field's conventional opening imperative ("Creates a branch point…", "Fires once per life") sat "mid-sentence" whenever the previous field ended without punctuation, and got flagged as a name. The decapitalizing pass now runs PER FIELD, before joining, since each field starts its own sentence. The `Set`/`Create`/`Requires`/`Effects`/`Note` STOPWORDS entries were symptom patches for this same class; left in place as harmless belt-and-braces. Verified: the bug case flags `["Creates","Fires"]` under the old logic and nothing under the new, while mid-sentence proper nouns (Lehman, Nadia) and years still flag. Advisory-only path — no blocking, merging, engine or prompt changes. |
+| Category vocabulary drift normalized at extraction | shipped | on `dev` — bugfix for harvested pattern drafts arriving with a category the model invented ("education"), which `validatePattern` rightly rejects, leaving a draft in the queue whose Approve button can only fail ("draft is not a valid pattern yet: category: education"). Two halves. Server: `CATEGORY_ALIASES`/`normalizeCategory` (`server/extraction.js`) maps a stray label to its ONE clear home in the vocabulary at parse time (education/school/work/job → career; finance/financial → money; relationship(s) → romance — career is where the live library files every education-shaped pattern), applied inside `extractPatterns` so the CLI, the admin paste box and the harvest library path all get it; an unmapped label stays as written for `validatePattern` to flag, since guessing a home for an ambiguous label is worse than an honest problem report. Admin: `PatternForm.jsx` now mirrors the server's category check in its inline validation AND renders an off-vocabulary value as a visible disabled option — a controlled `<select>` whose value matches no option renders BLANK, which hid exactly the field the reviewer needed to fix. The three stuck drafts were re-labeled to `career` through the running admin's own PUT route (store-backed: backup, atomic write, version check), approval left to a person. No prompt, engine, schema-vocabulary or referee changes — `CATEGORIES` itself is untouched. |
+| Cross-reference panel collapses details by default | shipped | on `dev` — `admin/src/components/Warnings.jsx`'s per-item warning list (the unreachable-flag / inert-exclusion / broken-reference lines) now sits inside a `<details>`, closed by default, matching the collapsed-by-default disclosure pattern the Name Pool tab's per-row names list already established. The summary line above it (unreachable/inert/broken-refs/settable counts) and the static explanatory paragraph stay visible regardless; only the itemised list collapses. No change to what the check measures or how a warning is worded |
+| Logs tab row detail moved to Modal | shipped | on `dev` — see the "Admin edit forms open in a modal dialog" row above; this is the fix that closed the last inline-below-grid holdout, plus an audit confirming no others remained (Library/Seeds/Name Pool/draft-review grids already opened in `Modal.jsx`; Preview and Stats render single result blocks, not row-selectable grids, so they were never in scope) |
+| Bulk approve-clean / reject-warned in Harvest + Generate Seeds | shipped | on `dev` — two new bulk actions, "Approve all without warnings" and "Reject all with warnings", added to the seed-draft review queues in the Generate Seeds tab (`admin/src/components/SeedGeneration.jsx`) and the Harvest tab's harvested-seed-drafts queue (`admin/src/components/Harvest.jsx`); both act only on the currently-listed drafts (whatever the tab is showing right now, same "acts on the current view" rule the Name Pool bulk-select already follows) split by whether `validationWarnings` is empty, leaving the other half untouched either way. Each is a loop over the existing single-draft `POST /admin/api/seedDrafts/:id/approve` / `/reject` endpoints (`api.approveDraft`/`api.rejectDraft`) — no new routes — and both require a click-through confirmation step first, the same pending/Confirm/Cancel shape `GroupControls.jsx`'s bulk deactivate already uses, since one click can now approve or reject many drafts. `SeedGeneration.jsx`'s pre-existing "Approve all without warnings" (which previously ran with no confirmation) gained the same confirmation step for consistency. Deliberately scoped to seed drafts only, not the Harvest tab's harvested-library-pattern queue: a pattern draft carries no persisted `validationWarnings` field (only transient anonymity/duplicate findings from the run that produced it), and inventing a stored warning concept for patterns would be new warning-detection logic, which this pass does not touch. No change to validation, warning-detection, or the approve/reject route contracts |
 | Region weights rebuilt on one archive vintage | shipped | on `dev` — housekeeping with a real payoff. The pool had been sitting on TWO archive vintages: the 807 SSA-sourced entries were measured against the committed 2025 archive, while the 187 originals kept maps from an older one that predated Florida's inclusion, so not a single entry carried a `US-FL` key. `npm run build-region-weights -- ../ssa-state` re-run across all 993 entries puts every map on the same 2025 data. No code change at all — the script already mutated `region_frequency` in place rather than replacing the record, so `national_births`, `active` and every other field survived untouched (verified: 993 entries, 953 with `national_births`, key order intact). Results: 908 → 914 entries with a regional map, 23,417 region entries written, 50 → 51 distinct regions, and 360 entries now carry `US-FL`. Measured regional lift IMPROVED to 1.4-2.2x (was 1.4-1.9x), with US-HI now 2.2x. Florida itself turns out to tilt only mildly — caribbean 1.12x, latin-american 1.02x — and that is the data, not a bug: FL has 16 entries above 2x against Minnesota's 48, and 253 of its 360 entries sit BELOW 0.8x, which is what a high-migration state whose naming profile sits near the national average looks like. Its strongest signals are plausible (Joaquim 8.9x, Rafaela, Thiago; Winston; Valentina). No pool membership, era, deactivation, weighting-method or selection changes. |
 
 ---
@@ -686,6 +698,14 @@ Two rules hold the safety story together:
 
 Other things worth knowing before working on it:
 
+- **Every grid's row detail opens in Modal.jsx, never inline below the
+  grid** — this was established by the Logs tab conversion (the Logs tab was
+  the one holdout: an audit of every admin grid found Library/Seeds/Name Pool/
+  the draft-review queues already opened their row detail in `Modal.jsx`,
+  while Logs alone rendered the full assembledPrompt/rawResponse/
+  validationErrors expansion inline in a `<section>` below the table). A new
+  admin panel with a grid follows this pattern from the start; retrofitting an
+  inline view later is the exception being fixed, not a precedent to repeat.
 - `server/admin/store.js` is the only writer. Every save copies the old file to
   `.bak`, writes to a temp file and renames (so an interrupted save cannot leave
   a half-written library the game server then refuses to boot on), and checks a
@@ -771,6 +791,14 @@ Other things worth knowing before working on it:
   lists are the same `DraftQueue.jsx` the other two tabs use, filtered to
   `source === 'harvested'` so "where did this row come from" stays answerable
   at a glance in a queue three features write to.
+- **The header's "storyteller" toggle switches the LLM provider at runtime** —
+  server-wide, for every life this process serves, which is exactly why it
+  lives here and not in the player UI. `admin/src/components/ProviderToggle.jsx`
+  → `PUT /admin/api/provider` → `provider.js`'s `setProvider`. Runtime-only
+  (`LLM_PROVIDER` stays the boot default; restart reverts — the label says so
+  whenever active ≠ boot), and a switch to a provider that could not serve
+  (no key, model not pulled) is refused with the reason while the previous
+  provider stays active. See "LLM provider abstraction" below.
 - `admin/` is a separate Vite root building to `dist-admin/`. `npm run build`
   never sees it, which is why no admin code can reach the player bundle.
 
@@ -808,6 +836,10 @@ accepted. On a two-attempt request, the winning attempt (if any) logs
 `"passed"`, an earlier attempt that got retried logs `"failed"`, and whichever
 attempt was the *last* one made logs `"fell_back_to_seed"` if nothing won —
 that is the one line that actually corresponds to what the player experienced.
+
+`provider` (`"anthropic"` | `"ollama"`) says which backend ran the call —
+recorded even when the call errored, since the provider was still asked. It is
+deliberately not a `keySource` value: see "LLM provider abstraction" below.
 
 `keySource` (`"server"` | `"byok"` | `null`) says which API key paid for the
 call. It exists for the harvester, which may only mine server-key generations —
@@ -903,6 +935,86 @@ approval) plus a `harvestedFrom` note of which log entry it came from (which doe
 not — the log rotates and that id stops resolving).
 
 ---
+
+## LLM provider abstraction
+
+The storyteller can be Anthropic (the default) or a local Ollama instance,
+chosen by `LLM_PROVIDER` at startup — **server-wide, for the whole process**.
+This is permanent infrastructure, the foundation for a future per-player
+local-model option, not a dev toggle.
+
+**The seam is `server/provider.js`, and it is the only importer of a backend
+client.** Everything that talks to a model — `/api/scenarios` and `/api/intro`
+(through `server/llm.js`'s logging wrapper), `/api/obituary`,
+`server/extraction.js` (and through it `server/harvest.js`'s library path),
+`server/seed-generation.js`, the admin preview, and both CLI scripts' `hasKey`
+gates — imports `provider.js`. Its `complete` keeps `anthropic.js`'s exact
+call signature and normalizes the return to
+`{ text, usage: { input, output }, stopReason, provider, model }`, so nothing
+downstream — validators, logging, harvesting — knows or cares which provider
+ran. The storyteller/referee split is identical either way: whichever model
+writes the proposals, the engine still owns every number.
+
+**Selection.** `LLM_PROVIDER=anthropic` is the default — an existing
+deployment needs zero config changes. `LLM_PROVIDER=ollama` additionally
+requires `OLLAMA_MODEL` (no default, deliberately: a guessed model that isn't
+pulled would fail confusingly mid-generation, so an unset one fails at startup
+by name instead) and honors `OLLAMA_BASE_URL` (default
+`http://localhost:11434`) and `OLLAMA_TIMEOUT_MS` (a floor of 120s over caller
+timeouts — local inference is a different latency regime). On first use the
+Ollama client verifies the configured model against `/api/tags`, failing with
+the model's name and the pulled list rather than a generic fetch error, and
+detects whether the server supports schema-constrained `format` (Ollama
+≥ 0.5.0) or only basic `format: "json"`, logging which one it found. An
+unknown `LLM_PROVIDER` value refuses to boot rather than silently meaning
+"anthropic".
+
+**Runtime toggle, admin-only.** The admin header carries a "storyteller"
+switch (`admin/src/components/ProviderToggle.jsx`, `GET|PUT
+/admin/api/provider`, `provider.js`'s `setProvider`). It is still the same
+server-wide selection — one storyteller for every life this process serves,
+NOT per-player — just settable without a restart, and **runtime-only**:
+`LLM_PROVIDER` stays the boot default and a restart reverts to it (the UI
+tags the label "runtime, reverts on restart" whenever the active provider
+differs from the boot one). A switch is refused, with the reason, if the
+target could not serve the next call — no `ANTHROPIC_API_KEY`, no
+`OLLAMA_MODEL`, or (via the same first-use handshake) an Ollama model that
+is not actually pulled — so a failed toggle keeps the previous provider
+rather than quietly turning every generation into a seed fallback. It lives
+in the admin, not the player UI, on purpose: server-wide state belongs on
+the server-config surface, and the player client deliberately never mentions
+providers. `provider.js` exports `PROVIDER`/`MODEL` as **live bindings**
+(`export let`) so every importer sees a switch the moment it happens.
+
+**`keySource` does not change for Ollama.** That field answers "whose key paid
+for this call" so the harvester knows what it may mine; a server-run Ollama
+instance is the server's own compute, exactly as the server's Anthropic key is
+the server's own spend, so both providers log `keySource: "server"`. Which
+backend ran is a separate question, answered by the new `provider` field on
+each log record. Calls that were never logged (obituary, extraction, admin
+preview, seed-gen) stay unlogged under either provider.
+
+**Expect a higher validation-failure/fallback rate on Ollama.** A local model
+writes weaker JSON and weaker cards than Anthropic; that is a capability gap,
+not a bug. A malformed Ollama batch hits the exact same
+retry-then-seed-fallback path a malformed Anthropic batch does (verified
+deliberately, with a mock returning prose: attempt 1 `failed`, retry
+`fell_back_to_seed`, client got seed content) — no changes to
+`shared/schema.js`, `shared/content.js`, or any fallback logic.
+
+**Not built yet, on purpose:**
+
+- **Per-player provider selection.** Selection is one env var for the whole
+  process; there is no per-request or per-player routing, and nothing
+  client-facing mentions providers.
+- **A player-supplied Ollama endpoint.** The base URL is server config only.
+- The **SSRF consideration** a player-supplied URL would create: a URL a
+  player controls would let them point the server's own HTTP client at
+  internal services (cloud metadata endpoints, the loopback-only admin, other
+  LAN hosts). Before any such feature ships it needs egress validation —
+  scheme/host allow-listing, private-range blocking, no redirects — plus a
+  `keySource`/harvest-eligibility decision, since a player-run model's output
+  is their content (the `byok` reasoning applies to compute, not just keys).
 
 ## Location and privacy
 
