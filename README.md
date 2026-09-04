@@ -443,10 +443,18 @@ It is generated offline and reviewed like everything else here:
 npm run generate-demo-seeds -- --total=1000
 ```
 
-That writes `demo-seed-scenarios.draft.json` and stops. Review and approve in
-the admin's **Demo pool** tab (`npm run admin`), which has the same
-approve / edit-and-approve / reject controls as the other queues plus
-"Approve all without warnings" and "Reject all with warnings" for the volume.
+That writes `demo-seed-scenarios.draft.json` and stops. Runs accumulate: a
+second run de-duplicates against both the existing queue and anything already
+approved, so topping up is safe. Review and approve in the admin's **Demo
+pool** tab (`npm run admin`), which has the same approve / edit-and-approve /
+reject controls as the other queues plus "Approve all without warnings" and
+"Reject all with warnings" for the volume.
+
+Expect diminishing returns rather than a linear pool: measured, 300 candidates
+yielded ~300 distinct situations and the next 700 yielded only ~290 more, with
+the rest flagged as repeats of something already queued. The model runs out of
+situations before it runs out of words. More themes in `DEMO_THEMES` moves that
+number; a bigger `--total` mostly does not.
 
 Generation runs through `server/provider.js` like every other model call, so it
 works on Anthropic or Ollama according to `LLM_PROVIDER`, and through the same

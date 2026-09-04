@@ -1276,6 +1276,39 @@ word *shared* by two cards appears in two documents by definition, so nothing
 could ever qualify — 0 of 30 marked against two pairs visible from across the
 room. The floor is 2 now. **Measure, don't assume.**)
 
+**What a real run costs, and what it buys.** Measured over two runs on
+Anthropic Sonnet, ~5.5 accepted candidates per model call:
+
+| run | asked | got | time | new distinct situations |
+| --- | --- | --- | --- | --- |
+| first | 300 | 300 | 18 min | ~300 |
+| top-up | 700 | 700 | 44 min | ~290 |
+
+**The second number is the important one.** Seven hundred more cards bought
+roughly 290 more distinct *situations*: at 1000 cards the near-duplicate pass
+flags 411 as a repeat of something already in the queue, against 99 at 300.
+That is not the threshold degrading — spot-checking the pairs, most are real
+(two identical eye-twitch cards, two landlord-deposit cards, seven parlay
+variants). The model genuinely runs out of new situations before it runs out
+of words, so **plan the pool size around distinct situations rather than card
+count**, and expect a third run to be worse again. The lever that would
+actually move this is more `DEMO_THEMES`, not a bigger `--total`.
+
+Two runs also showed the corpus-relative ceiling behaving as designed: one
+card among the original 300 gained a near-duplicate warning when the pass
+re-ran over 1000, because `TOPIC_DF_CEILING` is a share of the corpus and a
+word that was too common to count as rare at 300 is rare at 1000. That is the
+measure working, not drifting.
+
+**Reading the flags.** Matches on three or more shared rare words are almost
+always the same card twice. Matches on exactly two are roughly 70% genuine —
+the rest are two different situations that share an object or a weekday
+("shower", "Dutch oven", "tuesday"). That is why the warning names the words
+and says *read both* rather than dropping the card: at two words this is a
+judgement a person makes in a second and a heuristic gets wrong three times in
+ten. **Do not bulk-reject the flagged half without looking**; bulk-approving
+the clean half is safe, and is already more content than the demo needs.
+
 ### Review
 
 The admin's **Demo pool** tab (`admin/src/components/DemoPool.jsx`) — a third
