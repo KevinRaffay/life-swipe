@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   getContentMode, setContentMode, hasConfirmedAge, confirmAge,
   getRegionChoice, setRegionChoice, getDetectedRegion, getTheme, setTheme, getActiveTheme,
@@ -18,7 +18,18 @@ export default function StartScreen({ onStart, onStartDemo, demoRequested = fals
   // to start a demo life. One dialog, two callers, because the confirmation
   // being asked for is the same one - the demo is mature content too, so it
   // goes through the identical gate rather than around it.
-  const [askingAge, setAskingAge] = useState(demoRequested ? 'demo' : null);
+  const [askingAge, setAskingAge] = useState(null);
+
+  // `demoRequested` arrives from the /?demo=1 kiosk link, and it arrives LATE:
+  // App.jsx reads the URL in an effect, so this component's first render sees
+  // `false` and only the second sees `true`. Seeding the useState above from
+  // the prop therefore did nothing at all - the initializer had already run -
+  // and the kiosk link silently landed on an ordinary start screen. Found by
+  // opening the link, not by reading this. It has to be an effect on the
+  // prop, not derived state.
+  useEffect(() => {
+    if (demoRequested) setAskingAge('demo');
+  }, [demoRequested]);
   const [region, setRegion] = useState(getRegionChoice);
   const [theme, setThemeLocal] = useState(getTheme);
   const detected = getDetectedRegion();

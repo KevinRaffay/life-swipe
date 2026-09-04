@@ -207,33 +207,54 @@ export const BAL = {
     // use (see applyChoice) - never an abrupt cutoff, and never a target: a
     // demo life that goes broke or dies at swipe 12 ends at swipe 12.
     //
-    // 40 was picked from a read-time estimate and then MEASURED. The demo
-    // pool is minor-tier only, so a card is one prompt of ~20 words: about
-    // 5-7 seconds to read, decide and swipe, plus the toast. 40 x ~6s is
-    // ~4 minutes, inside the 1-5 minute brief with room for a slow reader.
-    // `npm run demo-check` reports the measured word counts this rests on.
-    maxSwipes: 40,
+    // 32 IS A MEASURED NUMBER, not an estimate. The first guess was 40, from
+    // a rough "a minor card is ~20 words, call it 6 seconds". Running
+    // `npm run demo-check` against a real pool put the median session at
+    // 5m33s - outside the 1-5 minute brief - because the pool's actual median
+    // card is 23 words, and 23 words at 3.6 words/second plus 2.4 seconds to
+    // decide is 8.8 seconds, not 6. At 32 swipes the median lands at ~4m40s,
+    // inside the brief with room for a slow reader.
+    //
+    // demo-check recomputes that estimate from the pool's real word counts
+    // every run and says so when the median leaves the 1-5 minute window, so
+    // this constant stays honest as the pool changes. The two reading-rate
+    // assumptions behind it are named at the top of that script rather than
+    // buried here, because they are the part most worth arguing with.
+    maxSwipes: 32,
 
     // Months per swipe INSTEAD of BAL.TIME, for demo lives only.
     //
-    // At the ordinary minor rate (1 month) a 40-swipe demo covers 3.3 years
-    // and ends at 21, which reads as a fragment rather than a life. At 4
-    // months it covers ~13 years and ends around 31 - college, first job,
+    // At the ordinary minor rate (1 month) a 32-swipe demo covers under three
+    // years and ends at 20, which reads as a fragment rather than a life. At
+    // 5 months it covers ~13 years and ends around 31 - college, first job,
     // first real money, the beginning of the rest of it - which is the arc a
-    // demo is actually trying to show. It does NOT make organic death likely
-    // (Gompertz mortality at 18-31 is a fraction of a percent a year, and
-    // getting there would need ~1.5 years per swipe, which no minor card can
-    // carry); the forced cap ending is the normal demo ending by design, and
-    // is written for. Bankruptcy remains a genuine early exit.
+    // demo is actually trying to show, and which is why the demo pool has
+    // three age bands reaching to 36 rather than one.
+    //
+    // 5 rather than 4 because maxSwipes came DOWN to 32 on measurement (see
+    // above) and the age reached has to be held roughly where it was: 32 x 5
+    // months lands at 31.3, still inside the pool's third band, where 32 x 4
+    // would land at 28.7 and make that band's ~180 cards unreachable. The
+    // product of these two constants is the real setting; either one alone is
+    // half an answer.
+    //
+    // This does NOT make organic death likely, and nothing in this range
+    // could: Gompertz mortality between 18 and 31 is a fraction of a percent
+    // a year, and reaching a meaningful chance inside 32 swipes would need
+    // ~1.5 years per swipe, which no minor card - "a moment or a week" - can
+    // carry without the fiction collapsing. The forced cap ending is the
+    // normal demo ending by design and is written for, in the obituary
+    // screen's own `ending === 'demo'` branch. Bankruptcy remains a genuine
+    // early exit and does fire.
     //
     // Same key names as BAL.TIME, and the engine's own clamps still apply on
     // top - `timeCostMonths` runs the result through CLAMP.timeMonths and the
     // stage cap exactly as it does for a real life.
     time: {
-      minor: 4,
+      minor: 5,
       standard: 9,
       major: 18,
-      trivial: 4,
+      trivial: 5,
     },
   },
 };
