@@ -36,6 +36,14 @@ export const FILES = {
   // instead of the situation library.
   seedDrafts: { file: path.join(ROOT, 'scenarios-seed.draft.json'), kind: 'seed' },
   seedRejected: { file: path.join(ROOT, 'scenarios-seed.draft.rejected.json'), kind: 'rejection' },
+  // The DEMO pool and its own draft/rejected pair. A third draft/target
+  // triple through the same `draftRoutes` factory the other two use - a
+  // separate content set with a separate register, deliberately not a mode
+  // flag on the seed deck, so demo content can never reach a normal life by
+  // being approved into the wrong file.
+  demoSeeds: { file: path.join(ROOT, 'data', 'demo-seed-scenarios.json'), kind: 'seed' },
+  demoDrafts: { file: path.join(ROOT, 'demo-seed-scenarios.draft.json'), kind: 'seed' },
+  demoRejected: { file: path.join(ROOT, 'demo-seed-scenarios.draft.rejected.json'), kind: 'rejection' },
   // Not present in the repo yet. Everything here copes with that; the thread
   // editor is the one feature deliberately left for later.
   threads: { file: path.join(ROOT, 'server', 'thread-templates.json'), kind: 'thread' },

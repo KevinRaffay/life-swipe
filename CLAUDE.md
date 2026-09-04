@@ -85,9 +85,12 @@ Breaking any of these is a bug regardless of what the tests say.
 | `scripts/build-name-pool.js` | generates the pool CANDIDATES from SSA birth records: top-N per state/era/gender, merged into the existing pool, never deleting. |
 | `scripts/name-categories.json` | folded name → category, for SSA-sourced names. An organisational label, not a weight. Data only. |
 | `scripts/build-region-weights.js` | one-time: SSA birth data → the `region_frequency` maps for names already in the pool. |
+| `data/demo-seed-scenarios.json` | the DEMO pool: ~1000 minor-tier, mature-register cards for ages 18–36. Its own content set, read only by a demo deck, never mixed with `scenarios-seed.json`. Data only. |
+| `scripts/generate-demo-seeds.js` | CLI for bulk demo-pool drafting. Never auto-merges; writes `demo-seed-scenarios.draft.json`. |
+| `scripts/demo-check.js` | the demo's own assertions: swipe cap held, zero provider calls, no non-safe content under 18. Reports the measured session length `BAL.DEMO.maxSwipes` rests on. |
 | `shared/library.js` | situation-library selection, filtering, rarity weighting. |
 | `shared/intro.js` | the two authored identity choices shown at the start of every life, and the offline fallback text for the grounding beat that follows them. Not generated content: excluded from seen_patterns/seen_seed_ids and from LLM request logging. |
-| `shared/deck.js` | buffering, eligibility, background refill, anti-repetition. |
+| `shared/deck.js` | buffering, eligibility, background refill, anti-repetition, and the demo deck's unconditional no-live-generation gate. |
 | `shared/fallback.js` | procedural templates so offline play never runs dry. |
 | `server/index.js` | serves `dist/`, proxies the LLM provider, resolves the content tier. |
 | `server/prompt.js` | system + user prompts. (The spec calls this `llm.js`.) |
@@ -102,7 +105,7 @@ Breaking any of these is a bug regardless of what the tests say.
 | `server/admin/store.js` | the ONLY thing that writes content files: backup, atomic write, version check, key order. |
 | `server/extraction.js` | the extraction prompt and checks, shared by the CLI and the admin. |
 | `server/harvest.js` | mining the LLM request log for content worth keeping: eligibility, de-personalisation, generalisability, both draft paths. Reads the log, writes nothing. |
-| `shared/provenance.js` | the authoring-provenance vocabulary (`hand-authored`/`extracted`/`generated`/`harvested`) and the harvested-share maths. |
+| `shared/provenance.js` | the authoring-provenance vocabulary (`hand-authored`/`extracted`/`generated`/`harvested`/`demo-generated`) and the harvested-share maths. |
 | `admin/` | the admin React app. Its own Vite root; never an input to the player build. |
 | `client/src/styles.css` | all styles: Radix Mauve neutral scale imports, semantic token definitions, theme-aware CSS variables, Electric-dusk brand accent preservation. Applies `.dark-theme` class via `App.jsx` for dark mode. |
 | `@radix-ui/colors` | Radix UI color system: Mauve light/dark scales for neutral palette, paired variables (`--mauve-1` through `--mauve-12`). CSS imports in `styles.css`: `mauve.css` (light) and `mauve-dark.css` (dark). |
@@ -133,13 +136,15 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | `server/extraction.js` | the pattern-extraction prompt and its checks (anonymity sweep, duplicate scoring, id collisions); shared by the CLI and the admin. |
 | `server/seed-generation.js` | bulk offline generation of seed-scenario drafts for coverage-thin buckets: a generic per-bucket sample state, the weight-tier mix, occasional situation-library grounding, all down the real prompt/validator path. Shared by the CLI and the admin, same relationship `server/extraction.js` has to pattern extraction. |
 | `server/harvest.js` | the content harvester: reads `server/logs/llm-requests.jsonl`, filters it to server-key calls that passed validation, puts the cast's name tags back into the cards, drops the ones that only make sense inside one life, and proposes seed-deck and situation-library drafts. Never writes a content file - the admin route does the appending. |
+| `server/demo-prompt.js` | the DEMO storyteller prompts: the system block carrying the content register (mature-only, minor-tier-only, innuendo-not-explicit, current gen-z voice, 18+ cast), the per-batch user prompt, the three demo age bands (`DEMO_STAGES`) and the theme rotation (`DEMO_THEMES`). A sibling of `prompt.js`, never a mode inside it. |
+| `server/demo-seed-generation.js` | bulk offline generation of DEMO pool drafts: age-band targeting, batching, theme rotation, the authoring-side register screen (hard drops) and craft warnings, and the corpus-wide near-duplicate pass. Down the real provider seam and the real validators. Shared by the CLI and the admin's Demo pool tab. |
 | `server/geo.js` | offline IP → region via `geoip-lite`. Holds the privacy contract; read it before touching location. |
 | `server/name-pool.json` | data only: 993 names across 49 origins, generated from SSA birth records, with era, gender, national births, per-region frequency (all on the 2025 archive vintage) and an `active` flag. |
 | `server/name-pool-controls.json` | data only: pool-wide deactivation lists for category / region / gender_assoc, each entry requiring a reason. |
 | `server/name-pool-health.js` | pool-health measurements (category spread, era gaps, zero-eligible-candidate warnings), shared by `npm run names` and the admin's health panel. |
 | `server/situation-library.json` | data only: the situation-library life-event shapes the storyteller is briefed with. |
 | `server/admin/index.js` | the admin API router; mounted at `/admin`, loopback-only, no auth. Every route can rewrite content files. |
-| `server/admin/store.js` | the ONLY writer of content files: `.bak` backup, temp-file atomic write, content-hash version check. |
+| `server/admin/store.js` | the ONLY writer of content files: `.bak` backup, temp-file atomic write, content-hash version check. Whitelists the demo pool's own draft/target/rejected triple alongside the library's and the seed deck's. |
 | `server/admin/preview.js` | live preview: runs the real generation path against fresh in-memory sample state and returns raw + validated output, including the cards `/api/scenarios` would have dropped. |
 | `server/admin/cross-reference.js` | best-effort reachability check: which library `requires` flags nothing in the game ever sets. Advisory, never a save blocker. |
 | `server/admin/content-schema.js` | field-level validation for the editable content types (library, seeds, name-pool entries, name-pool group controls), reusing the extraction checks and the game's own `validateScenario`. |
@@ -150,19 +155,19 @@ section in the same commit — a stale map is worse than none. (`shared/`,
 | --- | --- |
 | `client/index.html` | the Vite HTML entry. |
 | `client/src/main.jsx` | mounts the React root. |
-| `client/src/App.jsx` | the root component: the game loop (title → intro → playing → ended), the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`), which screen is showing, and theme class application (`.dark-theme` on `<html>` root). |
+| `client/src/App.jsx` | the root component: the game loop (title → intro → playing → ended), the `Deck`, engine calls (`createState`/`applyChoice`/`stateSummary`), which screen is showing, and theme class application (`.dark-theme` on `<html>` root). Also owns `startDemo` and the `/?demo=1` kiosk parameter - the demo path skips the intro phase entirely and builds a `demoMode` deck over `data/demo-seed-scenarios.json`. |
 | `client/src/api.js` | the client half of the LLM wiring: best-effort POSTs to the server that fall back to seed content silently, including the intro grounding beat (`fetchIntroBeat`). |
 | `client/src/prefs.js` | per-player cross-life memory in `localStorage` (content mode, age gate, region choice, theme override, `seen_patterns`/`seen_seed_ids`), every access wrapped. Theme functions: `getTheme()` (explicit override or null), `setTheme()`, `getActiveTheme()` (override or OS preference). |
 | `client/src/styles.css` | all styles: Radix Mauve imports, semantic color tokens, light/dark theme declarations, component styles. Applies theme variables via `.dark-theme` selector. |
 | `client/src/components/CardStack.jsx` | the swipe gesture (pointer events), tiered card rendering, and `useFitToCard` — the measure-and-shrink pass that keeps a long card inside its box so it never scrolls. |
-| `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. |
-| `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice, theme toggle (light/dark/auto). |
+| `client/src/components/Hud.jsx` | the stats HUD (money/health/happiness/age) and the shared money formatter. Takes an optional `swipeCap` (demo mode only) that turns the counter into "swipe 12 of 40". |
+| `client/src/components/StartScreen.jsx` | the start screen: content-mode pick, age confirmation, region choice, theme toggle (light/dark/auto), and the separate demo entry link below the Begin button. `askingAge` is `null`/`'mature'`/`'demo'` - one gate dialog, two callers, since demo mode is mature content and goes through it rather than around it. |
 | `client/src/components/Intro.jsx` | the opening sequence between StartScreen and the first `deck.draw()` card: two authored identity choices (`shared/intro.js`) rendered through the same `CardStack`, then the grounding beat as a modal over that same screen (the framing line and the emptied card slot stay mounted underneath; the choice buttons do not, since the card they belonged to has been swiped away). Presentational only - `App.jsx` owns the state and the `applyChoice` calls. |
 | `client/src/components/GroundingBeat.jsx` | the intro's one non-interactive step: a generated (or, on failure/timeout, authored-fallback) establishing scene, shown once as a popup modal over the intro screen - the same backdrop + centered-dialog shape as `ConsequenceModal.jsx`, with the major-tier card's `.scene__setting`/`.scene__beat` treatment inside the panel. Tap, drag (via `pointerup`, not `click`, so a drag still registers) or press a key anywhere to continue - there is no choice to make. Inputs are ignored until the beat lands. |
 | `client/src/severity.js` | classifies a turn's consequences as `major` or `standard` for EventToast - the one place the toast/modal threshold is tuned. |
 | `client/src/components/EventToast.jsx` | the toast of what the engine did to the player after the last swipe: fixed ~3-4s duration, paused while a pointer is down, tap to dismiss early. Routes `major` turns to `ConsequenceModal` instead. |
 | `client/src/components/ConsequenceModal.jsx` | the dismissible dialog for major-tier consequences (a pending event resolving, a significant new flag, a large stat swing). Same centered-dialog pattern as `admin/src/components/Modal.jsx`, reimplemented client-side since admin never ships to players. |
-| `client/src/components/Obituary.jsx` | the end-of-life screen; fetches the obituary and falls back to a locally written one. |
+| `client/src/components/Obituary.jsx` | the end-of-life screen; fetches the obituary and falls back to a locally written one. In demo mode it makes NO fetch at all and always writes locally, and it recognises `ending === 'demo'` as an ending nobody died in. |
 
 ---
 
@@ -178,6 +183,8 @@ npm run build-name-pool -- <dir>       # generate pool candidates from SSA birth
 npm run build-region-weights -- <dir>  # regenerate region_frequency from SSA data
 npm run extract-patterns -- source.txt # draft library patterns (never auto-merges)
 npm run generate-seeds -- --mode=both --target=15  # draft seed scenarios for thin buckets (never auto-merges)
+npm run generate-demo-seeds -- --total=1000        # draft DEMO pool candidates (never auto-merges)
+npm run demo-check                     # demo-mode assertions: swipe cap, no provider calls, no under-18 content
 npm run admin                          # build dist-admin/, serve, open :8787/admin
 npm run dev:admin                      # admin vite :5174 + api, for admin UI work
 npm run normalise-content              # rewrite content files in canonical key order
@@ -239,6 +246,15 @@ coverage target" checkbox (admin) generates for every bucket/mode pair
 regardless, since the bare target is a floor, not a ceiling on how much
 variety a bucket is worth having.
 
+**Demo pool** — a separate content set, `data/demo-seed-scenarios.json`, read
+only by a demo deck and never mixed with the seed deck. Minor-tier only,
+mature register, ages 18–36, generated by `server/demo-seed-generation.js`
+(CLI: `npm run generate-demo-seeds`; admin: the "Demo pool" tab) through the
+same validators everything else uses. Draft-only, same as the other two paths:
+it writes `demo-seed-scenarios.draft.json` and stops. See "Demo mode" below
+for the register, the screening and why `modes` is computed rather than
+stamped `["mature"]`.
+
 **Spelling convention** — house style is American English throughout. The
 generation system prompt, the obituary prompt and the extraction prompt
 (`server/prompt.js`, `server/extraction.js`) each carry an explicit instruction
@@ -258,10 +274,14 @@ normal admin edit flow to correct rather than auto-rewritten.
 **Content provenance** — every library pattern and seed scenario records where
 it came from, in a `source` field: `hand-authored` (a person, in the admin forms
 or the JSON directly), `extracted` (`server/extraction.js`, from pasted external
-text), `generated` (`server/seed-generation.js`, bulk drafting) or `harvested`
-(`server/harvest.js`, mined from the request log). A record written before the
+text), `generated` (`server/seed-generation.js`, bulk drafting), `harvested`
+(`server/harvest.js`, mined from the request log) or `demo-generated`
+(`server/demo-seed-generation.js`, the demo pool). A record written before the
 field existed reads as hand-authored, which is what it is. `shared/provenance.js`
-owns the vocabulary.
+owns the vocabulary. `demo-generated` is its own value rather than a reuse of
+`generated` because the two pools are separate content sets with separate
+registers, and a demo card that ever turned up in `data/scenarios-seed.json`
+should be visible as one at a glance.
 
 This is **not** the runtime `source` `shared/deck.js` stamps on a dealt card
 (`seed`/`llm`/`fallback`/`library`) — the deck overwrites that for every seed at
@@ -480,6 +500,13 @@ npm run names                           # pool is well formed, spreads, tilts by
                                         # region, and no seed card hardcodes a name
 ```
 
+Plus one more once demo mode is in play, since none of the three above
+exercise it — the simulator plays ordinary lives and never sets `demoMode`:
+
+```bash
+npm run demo-check                      # three demo assertions (see "Demo mode")
+```
+
 The assertions are:
 - no mature content in a safe-mode life
 - no mature content dealt to a character under 18, in either mode
@@ -672,6 +699,7 @@ without stating you checked all three.
 | Logs tab row detail moved to Modal | shipped | on `dev` — see the "Admin edit forms open in a modal dialog" row above; this is the fix that closed the last inline-below-grid holdout, plus an audit confirming no others remained (Library/Seeds/Name Pool/draft-review grids already opened in `Modal.jsx`; Preview and Stats render single result blocks, not row-selectable grids, so they were never in scope) |
 | Bulk approve-clean / reject-warned in Harvest + Generate Seeds | shipped | on `dev` — two new bulk actions, "Approve all without warnings" and "Reject all with warnings", added to the seed-draft review queues in the Generate Seeds tab (`admin/src/components/SeedGeneration.jsx`) and the Harvest tab's harvested-seed-drafts queue (`admin/src/components/Harvest.jsx`); both act only on the currently-listed drafts (whatever the tab is showing right now, same "acts on the current view" rule the Name Pool bulk-select already follows) split by whether `validationWarnings` is empty, leaving the other half untouched either way. Each is a loop over the existing single-draft `POST /admin/api/seedDrafts/:id/approve` / `/reject` endpoints (`api.approveDraft`/`api.rejectDraft`) — no new routes — and both require a click-through confirmation step first, the same pending/Confirm/Cancel shape `GroupControls.jsx`'s bulk deactivate already uses, since one click can now approve or reject many drafts. `SeedGeneration.jsx`'s pre-existing "Approve all without warnings" (which previously ran with no confirmation) gained the same confirmation step for consistency. Deliberately scoped to seed drafts only, not the Harvest tab's harvested-library-pattern queue: a pattern draft carries no persisted `validationWarnings` field (only transient anonymity/duplicate findings from the run that produced it), and inventing a stored warning concept for patterns would be new warning-detection logic, which this pass does not touch. No change to validation, warning-detection, or the approve/reject route contracts |
 | Game renamed to FATE (display only) | shipped | on `rename-to-fate` — cosmetic-only rename of the displayed game name from "Life Swipe" to "FATE": `client/index.html` (title, meta description), `client/src/components/StartScreen.jsx`'s title heading, `client/src/components/Obituary.jsx`'s share text and `navigator.share` title, `admin/index.html` title and `admin/src/App.jsx`'s header both renamed too, since they carry the same product branding. Internal-only occurrences left untouched on purpose: `localStorage` keys in `prefs.js` (all `lifeswipe.*`), the `life-swipe` npm package name, CLAUDE.md/README.md, and the `styles.css` file-header comment — none of those are UI. No engine, logic, or data changes. |
+| Demo mode (static short life + 1000-card demo pool) | shipped | on `demo-mode` — a second ENTRY PATH into the same game, not a second game. `state.demoMode` (new, on `createState`, alongside a new plain `startAge` parameter) is read in exactly four places: the swipe cap in `applyChoice`, the time table in `timeCostMonths`, the refill gate in `shared/deck.js`, and presentation branches in `App.jsx`/`Obituary.jsx`/`Hud.jsx` — each an `if (demoMode)` around otherwise byte-identical behaviour, false for every ordinary life. A demo life starts at 18 (which SATISFIES invariant 2 rather than dodging it — `effectiveTier` is untouched), forces `contentMode: 'mature'` THROUGH the existing age gate rather than around it (`StartScreen`'s `askingAge` is now `null`/`'mature'`/`'demo'`, one dialog two callers; `/?demo=1` opens the gate rather than bypassing it), skips the `'intro'` phase entirely (which also removes its `POST /api/intro` call), and ends at `BAL.DEMO.maxSwipes` (40) via the same `finish` path bankruptcy and death use — checked LAST among the ending conditions so a life that goes broke on swipe 40 ends as broke. `ending: 'demo'` keeps `alive` true (nothing killed them) and `Obituary.jsx` writes a closing card for the format instead of an obituary. `BAL.DEMO.time` advances 4 months per minor swipe so the demo covers ~18→31 instead of 18→21; faster time was CONSIDERED for making organic death common and rejected as impossible — Gompertz mortality at those ages needs ~1.5 years per swipe, which no minor card can carry. ZERO PROVIDER CALLS is enforced, not preferred: `Deck.maybeRefill` returns on `demoMode` as its first line, before it reads `fetchBatch` (which `App.jsx` also passes null), and `Obituary.jsx` skips its fetch too. New content set `data/demo-seed-scenarios.json` (never `scenarios-seed.json`), `source: 'demo-generated'` (a fifth `shared/provenance.js` value), minor-tier only, three age bands 18-22/22-30/30-36. `modes` is COMPUTED, not stamped `["mature"]` — a uniformly mature-only pool would be gated behind the 1-3 dark-arc budget and throttle 1000 cards to 3. New `server/demo-prompt.js` + `server/demo-seed-generation.js` (siblings of `prompt.js`/`seed-generation.js`, not modes inside them: coverage-driven vs volume-driven targeting), through the unchanged `server/provider.js` seam and the unchanged `shared/schema.js`/`shared/content.js` validators. The content register is innuendo-driven comedic writing, NOT explicit content, and relaxes the "no explicit sexual content in either mode" rule by nothing; an authoring-side screen hard-drops explicit content, non-adult casts, tagged parents (invariant 8 — the model reached for `{{new:parent}}` in the first pilot), empty role tags and non-minor weights, and warns on word count, dated slang, gendered pronouns beside a name tag, generic labels and British spelling. A corpus-wide near-duplicate pass warns (never drops) on same-situation repeats that word overlap cannot see — measured at 0.23 Jaccard on two obviously identical cards. New CLI `npm run generate-demo-seeds` and admin "Demo pool" tab (`admin/src/components/DemoPool.jsx`) — a third draft/target pair through the SAME `draftRoutes` factory and `DraftQueue.jsx`, parametrised not duplicated, with the existing bulk approve-clean/reject-warned actions. Draft-only; nothing reaches the live pool without a human approve. New `npm run demo-check` asserts the cap holds, no provider call is attempted (by handing the deck a counting `fetchBatch`, so it tests the guard rather than the caller) and nothing non-safe is dealt under 18. NOT changed: the engine's effect resolution, the referee, `data/scenarios-seed.json`, `server/seed-generation.js`, `server/prompt.js`, `shared/content.js` or `effectiveTier`. |
 | Region weights rebuilt on one archive vintage | shipped | on `dev` — housekeeping with a real payoff. The pool had been sitting on TWO archive vintages: the 807 SSA-sourced entries were measured against the committed 2025 archive, while the 187 originals kept maps from an older one that predated Florida's inclusion, so not a single entry carried a `US-FL` key. `npm run build-region-weights -- ../ssa-state` re-run across all 993 entries puts every map on the same 2025 data. No code change at all — the script already mutated `region_frequency` in place rather than replacing the record, so `national_births`, `active` and every other field survived untouched (verified: 993 entries, 953 with `national_births`, key order intact). Results: 908 → 914 entries with a regional map, 23,417 region entries written, 50 → 51 distinct regions, and 360 entries now carry `US-FL`. Measured regional lift IMPROVED to 1.4-2.2x (was 1.4-1.9x), with US-HI now 2.2x. Florida itself turns out to tilt only mildly — caribbean 1.12x, latin-american 1.02x — and that is the data, not a bug: FL has 16 entries above 2x against Minnesota's 48, and 253 of its 360 entries sit BELOW 0.8x, which is what a high-migration state whose naming profile sits near the national average looks like. Its strongest signals are plausible (Joaquim 8.9x, Rafaela, Thiago; Winston; Valentina). No pool membership, era, deactivation, weighting-method or selection changes. |
 
 ---
@@ -786,6 +814,19 @@ Other things worth knowing before working on it:
   today's log, so it was confirmed by planting a card that trips it and
   watching `npm run names` exit 1. The library path still runs the real
   `identityWarnings`, where it is the right question.
+- **The Demo pool tab is a THIRD draft/target pair, not a mode on Generate
+  seeds.** `admin/src/components/DemoPool.jsx` → `POST /api/generate-demo-seeds`
+  → `demo-seed-scenarios.draft.json` → the same `draftRoutes`-generated
+  approve/reject routes → `data/demo-seed-scenarios.json`. It reuses
+  `DraftQueue.jsx`, `SeedForm.jsx` and the bulk approve-clean/reject-warned
+  actions unchanged; only the target file and the generation knob differ. It
+  is its own tab because every control on "Generate seeds" is about coverage
+  (mode picker, per-bucket target, generate-anyway checkbox) and none of them
+  mean anything for a volume-driven, single-mode, single-tier pool — a toggle
+  would have meant three controls greying themselves out. See "Demo mode".
+  The cross-reference check deliberately does NOT read the demo pool: it
+  answers "can anything ever set this `requires` flag", and demo cards carry
+  no library `requires` chains.
 - **Harvesting never merges either**, and never runs on a timer. The "Harvest"
   tab (`admin/src/components/Harvest.jsx`) reads the request log on demand and
   appends to both draft queues; see "Content harvesting" below. Its two review
@@ -1016,6 +1057,244 @@ deliberately, with a mock returning prose: attempt 1 `failed`, retry
   scheme/host allow-listing, private-range blocking, no redirects — plus a
   `keySource`/harvest-eligibility decision, since a player-run model's output
   is their content (the `byok` reasoning applies to compute, not just keys).
+
+## Demo mode
+
+A short, mature-only, **entirely static** life for a demo booth, a link
+somebody clicks once, or anyone who wants to see what the game is without
+committing to a whole life. One to five minutes, capped in swipes, starting at
+18, drawing from its own thousand-card pool and **never calling a model**.
+
+It is a second entry path into the same game, not a second game. The engine,
+`applyChoice`, effect resolution, the referee, `scenarios-seed.json` and its
+generation script are all untouched — every demo-specific behaviour hangs off
+one boolean.
+
+**`state.demoMode` is that boolean, and its blast radius is four places.**
+`createState` records it, and it is read by exactly: the swipe cap in
+`applyChoice`, the time table in `timeCostMonths`, the refill gate in
+`shared/deck.js`, and the presentation branches in `App.jsx`/`Obituary.jsx`.
+Every one of those is `if (demoMode)` around behaviour that is otherwise
+byte-identical, and `demoMode` is `false` for every ordinary life. Nothing in
+the demo path can move the main game, which is the property that made this
+safe to put in `shared/` at all rather than bolting a parallel engine beside
+it.
+
+**Age 18, through `createState`'s new `startAge` parameter — not by
+fast-forwarding.** `createState({ startAge: 18 })` is a plain parameter any
+life may pass; advancing `ageMonths` after construction would skip the
+age-dependent setup and hand the starting friend a name drawn for a
+sixteen-year-old's cohort (`impliedBirthYear`). **This satisfies invariant 2
+rather than working around it**: `effectiveTier({ age: 18, contentMode:
+'mature' })` returns `'mature'` on its own terms, so no demo card is ever
+mature content shown to a minor, and `effectiveTier` itself is completely
+unchanged. `npm run demo-check` asserts that directly instead of trusting it —
+"structurally impossible" is a claim, and an unasserted claim is how it would
+quietly stop being true if the start age were ever lowered.
+
+**The age gate still runs.** Demo mode forces `contentMode: 'mature'`, so it
+goes through the same 18-or-older confirmation the Mature pill does —
+`StartScreen`'s `askingAge` became `null | 'mature' | 'demo'`, one dialog with
+two callers, because the confirmation being asked for is the same one. The
+`/?demo=1` kiosk link does not bypass it either: an unconfirmed visitor lands
+on the start screen with the dialog already open and the demo begins on accept.
+
+**No intro phase.** Demo mode goes from entry straight to the first
+`deck.draw()` card, skipping `phase === 'intro'` entirely. That also removes
+the flow's one generation call: the grounding beat is inside the intro, so
+skipping the phase skips `POST /api/intro`.
+
+### Zero provider calls, enforced not preferred
+
+`Deck`'s constructor takes `demoMode`, and `maybeRefill` returns on it as its
+**first line**, before it reads `fetchBatch` at all. `App.jsx` passes
+`fetchBatch: null` as well — the flag is the half that cannot be forgotten by
+a future caller. A demo life draws from the demo pool and, only if that were
+somehow exhausted mid-life, from `shared/fallback.js`'s procedural templates.
+Nothing else.
+
+The obituary is covered too: `Obituary.jsx` takes `demoMode` and uses the
+locally written obituary rather than calling `POST /api/obituary`. That call
+happens after play rather than during it, but "zero API calls" is the whole
+format, and a demo booth wants the instant ending anyway.
+
+`npm run demo-check` proves the deck half by handing the deck a `fetchBatch`
+that **counts being called** and asserting the counter stayed at zero — so it
+tests the guard in `shared/deck.js`, not that `App.jsx` remembered to pass
+null.
+
+### The cap, and why the forced ending is the normal one
+
+`BAL.DEMO.maxSwipes` (40) is a ceiling, not a target. Bankruptcy and death end
+a demo life earlier on their own terms; the cap check sits **last** among the
+ending conditions in `applyChoice` precisely so a life that goes broke on its
+fortieth swipe ends as broke, not as "the demo finished".
+
+Reaching it routes through the same `finish` path every other ending uses, with
+`ending: 'demo'` and a cause from `DEMO_CAUSES`. **`alive` stays `true`** for
+this one ending — nothing killed them, the sample ended — and `ended` is what
+actually closes the run, which is what every caller reads. `Obituary.jsx`
+recognises `ending === 'demo'` and writes a closing card for the format instead
+of an obituary claiming a death that did not happen.
+
+The HUD shows `swipe 12 of 40` in demo mode. That one string is what stops the
+cap reading as the game breaking: a player who can see the end coming
+experiences it as the format.
+
+**`BAL.DEMO.time` (4 months per minor swipe, against `BAL.TIME`'s 1) is a
+deliberate choice, and the reasoning is worth keeping.** The brief asked
+whether faster time would make organic death or bankruptcy resolve a demo more
+often than the forced ending does. **It would not, and it cannot.** Gompertz
+mortality between 18 and 31 is a fraction of a percent a year; getting a
+meaningful chance of natural death inside forty swipes needs roughly 1.5 years
+per swipe, which no minor card — "a moment or a week" — can carry without the
+fiction collapsing. So 4 months is set for a different reason: at the ordinary
+rate a 40-swipe demo covers 3.3 years and ends at 21, which reads as a
+fragment. At 4 months it covers ~13 years and ends around 31 — college, first
+job, first real money — which is an arc. The forced ending is the normal demo
+ending **by design**, and is written for rather than apologised for.
+Bankruptcy stays a genuine early exit.
+
+### The pool is its own content set
+
+`data/demo-seed-scenarios.json`, never `data/scenarios-seed.json`. Same schema
+shape (a demo card goes through the identical `validateBatch` and is read by
+the identical `Deck` code path, so it has to be), plus
+`source: "demo-generated"` — a fifth value in `shared/provenance.js`'s
+vocabulary, so a demo card that ever turned up in the main deck through a
+mis-aimed approve is visible as one at a glance.
+
+Every card is `weight: "minor"` (prompt only — the demo lives on rhythm) and
+carries `stages`/`life_stage` for one of three age bands: `college` 18-22,
+`early` 22-30, `family` 30-36. There is deliberately nothing past 36: a demo
+life cannot reach it, and a card written for a 58-year-old would sit in the
+pool eligible to nobody.
+
+**`modes` is computed, not stamped `["mature"]`, and this matters.** The
+obvious move — tag the whole pool mature-only, since the demo is mature-only —
+is a bug. `shared/deck.js` treats a card without `"safe"` as a **dark-arc**
+card, gated behind the 1-3 arc budget a mature life rolls at birth
+(invariant 9), so a uniformly mature-only pool would throttle a thousand cards
+down to three and drop the demo onto fallback templates by swipe five.
+`shapeDemoRecord` uses the same rule `server/seed-generation.js` does: generated
+under the mature tier, tagged by what the card actually contains, so the
+genuinely dark ones carry `["mature"]` and spend the arc budget as they should
+while the merely cheeky ones carry both and flow freely. **The demo is
+mature-only because `demoMode` forces `contentMode` to `"mature"`, not because
+of a string in this field.**
+
+### Generation, and the content register
+
+`server/demo-prompt.js` (the prompts) and `server/demo-seed-generation.js` (the
+batching, screening and de-duplication), driven by `npm run generate-demo-seeds`
+or the admin's **Demo pool** tab. Siblings of `server/prompt.js` /
+`server/seed-generation.js`, not modes inside them, because the targeting logic
+differs in kind: seed generation is **coverage-driven** (ask `scripts/coverage.js`
+which bucket/mode pairs are short, fill those); demo generation is
+**volume-driven** (one mode, one tier, three age bands, a target of ~1000).
+
+Unchanged and unrelaxed: `server/provider.js` (so it runs on Anthropic or
+Ollama per `LLM_PROVIDER` and the admin toggle — no backend is named anywhere
+in either file), `shared/schema.js`'s `validateBatch`, and
+`shared/content.js`'s `checkCompliance`. Draft-only: it writes
+`demo-seed-scenarios.draft.json` and stops, exactly like every other content
+path here.
+
+**THE CONTENT REGISTER, because this is the thing most likely to be misread
+later.** "Spicy", "risqué", "innuendo" and "double entendre" in
+`server/demo-prompt.js` mean **suggestive comedic writing** — a line with an
+innocent surface reading and a cheekier one underneath. They do **not** mean
+explicit sexual content, and they relax the existing "no explicit sexual
+content in either mode" rule by not one word. It is a **comedic register
+layered on top of** the existing mature-mode content categories (crime, drugs,
+vice — `shared/content.js`'s `CATEGORIES`), not a new content category, and it
+adds none. Gen-Z vernacular drives **voice**, not content boundaries: current
+slang in a card about rent is still a card about rent.
+
+**The register is screened mechanically, not just asked for.** The generator
+carries an authoring-side screen that `shared/content.js` deliberately does not
+— and this is why it has to exist: `content.js`'s `sexual` pattern classifies
+its terms as *mature content*, which is **legal in a mature-tier life**, so a
+card that crossed the line would pass `checkCompliance` cleanly. The
+"no explicit sexual content" rule had always been prompt-side only, and a pool
+written to sit right next to that line is the one place worth also checking the
+output. It lives in `server/demo-seed-generation.js` rather than
+`shared/content.js` because it is authoring policy for one pool, not a runtime
+rule about what a life may contain — `content.js` stays the single source of
+truth for the latter, untouched.
+
+Hard drops (the candidate is discarded):
+
+| screen | why |
+| --- | --- |
+| explicit sexual content | the register is innuendo; the scene itself never |
+| cast not clearly adult | every character in the demo pool is 18 or over |
+| a tagged **parent** (`{{new:parent}}`, `{{new:mom}}`…) | invariant 8 — Mom and Dad are address forms the engine never renames. **The model reached for this in the very first pilot batch**, so it is a measured failure mode, not a hypothetical |
+| an empty role tag (`{{new:person}}`, `{{new:acquaintance}}`) | the role IS the identity; a bare one resolves to placeholder-reading text and gives the name pool no age/gender hint |
+| non-minor weight | a standard or major card carries setting/beat/dialogue and breaks the rhythm the whole format rests on |
+| a lexical near-copy (Jaccard ≥ 0.45) | nothing a reviewer could want |
+
+Warnings (attached as `validationWarnings`, so the queue's bulk actions can act
+on them — see below): prompt word count outside 15-30 widened by 35%; dated or
+invented slang the voice brief bans by name; hashtags; emoji; a **gendered
+pronoun beside a name tag** (the engine picks that name *after* the card is
+written, so "he" can be dealt with a woman's name in it); a generic choice
+label; British spelling, via the existing `britishSpellingWarnings`.
+
+**Near-duplicate detection runs twice, at two different strengths, on purpose.**
+Word overlap catches a card written twice and **cannot** catch a *situation*
+written twice, which is the repeat a thousand-card pool actually produces:
+measured on a pilot, two plainly identical "college friend's wedding, far away,
+costs a fortune" cards scored **0.23** on word overlap — far below anything
+usable as a drop threshold. So `markNearDuplicates` runs once over the whole
+accepted set at the end, across age bands, flagging pairs that share two or
+more words rare in the corpus, and it **warns rather than drops**: same-topic
+is a judgement call, and that judgement belongs to the reviewer, not to a
+heuristic. (It shipped broken first: the rare-word ceiling floored at 1, and a
+word *shared* by two cards appears in two documents by definition, so nothing
+could ever qualify — 0 of 30 marked against two pairs visible from across the
+room. The floor is 2 now. **Measure, don't assume.**)
+
+### Review
+
+The admin's **Demo pool** tab (`admin/src/components/DemoPool.jsx`) — a third
+draft/target pair through the same `draftRoutes` factory in
+`server/admin/index.js` and the same `DraftQueue.jsx` / `SeedForm.jsx` the
+other two use, parametrised rather than duplicated. Its target is
+`data/demo-seed-scenarios.json` and never the seed deck: the two pools stay
+separate all the way through approval, which is the whole reason the demo has
+its own file.
+
+A dedicated tab rather than a mode toggle on "Generate seeds": every control
+on that tab is about coverage — a mode picker, a per-bucket target, a
+"generate even for buckets already at target" checkbox — and all of them are
+meaningless here. Demo generation has one mode, one tier, no coverage table to
+be short against, and exactly one useful knob. A toggle would have meant three
+controls greying themselves out, which explains the difference worse than two
+tabs do.
+
+The "Approve all without warnings" / "Reject all with warnings" bulk actions
+apply directly, and this queue is the volume they were built for. Note that
+the main seed pipeline only ever attaches warnings to **major** cards (the one
+tier with per-field budgets) — every demo card is minor, so without
+`demoWarnings` a demo draft could not carry a warning at all and both bulk
+actions would be inert on the one queue that most needs them.
+
+### Verification
+
+```bash
+npm run demo-check                 # 300 demo lives, three hard assertions
+npm run demo-check -- 1000 seed
+```
+
+Three assertions, all exit 1 on failure: every demo life ends at or under the
+cap; no demo life attempts a live provider call; no card is dealt below 18 at a
+non-safe tier. It also reports the numbers `BAL.DEMO.maxSwipes` was tuned
+against — swipe counts, ages reached, how lives ended, and an estimated session
+length computed from the **pool's real word counts** rather than an assumed
+card length — because that constant is meant to be measured, not guessed.
+
+---
 
 ## Location and privacy
 

@@ -47,15 +47,27 @@ export const hasFlag = (s, f) => s.flags.includes(f);
 // `region` tilts the starting friend's name the same way it tilts everyone
 // else's. It is read here and NOT stored: it belongs to the session, not to
 // the life, and a saved game should not carry the player's location around.
+//
+// `startAge` and `demoMode` are the two demo-mode seams, and they are
+// deliberately independent of each other. `startAge` is a plain parameter -
+// any life may begin at any age - because fast-forwarding the clock after
+// construction would run the newborn state through none of the age-dependent
+// setup and leave `impliedBirthYear` naming the starting friend for a
+// sixteen-year-old's cohort. `demoMode` is a property of the SESSION recorded
+// on the life, read only by the demo swipe cap (applyChoice), the demo time
+// table (timeCostMonths) and the deck's refill gate (shared/deck.js). Neither
+// touches `effectiveTier`, which still decides content on age and mode alone.
 export function createState({
   seed = Date.now(), name = 'You', contentMode = DEFAULT_MODE, region = null,
+  startAge = null, demoMode = false,
 } = {}) {
   const state = {
     seed: String(seed),
     rngState: seedFrom(seed),
     name,
     turn: 0,
-    ageMonths: BAL.START.ageMonths,
+    ageMonths: Number.isFinite(startAge) ? Math.round(startAge * 12) : BAL.START.ageMonths,
+    demoMode: demoMode === true,
     money: BAL.START.money,
     health: BAL.START.health,
     happiness: BAL.START.happiness,
@@ -288,12 +300,19 @@ export function normalizeEffects(rawEffects, s) {
 }
 
 // Months advanced by a swipe. The storyteller may suggest; the engine decides.
+//
+// A demo life reads its per-weight defaults from BAL.DEMO.time instead of
+// BAL.TIME, so ~40 minor swipes cover about thirteen years rather than three
+// and the demo ends on someone who has actually lived a bit. Everything
+// around that is unchanged: an explicit `timeCostMonths` from a card still
+// wins, and the result still goes through the same CLAMP and stage cap.
 export function timeCostMonths(scenario, effects, s) {
   const [lo, hi] = BAL.CLAMP.timeMonths;
   const cap = BAL.TIME.stageCapMonths[stageOf(s).id] ?? 48;
+  const table = s.demoMode ? BAL.DEMO.time : BAL.TIME;
   const proposed = Number.isFinite(effects.timeCostMonths)
     ? effects.timeCostMonths
-    : BAL.TIME[scenario.weight] ?? BAL.TIME.standard;
+    : table[scenario.weight] ?? table.standard ?? BAL.TIME.standard;
   return clamp(proposed, lo, Math.min(hi, cap));
 }
 
@@ -334,6 +353,17 @@ const YOUNG_CAUSES = [
   'an aneurysm, no warning given',
   'a freak accident involving a ladder',
   'an infection that moved faster than the paperwork',
+];
+// How a DEMO life ends when it reaches BAL.DEMO.maxSwipes still going. Not a
+// death and not a bankruptcy - the one ending in this game you walk away
+// from - so it gets its own pool rather than borrowing a cause of death that
+// would be a lie. Written in the same register as the other three so the
+// obituary screen reads as an ending rather than as an error message.
+const DEMO_CAUSES = [
+  'the demo running out of road, which is the only ending here you survive',
+  'the tape running out mid-sentence, as demos do',
+  'a hard stop at the interesting part, on purpose',
+  'the end of the free sample, with the rest of it still ahead of you',
 ];
 
 /* ---------------------------------------------------------------- the act */
@@ -513,13 +543,26 @@ export function applyChoice(state, rawScenario, side) {
   if (age >= BAL.MAX_AGE) {
     return finish(s, 'death', 'You simply ran out of century.', events, before, scenario, chosenLabel, months);
   }
+  // The demo ceiling, checked LAST so it never pre-empts a real ending: a
+  // demo life that goes broke or dies on its fortieth swipe ends as broke or
+  // dead, not as "the demo finished". It is a ceiling, not a target. Guarded
+  // on s.demoMode, which is false for every ordinary life, so this branch
+  // cannot move the main game.
+  if (s.demoMode && s.turn >= BAL.DEMO.maxSwipes) {
+    const cause = DEMO_CAUSES[Math.floor(nextRandom(s) * DEMO_CAUSES.length)];
+    return finish(s, 'demo', cause, events, before, scenario, chosenLabel, months);
+  }
 
   record(s, scenario, chosenLabel, side, before, months, events);
   return { state: s, events, ended: false };
 }
 
 function finish(s, ending, cause, events, before, scenario, chosenLabel, months) {
-  s.alive = false;
+  // A demo life that reaches the swipe cap is over but not dead - nothing
+  // killed them, the sample just ended - so `alive` stays true there and
+  // `ended` is what closes the run, which is what every caller actually
+  // reads. Death and bankruptcy are unchanged.
+  s.alive = ending === 'demo';
   s.ended = true;
   s.ending = ending;
   s.causeOfDeath = cause;

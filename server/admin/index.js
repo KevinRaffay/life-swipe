@@ -15,6 +15,7 @@ import { crossReference } from './cross-reference.js';
 import { previewPattern, previewSeed, yearFor } from './preview.js';
 import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } from '../extraction.js';
 import { generateSeedDrafts } from '../seed-generation.js';
+import { generateDemoDrafts, DEFAULT_TOTAL as DEMO_DEFAULT_TOTAL } from '../demo-seed-generation.js';
 import { runHarvest, HARVEST_DEFAULTS } from '../harvest.js';
 import { computeNamePoolHealth } from '../name-pool-health.js';
 import { hasKey, MODEL, setProvider, providerStatus } from '../provider.js';
@@ -58,6 +59,8 @@ export function createAdminRouter() {
     const seeds = read('seeds');
     const drafts = read('drafts');
     const seedDrafts = read('seedDrafts');
+    const demoSeeds = read('demoSeeds');
+    const demoDrafts = read('demoDrafts');
     const namePool = read('namePool');
     const nameControls = read('nameControls', EMPTY_NAME_CONTROLS);
     res.json({
@@ -69,6 +72,11 @@ export function createAdminRouter() {
       draftsVersion: drafts.version,
       seedDrafts: seedDrafts.data,
       seedDraftsVersion: seedDrafts.version,
+      demoSeeds: demoSeeds.data,
+      demoSeedsVersion: demoSeeds.version,
+      demoDrafts: demoDrafts.data,
+      demoDraftsVersion: demoDrafts.version,
+      demoDefaultTotal: DEMO_DEFAULT_TOTAL,
       namePool: namePool.data,
       namePoolVersion: namePool.version,
       nameControls: nameControls.data,
@@ -85,6 +93,7 @@ export function createAdminRouter() {
       regions: US_REGIONS,
       files: {
         library: fileOf('library'), seeds: fileOf('seeds'), drafts: fileOf('drafts'), seedDrafts: fileOf('seedDrafts'),
+        demoSeeds: fileOf('demoSeeds'), demoDrafts: fileOf('demoDrafts'),
         namePool: fileOf('namePool'), nameControls: fileOf('nameControls'),
       },
     });
@@ -476,6 +485,22 @@ export function createAdminRouter() {
     sanitize: ({ validationWarnings, harvestedFrom, ...rest }) => rest,
   });
 
+  // The DEMO pool's draft queue - the third draft/target pair through the
+  // same factory, parametrised exactly like the other two rather than
+  // duplicated. Its target is data/demo-seed-scenarios.json, never
+  // data/scenarios-seed.json: the two pools stay separate all the way
+  // through approval, which is the whole reason the demo has its own file.
+  // The validator is the same `validateSeedScenario` (a demo card is a real
+  // scenario and has to pass the real structural check), and the same
+  // `validationWarnings` strip applies - those are review metadata, not
+  // schema.
+  draftRoutes({
+    draftKey: 'demoDrafts', targetKey: 'demoSeeds', rejectedKey: 'demoRejected', label: 'scenario',
+    validate: (record, siblings) => validateSeedScenario(record, siblings).problems,
+    idBase: (record) => record.prompt,
+    sanitize: ({ validationWarnings, harvestedFrom, ...rest }) => rest,
+  });
+
   // Bulk-generate seed candidates for coverage-thin buckets and append them to
   // the seed draft queue - the same generation core as
   // scripts/generate-seed-scenarios.js, called directly from the admin UI's
@@ -535,6 +560,68 @@ export function createAdminRouter() {
         seedDrafts: saved.data,
         seedDraftsVersion: saved.version,
         buckets: results.map((r) => ({ bucket: r.bucket, mode: r.mode, target: r.target, accepted: r.accepted.length, batches: r.batches })),
+      });
+    } catch (err) {
+      if (err.status >= 500) console.error('[admin]', err);
+      send({ type: 'error', message: err.message });
+    } finally {
+      if (!res.writableEnded) res.end();
+    }
+  });
+
+  /* -------------------------------------------------------- demo pool */
+
+  // Bulk-generate DEMO pool candidates and append them to the demo draft
+  // queue. Same shape as /api/generate-seeds above - NDJSON progress lines,
+  // a `done` line carrying the payload, cancel via the response's 'close'
+  // event - because a thousand-card run is an hour or two of sequential
+  // model calls and a silent request would read as a hung button long before
+  // it finished.
+  //
+  // Appends only. data/demo-seed-scenarios.json is reached solely through
+  // the demoDrafts approve route above, by a person.
+  router.post('/api/generate-demo-seeds', async (req, res) => {
+    if (!hasKey()) return res.status(503).json({ error: 'no LLM provider is configured' });
+    const totalNum = Number(req.body?.total);
+    const total = Number.isFinite(totalNum) && totalNum > 0 ? Math.min(totalNum, 5000) : DEMO_DEFAULT_TOTAL;
+
+    res.setHeader('Content-Type', 'application/x-ndjson');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+    const send = (event) => { if (!res.writableEnded && !res.destroyed) res.write(JSON.stringify(event) + '\n'); };
+
+    let stopped = false;
+    res.on('close', () => { stopped = true; });
+
+    try {
+      const existingDrafts = read('demoDrafts').data;
+      const livePool = read('demoSeeds').data;
+      // De-duplicate against BOTH the queue and what is already approved, so
+      // a second run does not re-propose cards a reviewer has already taken.
+      const known = [...existingDrafts, ...livePool];
+
+      const results = await generateDemoDrafts({
+        total,
+        existingIds: new Set(known.map((d) => d.id)),
+        existingPrompts: known.map((d) => d.prompt).filter(Boolean),
+        onStage: (info) => send({ type: 'stage', ...info }),
+        onBatch: (info) => send({ type: 'batch', ...info }),
+        shouldStop: () => stopped,
+      });
+
+      const generated = results.flatMap((r) => r.accepted);
+      const saved = update('demoDrafts', (list) => [...list, ...generated], { force: true });
+
+      send({
+        type: 'done',
+        ok: true,
+        added: generated.length,
+        demoDrafts: saved.data,
+        demoDraftsVersion: saved.version,
+        stages: results.map((r) => ({
+          stage: r.stage, target: r.target, accepted: r.accepted.length, stats: r.stats,
+        })),
       });
     } catch (err) {
       if (err.status >= 500) console.error('[admin]', err);

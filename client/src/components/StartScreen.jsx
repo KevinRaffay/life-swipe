@@ -4,10 +4,21 @@ import {
   getRegionChoice, setRegionChoice, getDetectedRegion, getTheme, setTheme, getActiveTheme,
 } from '../prefs.js';
 import { US_REGIONS, labelFor } from '@shared/regions.js';
+import { BAL } from '@shared/balance.js';
 
-export default function StartScreen({ onStart, llmEnabled, model }) {
+// `onStartDemo` is a deliberately SEPARATE entry point, not a third value of
+// the Safe/Mature picker: demo mode is a short fixed-format sample, not a
+// permanent mode a player picks for a real life, and putting it in that
+// radiogroup would say otherwise. `demoRequested` is the /?demo=1 kiosk link
+// arriving with the age gate not yet satisfied - the gate still runs, it just
+// opens by itself.
+export default function StartScreen({ onStart, onStartDemo, demoRequested = false, llmEnabled, model }) {
   const [mode, setMode] = useState(getContentMode);
-  const [askingAge, setAskingAge] = useState(false);
+  // null = closed. 'mature' = confirming to pick mature mode. 'demo' = confirming
+  // to start a demo life. One dialog, two callers, because the confirmation
+  // being asked for is the same one - the demo is mature content too, so it
+  // goes through the identical gate rather than around it.
+  const [askingAge, setAskingAge] = useState(demoRequested ? 'demo' : null);
   const [region, setRegion] = useState(getRegionChoice);
   const [theme, setThemeLocal] = useState(getTheme);
   const detected = getDetectedRegion();
@@ -32,18 +43,34 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
 
   const chooseMode = (next) => {
     if (next === 'mature' && !hasConfirmedAge()) {
-      setAskingAge(true);
+      setAskingAge('mature');
       return;
     }
     setMode(next);
     setContentMode(next);
   };
 
+  // Demo mode is mature content, so it goes through the SAME gate - never
+  // around it. An already-confirmed player starts immediately; anyone else
+  // sees the dialog and starts on accept.
+  const beginDemo = () => {
+    if (!hasConfirmedAge()) {
+      setAskingAge('demo');
+      return;
+    }
+    onStartDemo();
+  };
+
   const acceptAge = () => {
+    const forDemo = askingAge === 'demo';
     confirmAge();
+    setAskingAge(null);
+    if (forDemo) {
+      onStartDemo();
+      return;
+    }
     setMode('mature');
     setContentMode('mature');
-    setAskingAge(false);
   };
 
   return (
@@ -58,13 +85,14 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
 
       {askingAge ? (
         <div className="agegate" role="dialog" aria-label="Age confirmation">
-          <p className="agegate__title">Mature mode</p>
+          <p className="agegate__title">{askingAge === 'demo' ? 'Quick demo' : 'Mature mode'}</p>
           <p className="agegate__body">
-            Adds addiction, crime, prison and gambling arcs, written with
-            consequence. No explicit sexual content in either mode.
+            {askingAge === 'demo'
+              ? 'The demo runs on mature content: addiction, crime, gambling and vice, written for laughs and consequence. No explicit sexual content in either mode.'
+              : 'Adds addiction, crime, prison and gambling arcs, written with consequence. No explicit sexual content in either mode.'}
           </p>
           <div className="agegate__actions">
-            <button className="btn btn--ghost" onClick={() => setAskingAge(false)}>Not now</button>
+            <button className="btn btn--ghost" onClick={() => setAskingAge(null)}>Not now</button>
             <button className="btn btn--primary" onClick={acceptAge}>I am 18 or older</button>
           </div>
         </div>
@@ -135,6 +163,19 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
       </ul>
 
       <button className="btn btn--primary btn--large" onClick={() => onStart(mode)}>Begin</button>
+
+      {/* Below the fold of the real game, behind a rule, in smaller type: a
+          demo is a sample, not a fourth thing to weigh up against Safe and
+          Mature. Deliberately NOT a mode pill. */}
+      <div className="start__demo">
+        <span className="start__demo-rule" />
+        <button className="start__demo-link" onClick={beginDemo}>
+          Just show me &mdash; {BAL.DEMO.maxSwipes} swipes, a few minutes
+        </button>
+        <p className="start__demo-note">
+          A short mature-only life starting at 18. No storyteller, no waiting.
+        </p>
+      </div>
 
       <p className={`start__status start__status--${llmEnabled ? 'live' : 'offline'}`}>
         {llmEnabled ? `Storyteller: ${model}` : 'Storyteller offline - playing hand-written scenarios'}

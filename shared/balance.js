@@ -189,6 +189,53 @@ export const BAL = {
       comfortable: 700,
     },
   },
+
+  // Demo mode: a short, mature-only, static life for a demo booth or a link
+  // somebody clicks once. Every number here is read ONLY when
+  // `state.demoMode` is true, so nothing in this block can move an ordinary
+  // life by a cent. See CLAUDE.md's "Demo mode" section.
+  DEMO: {
+    // 18, not 16, and set through createState's `startAge` rather than by
+    // fast-forwarding the clock afterwards. This SATISFIES the age invariant
+    // rather than working around it: effectiveTier({age: 18, contentMode:
+    // 'mature'}) is 'mature' on its own terms, so no demo card is ever a
+    // mature card shown to a minor.
+    startAge: 18,
+
+    // The hard ceiling on a demo life, in swipes. Reached, the engine ends
+    // the life gracefully through the same `finish` path bankruptcy and death
+    // use (see applyChoice) - never an abrupt cutoff, and never a target: a
+    // demo life that goes broke or dies at swipe 12 ends at swipe 12.
+    //
+    // 40 was picked from a read-time estimate and then MEASURED. The demo
+    // pool is minor-tier only, so a card is one prompt of ~20 words: about
+    // 5-7 seconds to read, decide and swipe, plus the toast. 40 x ~6s is
+    // ~4 minutes, inside the 1-5 minute brief with room for a slow reader.
+    // `npm run demo-check` reports the measured word counts this rests on.
+    maxSwipes: 40,
+
+    // Months per swipe INSTEAD of BAL.TIME, for demo lives only.
+    //
+    // At the ordinary minor rate (1 month) a 40-swipe demo covers 3.3 years
+    // and ends at 21, which reads as a fragment rather than a life. At 4
+    // months it covers ~13 years and ends around 31 - college, first job,
+    // first real money, the beginning of the rest of it - which is the arc a
+    // demo is actually trying to show. It does NOT make organic death likely
+    // (Gompertz mortality at 18-31 is a fraction of a percent a year, and
+    // getting there would need ~1.5 years per swipe, which no minor card can
+    // carry); the forced cap ending is the normal demo ending by design, and
+    // is written for. Bankruptcy remains a genuine early exit.
+    //
+    // Same key names as BAL.TIME, and the engine's own clamps still apply on
+    // top - `timeCostMonths` runs the result through CLAMP.timeMonths and the
+    // stage cap exactly as it does for a real life.
+    time: {
+      minor: 4,
+      standard: 9,
+      major: 18,
+      trivial: 4,
+    },
+  },
 };
 
 export default BAL;
