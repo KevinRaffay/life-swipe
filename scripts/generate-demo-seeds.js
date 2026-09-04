@@ -68,7 +68,14 @@ const results = await generateDemoDrafts({
   existingIds: new Set([...existingDrafts, ...livePool].map((d) => d.id)),
   existingPrompts: [...existingDrafts, ...livePool].map((d) => d.prompt).filter(Boolean),
   shouldStop: () => stopped,
-  onStage: ({ stage, label, target }) => {
+  onStage: ({ stage, label, target, marked }) => {
+    // The final cross-stage near-duplicate sweep reports through the same
+    // callback with stage 'all' and no target, so it needs its own line
+    // rather than "generating undefined candidate(s)".
+    if (stage === 'all') {
+      console.log(`\nnear-duplicate pass: flagged ${marked} card(s) as the same situation as an earlier one`);
+      return;
+    }
     console.log(`${stage.padEnd(9)} ${label} - generating ${target} candidate(s)...`);
   },
   onBatch: ({ batch, stage, produced, total: got, target, error }) => {

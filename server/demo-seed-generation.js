@@ -48,11 +48,16 @@ export const DEFAULT_TOTAL = 1000;
 // six of them is a small response either way.
 export const BATCH_SIZE = 6;
 
-// How the thousand is split across the three age bands (server/demo-prompt.js's
-// DEMO_STAGES). Weighted toward the front because that is where a demo life
-// actually spends its swipes: starting at 18 with BAL.DEMO.time's four months
-// a swipe, a 40-swipe demo is ~10 cards in the 18-22 band, ~24 in 22-30 and
-// ~6 past 30, and the pool should be deepest where the draws are.
+// How the total is split across the three age bands (server/demo-prompt.js's
+// DEMO_STAGES). Weighted toward the front because that is roughly where a demo
+// life spends its swipes: starting at 18 at BAL.DEMO.time's five months a
+// swipe, a 32-swipe demo is ~10 cards in the 18-22 band, ~19 in 22-30 and ~3
+// past 30, and the pool wants to be deepest where the draws are.
+//
+// The split is deliberately FLATTER than that 30/60/10 draw profile. Two
+// reasons: the opening cards are the ones every demo shows and a first
+// impression is worth over-provisioning, and a band that only supplies three
+// draws still needs enough cards that two demos in a row do not repeat it.
 export const STAGE_SHARE = { college: 0.40, early: 0.42, family: 0.18 };
 
 /* --------------------------------------------------- the register screen */
@@ -351,21 +356,31 @@ export function markNearDuplicates(records) {
     }
   });
 
-  const sharedCount = new Map(); // "i:j" -> rare words in common
-  for (const indices of byRareWord.values()) {
+  // "i:j" -> the rare words those two share. The WORDS, not just how many:
+  // naming them is what makes the warning actionable. A pair matched on
+  // "collections/agency/envelope" is a real repeat and a reviewer can see it
+  // instantly; a pair matched on "tuesday/thursday" is two unrelated cards
+  // that happen to name the same weekdays, and a reviewer can dismiss that
+  // just as fast. A bare count of 2 reads identically in both cases and makes
+  // them go and diff the cards by hand. Measured on the first 300-card run:
+  // of the pairs flagged on exactly two shared words, roughly one in five was
+  // this kind of coincidence.
+  const sharedWords = new Map();
+  for (const [word, indices] of byRareWord) {
     if (indices.length < 2 || indices.length > 12) continue; // a 12-way "rare" word is not rare
     for (let a = 0; a < indices.length; a++) {
       for (let b = a + 1; b < indices.length; b++) {
         const key = indices[a] + ':' + indices[b];
-        sharedCount.set(key, (sharedCount.get(key) || 0) + 1);
+        if (!sharedWords.has(key)) sharedWords.set(key, []);
+        sharedWords.get(key).push(word);
       }
     }
   }
 
   let marked = 0;
   const alreadyMarked = new Set();
-  for (const [key, shared] of sharedCount) {
-    if (shared < TOPIC_SHARED_MIN) continue;
+  for (const [key, words] of sharedWords) {
+    if (words.length < TOPIC_SHARED_MIN) continue;
     const [i, j] = key.split(':').map(Number);
     const later = Math.max(i, j);
     const earlier = Math.min(i, j);
@@ -374,7 +389,7 @@ export function markNearDuplicates(records) {
     const record = list[later];
     if (!record.validationWarnings) record.validationWarnings = [];
     record.validationWarnings.push(
-      `same situation as "${String(list[earlier].id)}" (${shared} rare words in common) - read both before approving`,
+      `same situation as "${String(list[earlier].id)}" - shares ${words.slice(0, 6).sort().join(', ')} - read both before approving`,
     );
     marked += 1;
   }

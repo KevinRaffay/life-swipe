@@ -207,20 +207,28 @@ export const BAL = {
     // use (see applyChoice) - never an abrupt cutoff, and never a target: a
     // demo life that goes broke or dies at swipe 12 ends at swipe 12.
     //
-    // 32 IS A MEASURED NUMBER, not an estimate. The first guess was 40, from
-    // a rough "a minor card is ~20 words, call it 6 seconds". Running
-    // `npm run demo-check` against a real pool put the median session at
-    // 5m33s - outside the 1-5 minute brief - because the pool's actual median
-    // card is 23 words, and 23 words at 3.6 words/second plus 2.4 seconds to
-    // decide is 8.8 seconds, not 6. At 32 swipes the median lands at ~4m40s,
-    // inside the brief with room for a slow reader.
+    // 30 IS A MEASURED NUMBER, and it was measured twice.
     //
-    // demo-check recomputes that estimate from the pool's real word counts
-    // every run and says so when the median leaves the 1-5 minute window, so
-    // this constant stays honest as the pool changes. The two reading-rate
-    // assumptions behind it are named at the top of that script rather than
-    // buried here, because they are the part most worth arguing with.
-    maxSwipes: 32,
+    // The first guess was 40, from a rough "a minor card is ~20 words, call
+    // it 6 seconds". `npm run demo-check` against a pilot pool put the median
+    // session at 5m33s - outside the 1-5 minute brief - because a real card
+    // is longer than that guess, and at 3.6 words/second plus 2.4 seconds to
+    // decide it costs ~8.8 seconds, not 6. That took it to 32.
+    //
+    // Then the actual 300-card pool arrived with a median card of 25 words
+    // rather than the pilot's 23, and 32 swipes measured at 5m04s - four
+    // seconds over. Hence 30, which lands at ~4m45s. Four seconds is well
+    // inside the error bars of a reading-rate assumption, and the number was
+    // trimmed anyway: the brief is the brief, and arguing with the harness
+    // that is telling you the answer is how a constant goes stale.
+    //
+    // demo-check recomputes that estimate from the pool's real word counts on
+    // every run and says so when the median leaves the window, so this stays
+    // honest as the pool changes. The two reading-rate assumptions behind it
+    // sit at the top of that script rather than here, because they are the
+    // part most worth arguing with, and they are deliberately CONSERVATIVE -
+    // 3.6 words/second is about 216wpm against a typical adult's ~240.
+    maxSwipes: 30,
 
     // Months per swipe INSTEAD of BAL.TIME, for demo lives only.
     //
@@ -231,12 +239,14 @@ export const BAL = {
     // demo is actually trying to show, and which is why the demo pool has
     // three age bands reaching to 36 rather than one.
     //
-    // 5 rather than 4 because maxSwipes came DOWN to 32 on measurement (see
-    // above) and the age reached has to be held roughly where it was: 32 x 5
-    // months lands at 31.3, still inside the pool's third band, where 32 x 4
-    // would land at 28.7 and make that band's ~180 cards unreachable. The
-    // product of these two constants is the real setting; either one alone is
-    // half an answer.
+    // 5 rather than 4 because maxSwipes came DOWN on measurement (see above)
+    // and the age reached has to be held where the pool's bands are: 30 x 5
+    // months lands at 30.5, just inside the third band, where 30 x 4 would
+    // land at 28 and make that band's cards unreachable entirely. The product
+    // of these two constants is the real setting; either one alone is half an
+    // answer, so re-check the age line demo-check prints after touching
+    // either. The third band is lightly used by design - about one draw per
+    // demo - which is why it is the smallest share in STAGE_SHARE.
     //
     // This does NOT make organic death likely, and nothing in this range
     // could: Gompertz mortality between 18 and 31 is a fraction of a percent

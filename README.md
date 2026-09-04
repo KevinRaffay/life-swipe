@@ -393,7 +393,7 @@ Add `"priority": 1` to any seed that has to fire for later cards to make sense.
 ## Demo mode
 
 A short, mature-only, **entirely static** life — one to five minutes, capped at
-32 swipes, starting at 18, drawing from its own thousand-card pool and **never
+30 swipes, starting at 18, drawing from its own dedicated pool and **never
 calling a model**. Meant for a demo booth, a link somebody clicks once, or
 anyone who wants to see what the game is without committing to a whole life.
 
@@ -417,13 +417,13 @@ What is different from an ordinary life, and nothing else is:
 | card source | `data/scenarios-seed.json` + live generation | `data/demo-seed-scenarios.json` only |
 | provider calls | scenarios, intro beat, obituary | **none, ever** |
 | time per minor swipe | 1 month | 5 months |
-| ends when | you die or go broke | you die, go broke, **or** hit 32 swipes |
+| ends when | you die or go broke | you die, go broke, **or** hit 30 swipes |
 
 The swipe cap is a ceiling, not a target: a demo life that goes broke on swipe
 twelve ends on swipe twelve. Reaching the cap ends the life through the same
 path death and bankruptcy use, so you get the ending screen rather than a
 cutoff — and since nothing killed you, it does not pretend otherwise. The HUD
-counts `swipe 12 of 32` so the ending is never a surprise.
+counts `swipe 12 of 30` so the ending is never a surprise.
 
 **Zero provider calls is enforced, not preferred.** `Deck.maybeRefill` returns
 on the demo flag before it looks at whether a fetcher was even configured, and
@@ -476,7 +476,7 @@ tier. That last one should be structurally impossible — a demo starts at 18 an
 the clock only moves forward — which is exactly why it is asserted rather than
 assumed.
 
-It also reports the numbers the 32-swipe cap was tuned against, including an
+It also reports the numbers the 30-swipe cap was tuned against, including an
 estimated session length computed from the pool's real word counts.
 
 ---
