@@ -1080,6 +1080,18 @@ the demo path can move the main game, which is the property that made this
 safe to put in `shared/` at all rather than bolting a parallel engine beside
 it.
 
+**That claim was measured, not asserted.** `shared/engine.js` genuinely
+changed for this feature — `createState`, `timeCostMonths`, `applyChoice`'s
+ending list and `finish` — so "the main game is untouched" is exactly the kind
+of statement this file's own Verification section says to go and break rather
+than believe. The check: a `git worktree` at the last pre-demo commit, then
+`node scripts/simulate.js 300 regression --mode=both` run in both trees with
+the same base seed, and the two outputs diffed. **Byte-identical**, across 300
+lives in both modes — lifespan, swipes, money, causes of death, card sources,
+every assertion. Re-run that diff after any future edit to those four seams; a
+demo-guarded branch that has started costing the main game a single RNG draw
+will show up in it immediately, and nowhere else.
+
 **Age 18, through `createState`'s new `startAge` parameter — not by
 fast-forwarding.** `createState({ startAge: 18 })` is a plain parameter any
 life may pass; advancing `ageMonths` after construction would skip the
