@@ -154,6 +154,36 @@ if (hardcoded.length) {
 }
 console.log(`seed deck: ${seedDeck.length} cards, ${hardcoded.length} hardcoded names`);
 
+// The DEMO pool (data/demo-seed-scenarios.json) is dealt by the same Deck and
+// resolved by the same `resolveCardNames`, so invariant 8 binds it exactly as
+// it binds the seed deck - and until this ran, nothing checked it. That gap
+// mattered more here than it would anywhere else: demo cards are GENERATED in
+// bulk and approved a few hundred at a time, so a prompt regression that let
+// one card through with a literal name would arrive in company, and would only
+// show up as two characters quietly becoming one person mid-demo.
+//
+// Same check, deliberately not a wider one. A scan for any pool name appearing
+// in visible text was tried and is useless here: it flags the Allen key in a
+// flat-pack card, the "Don" inside "Don't", the months April and June, and the
+// city of Austin - eight hits on today's pool, none of them real. The
+// relationship-name check is the one that catches the bug that actually breaks
+// the game, which is the same reason the seed deck only gets this one.
+const demoPath = fileURLToPath(new URL('../data/demo-seed-scenarios.json', import.meta.url));
+const demoPool = fs.existsSync(demoPath) ? JSON.parse(fs.readFileSync(demoPath, 'utf8')) : [];
+const demoHardcoded = [];
+for (const card of demoPool) {
+  for (const side of ['leftEffects', 'rightEffects']) {
+    const rel = card[side] && card[side].relationship;
+    if (!rel || typeof rel.name !== 'string') continue;
+    if (rel.name.includes('{{') || ADDRESS_TERMS.has(rel.name)) continue;
+    demoHardcoded.push(`${card.id}.${side} names "${rel.name}"`);
+  }
+}
+if (demoHardcoded.length) {
+  errors.push(`${demoHardcoded.length} demo card(s) hardcode a name: ${demoHardcoded.slice(0, 3).join(', ')}`);
+}
+console.log(`demo pool: ${demoPool.length} cards, ${demoHardcoded.length} hardcoded names`);
+
 /* ---------------------------------------------------------- distribution */
 
 // Roles a life actually generates, weighted the way the storyteller reaches

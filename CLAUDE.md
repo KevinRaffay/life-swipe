@@ -1343,7 +1343,18 @@ npm run demo-check -- 1000 seed
 
 Three assertions, all exit 1 on failure: every demo life ends at or under the
 cap; no demo life attempts a live provider call; no card is dealt below 18 at a
-non-safe tier. It also reports the numbers `BAL.DEMO.maxSwipes` was tuned
+non-safe tier.
+
+`npm run names` covers the demo pool too, with the same hardcoded-name check
+it runs on the seed deck - invariant 8 binds the demo pool identically, since
+the same `Deck` deals it and the same `resolveCardNames` resolves it. That
+matters more here than in the seed deck: demo cards are generated in bulk and
+approved a few hundred at a time, so a prompt regression that let a literal
+name through would arrive in company, and would surface only as two characters
+quietly becoming one person mid-demo. Deliberately the same narrow check, not a
+wider one - a scan for any pool name in visible text was tried and flags the
+Allen key in a flat-pack card, the "Don" inside "Don't", the months April and
+June, and the city of Austin. Eight hits, none real. It also reports the numbers `BAL.DEMO.maxSwipes` was tuned
 against — swipe counts, ages reached, how lives ended, and an estimated session
 length computed from the **pool's real word counts** rather than an assumed
 card length — because that constant is meant to be measured, not guessed.

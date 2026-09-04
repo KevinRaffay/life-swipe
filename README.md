@@ -487,6 +487,11 @@ assumed.
 It also reports the numbers the 30-swipe cap was tuned against, including an
 estimated session length computed from the pool's real word counts.
 
+`npm run names` checks the demo pool as well as the seed deck for cards that
+hardcode a person's name instead of using a `{{new:role}}` tag — the engine
+names every character, and a card that names one itself would be the same
+person in every life.
+
 ---
 
 ## Content modes
