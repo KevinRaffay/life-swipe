@@ -2528,5 +2528,198 @@
     "typical_effects": "Creates a branch point that affects social life and personal interests; may generate pending events related to stress or skill development",
     "rarity": "uncommon",
     "source": "harvested"
+  },
+  {
+    "id": "early_career_mentorship_with_excess",
+    "pattern": "A promising early career under a charismatic senior figure who normalizes excess and unconventional behavior",
+    "category": "career",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_mentored"
+    ],
+    "typical_effects": "Creates a pending event for the character to either embrace or reject the mentor's influence, potentially leading to a career pivot or ethical conflict",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "scientific_background_to_radical_politic",
+    "pattern": "A person with scientific training transitions to radical political ideology while pursuing entrepreneurial ventures",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_political"
+    ],
+    "typical_effects": "Creates a branch point where the character's political beliefs either drive or conflict with their business decisions",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "romantic_entanglement_with_political_div",
+    "pattern": "A romantic relationship develops between two people with divergent political views, leading to frequent conflict and eventual separation",
+    "category": "romance",
+    "life_stage": [
+      20,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_in_romantic_relationship"
+    ],
+    "typical_effects": "Creates a pending event for relationship resolution or continuation, with potential for character growth or conflict escalation",
+    "rarity": "common",
+    "source": "extracted"
+  },
+  {
+    "id": "entrepreneurial_failure_and_business_rei",
+    "pattern": "An entrepreneur experiences multiple business failures before discovering a new venture that aligns with their ideological beliefs",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_entrepreneur"
+    ],
+    "typical_effects": "Creates a branch point where the character's ideology either propels or hinders their next business venture",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "small_business_ownership_with_part",
+    "pattern": "A person manages a small business with part-time college student employees in a warehouse setting",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_business_owner"
+    ],
+    "typical_effects": "Creates a pending event for business growth or management challenges with staff",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "cryptocurrency_adoption_for_anonymous_tr",
+    "pattern": "A person discovers cryptocurrency and develops a business model that enables anonymous digital transactions",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_used_cryptocurrency"
+    ],
+    "typical_effects": "Creates a major branch point with potential for legal consequences or business success",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "personal_grief_and_life_reflection",
+    "pattern": "A person experiences significant emotional distress and life reflection following a romantic breakup, leading to personal goals reevaluation",
+    "category": "romance",
+    "life_stage": [
+      25,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_heartbroken"
+    ],
+    "typical_effects": "Creates a pending event for personal growth or career pivot following the breakup",
+    "rarity": "common",
+    "source": "extracted"
+  },
+  {
+    "id": "drug_use_influences_business_ideation",
+    "pattern": "A person's interest in psychedelic drugs influences their business ideas, particularly those involving anonymous marketplaces",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "mature"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_used_drugs"
+    ],
+    "typical_effects": "Creates a major branch point where the character must decide whether to pursue this line of business",
+    "rarity": "rare",
+    "source": "extracted"
+  },
+  {
+    "id": "scientific_precision_in_creating_busines",
+    "pattern": "A person with scientific background applies technical precision and engineering principles to build a business platform",
+    "category": "career",
+    "life_stage": [
+      25,
+      40
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_scientist"
+    ],
+    "typical_effects": "Creates a pending event for technical success or failure of the business platform",
+    "rarity": "uncommon",
+    "source": "extracted"
+  },
+  {
+    "id": "early_career_research_to_entrepreneurial",
+    "pattern": "A person transitions from academic research to entrepreneurship, driven by disillusionment with traditional career paths",
+    "category": "career",
+    "life_stage": [
+      25,
+      35
+    ],
+    "modes": [
+      "safe"
+    ],
+    "requires": [],
+    "excludes": [
+      "has_been_researcher"
+    ],
+    "typical_effects": "Creates a branch point where the character's career path either continues in academia or ventures into business",
+    "rarity": "uncommon",
+    "source": "extracted"
   }
 ]
