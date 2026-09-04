@@ -250,7 +250,7 @@ export default function App() {
   return (
     <main className="admin">
       <header className="admin__head">
-        <h1>Life Swipe <span className="muted">content admin</span></h1>
+        <h1>FATE <span className="muted">content admin</span></h1>
         <span
           className="badge"
           title="No authentication. The server binds to 127.0.0.1, which is the only thing keeping this private."

@@ -33,7 +33,7 @@ function localObituary(stats) {
 
 function shareText(stats, obit) {
   const lines = [
-    'LIFE SWIPE',
+    'FATE',
     obit.headline,
     '',
     `Died at ${stats.age} - ${stats.ending === 'bankrupt' ? 'broke' : stats.cause}`,
@@ -67,7 +67,7 @@ export default function Obituary({ stats, history, onRestart }) {
   const onShare = async () => {
     const text = shareText(stats, obit);
     try {
-      if (navigator.share) await navigator.share({ title: 'Life Swipe', text });
+      if (navigator.share) await navigator.share({ title: 'FATE', text });
       else await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
