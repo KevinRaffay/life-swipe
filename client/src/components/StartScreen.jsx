@@ -53,7 +53,7 @@ export default function StartScreen({ onStart, llmEnabled, model }) {
         <span className="start__mark-right">&rarr;</span>
       </div>
 
-      <h1 className="start__title">LIFE<span>SWIPE</span></h1>
+      <h1 className="start__title">FATE</h1>
       <p className="start__tagline">One life. Two choices at a time.<br />Until you die or go broke.</p>
 
       {askingAge ? (
