@@ -25,7 +25,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { hasKey, PROVIDER, MODEL } from '../server/provider.js';
-import { generateDemoDrafts, DEFAULT_TOTAL } from '../server/demo-seed-generation.js';
+import { generateDemoDrafts, remarkNearDuplicates, DEFAULT_TOTAL } from '../server/demo-seed-generation.js';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
@@ -86,6 +86,11 @@ const results = await generateDemoDrafts({
 
 const generated = results.flatMap((r) => r.accepted);
 const merged = [...existingDrafts, ...generated];
+// The pass inside generateDemoDrafts only saw THIS run's cards. On a top-up
+// run that leaves the new candidates unchecked against everything already in
+// the queue, so re-run it over the merged corpus - free, and the only way a
+// second run's repeats of a first run's situations get noticed.
+const nearDupes = remarkNearDuplicates(merged);
 fs.writeFileSync(OUT, JSON.stringify(merged, null, 2) + '\n');
 
 const mins = ((Date.now() - started) / 60000).toFixed(1);
@@ -110,8 +115,12 @@ console.log(
   `${String(totals.warned).padStart(7)}`,
 );
 
-const clean = generated.filter((g) => !g.validationWarnings).length;
-console.log(`\n  ${clean} of ${generated.length} new candidate(s) carry NO warnings; ${generated.length - clean} are flagged.`);
+// Report against the MERGED queue, since that is what the reviewer opens - and
+// a top-up run can flag a card from an earlier run as the duplicate of a new
+// one, so "this run's candidates" is no longer the interesting number.
+const cleanMerged = merged.filter((g) => !g.validationWarnings).length;
+console.log(`\n  near-duplicate pass over the whole queue: ${nearDupes} card(s) flagged as the same situation as an earlier one.`);
+console.log(`  ${cleanMerged} of ${merged.length} queued draft(s) carry NO warnings; ${merged.length - cleanMerged} are flagged.`);
 console.log('  The admin\'s "Approve all without warnings" / "Reject all with warnings" act on exactly that split.');
 
 // Register drops are the interesting failure: a candidate the model wrote that

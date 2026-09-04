@@ -321,6 +321,9 @@ export const DUPLICATE_THRESHOLD = 0.45;
 const TOPIC_DF_CEILING = 0.02;
 // How many rare words two prompts must share to count as the same situation.
 const TOPIC_SHARED_MIN = 2;
+// The one place this string is written, so `remarkNearDuplicates` below and
+// every reader that filters on it cannot drift from what the writer emits.
+export const NEAR_DUPLICATE_PREFIX = 'same situation as ';
 
 /**
  * Flag same-situation repeats across a finished set of demo records, in
@@ -389,11 +392,44 @@ export function markNearDuplicates(records) {
     const record = list[later];
     if (!record.validationWarnings) record.validationWarnings = [];
     record.validationWarnings.push(
-      `same situation as "${String(list[earlier].id)}" - shares ${words.slice(0, 6).sort().join(', ')} - read both before approving`,
+      `${NEAR_DUPLICATE_PREFIX}"${String(list[earlier].id)}" - shares ${words.slice(0, 6).sort().join(', ')} - read both before approving`,
     );
     marked += 1;
   }
   return marked;
+}
+
+/**
+ * Re-run the near-duplicate pass over a WHOLE corpus - typically the existing
+ * draft queue plus a run's new candidates, merged.
+ *
+ * This exists because a top-up run is the normal case, not the exception. The
+ * pass inside `generateDemoDrafts` can only see the cards that run produced,
+ * so a second run of 700 against an existing 300 would never notice that its
+ * new collections-agency card is the same situation as one already sitting in
+ * the queue. The LEXICAL de-duplication does cross that boundary (the caller
+ * passes `existingPrompts`), but same-situation-different-words is exactly the
+ * repeat word overlap cannot catch, which is the whole reason this pass
+ * exists.
+ *
+ * Strips only the near-duplicate warnings before re-marking, so every other
+ * warning a card carries survives untouched, and marks against the merged
+ * corpus in order - which means the earliest writing of a situation stays
+ * clean however many runs it takes to accumulate its copies.
+ *
+ * Cheap and side-effect-free apart from the records themselves: no model call,
+ * no file access, no change to any card's content.
+ *
+ * @param {object[]} records the merged corpus, oldest first
+ * @returns {number} how many records carry a near-duplicate warning afterwards
+ */
+export function remarkNearDuplicates(records) {
+  for (const c of Array.isArray(records) ? records : []) {
+    if (!c.validationWarnings) continue;
+    c.validationWarnings = c.validationWarnings.filter((w) => !w.startsWith(NEAR_DUPLICATE_PREFIX));
+    if (!c.validationWarnings.length) delete c.validationWarnings;
+  }
+  return markNearDuplicates(records);
 }
 
 /* ------------------------------------------------------------- core ---- */

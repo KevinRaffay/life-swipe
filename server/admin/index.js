@@ -15,7 +15,7 @@ import { crossReference } from './cross-reference.js';
 import { previewPattern, previewSeed, yearFor } from './preview.js';
 import { extractPatterns, identityWarnings, idCollisions, duplicateWarnings } from '../extraction.js';
 import { generateSeedDrafts } from '../seed-generation.js';
-import { generateDemoDrafts, DEFAULT_TOTAL as DEMO_DEFAULT_TOTAL } from '../demo-seed-generation.js';
+import { generateDemoDrafts, remarkNearDuplicates, DEFAULT_TOTAL as DEMO_DEFAULT_TOTAL } from '../demo-seed-generation.js';
 import { runHarvest, HARVEST_DEFAULTS } from '../harvest.js';
 import { computeNamePoolHealth } from '../name-pool-health.js';
 import { hasKey, MODEL, setProvider, providerStatus } from '../provider.js';
@@ -611,7 +611,16 @@ export function createAdminRouter() {
       });
 
       const generated = results.flatMap((r) => r.accepted);
-      const saved = update('demoDrafts', (list) => [...list, ...generated], { force: true });
+      // Re-run the near-duplicate pass over the MERGED queue, not just this
+      // run's output: a top-up run's cards are otherwise never checked against
+      // what is already queued, and same-situation-different-words is exactly
+      // the repeat the lexical de-duplication cannot see. See
+      // remarkNearDuplicates - no model call, no content change.
+      const saved = update('demoDrafts', (list) => {
+        const merged = [...list, ...generated];
+        remarkNearDuplicates(merged);
+        return merged;
+      }, { force: true });
 
       send({
         type: 'done',
