@@ -401,7 +401,9 @@ Two ways in, both distinct from the Safe/Mature picker, because a demo is a
 sample of the game rather than a third permanent mode:
 
 - the **"Just show me"** link under the Begin button on the start screen;
-- **`http://localhost:8787/?demo=1`**, for a kiosk.
+- **`http://localhost:8787/?demo=1`**, for a kiosk;
+- **<https://kevinraffay.github.io/life-swipe/?demo=1>**, the same link on a
+  public static host — see "Playing it on GitHub Pages" below.
 
 Neither bypasses the age gate. Demo mode forces mature content, so it goes
 through the same 18-or-older confirmation the Mature pill does — the kiosk link
@@ -430,6 +432,32 @@ on the demo flag before it looks at whether a fetcher was even configured, and
 the obituary is written locally too. `npm run demo-check` proves it by handing
 the deck a fetcher that counts being called and asserting the count stayed at
 zero.
+
+### Playing it on GitHub Pages
+
+<https://kevinraffay.github.io/life-swipe/?demo=1>
+
+Because a demo life never calls a model, and because every card it draws is
+bundled into the JavaScript at build time, the demo needs no server at all —
+so the player client is published to GitHub Pages, and demo mode is reached
+there through the same kiosk link it already had. Ten swipes in a browser
+make zero network requests once the page has loaded.
+
+`.github/workflows/pages.yml` publishes it on every push to `main`: install,
+`npm run demo-check` as a gate, then build with `VITE_BASE=/life-swipe/` and
+deploy `dist/`. To publish somewhere else, that env var is the only thing
+that changes — it is the subpath the site is served from, and it is `/` for a
+custom domain or a user page. Locally:
+
+```bash
+VITE_BASE=/life-swipe/ npm run build   # the Pages build
+npm run build                          # base "/", what `npm start` needs
+```
+
+The bare URL — without `?demo=1` — still offers a full life. There is no
+storyteller behind it on a static host, so it runs on the hand-written seed
+deck and says so ("Storyteller offline"). The two API probes the client makes
+on load 404 there, are caught, and are what produce that message.
 
 ### The demo content pool
 

@@ -1,0 +1,81 @@
+# Publish the player build to GitHub Pages.
+#
+# This deploys the WHOLE player client, with demo mode reached through its
+# existing kiosk link:
+#
+#   https://kevinraffay.github.io/life-swipe/?demo=1
+#
+# There is no server behind it and there cannot be. That is fine for the demo
+# and only for the demo: a demo life makes zero provider calls by construction
+# (shared/deck.js's refill gate, Obituary.jsx's skipped fetch, and no intro
+# phase), and every card it draws is bundled into the JS at build time. The
+# bare URL still offers a full life; on a static host that runs on the seed
+# deck alone and says so ("Storyteller offline"), which is honest but is not
+# what this deployment is for.
+#
+# The admin cannot reach this artifact: `npm run build` never sees admin/ (it
+# is a separate Vite root building to dist-admin/), so the exclusion is
+# structural rather than a rule this file has to remember.
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Deploy an unmerged branch by hand, without changing what `main` publishes.
+  workflow_dispatch:
+
+# Read the repo, mint the Pages token. Nothing here needs write access to the
+# repository itself.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it half-published; queue
+# the newer one behind it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The gate. demo-check is the demo's own npm run simulate - the swipe
+      # cap holds, no provider call is attempted, nothing non-safe is dealt
+      # under 18, and every name comes from BAL.DEMO.nameCategories. A build
+      # that fails its own four assertions has no business reaching a public
+      # URL, and this is the only place that gets checked automatically.
+      - name: Demo assertions
+        run: npm run demo-check
+
+      # The subpath the project page is served from. Trailing slash required.
+      # If this repo is ever renamed, or moved to a custom domain / user page
+      # (where the base is "/"), this is the one line that changes.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BASE: /life-swipe/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
