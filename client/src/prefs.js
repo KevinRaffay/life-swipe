@@ -158,10 +158,10 @@ export function resetSeenSeedIds() {
 
 /* ------------------------------------------------------------- theme ---- */
 
-// Explicit theme override, persisted like other preferences.
-// null = follow OS via prefers-color-scheme
-// 'light' = force light theme
-// 'dark' = force dark theme
+// The player's theme, persisted like other preferences.
+// null = never chosen, which means DARK - see getActiveTheme
+// 'light' = light theme
+// 'dark' = dark theme
 const THEME_KEY = 'lifeswipe.theme';
 
 export function getTheme() {
@@ -174,21 +174,41 @@ export function setTheme(theme) {
   if (theme === 'light' || theme === 'dark') {
     write(THEME_KEY, theme);
   } else {
-    // null or undefined = reset to auto
+    // null or undefined = forget the choice, i.e. back to the dark default
     try { window.localStorage.removeItem(THEME_KEY); } catch { /* ignore */ }
   }
 }
 
 /**
- * The effective theme: the player's override, or OS preference via
- * prefers-color-scheme, or 'dark' as the ultimate fallback.
+ * The theme actually in force: what the player picked, or DARK.
+ *
+ * Dark is the default rather than the OS's `prefers-color-scheme`, which is
+ * what this used to follow. Two reasons it is worth the departure from the
+ * usual courtesy: the game is a dark comedy read one card at a time, and the
+ * card is the whole screen, so the surround is the mood rather than chrome
+ * around content; and the deployed demo is somebody's ten-second first
+ * impression, where an OS-dependent look means half the audience sees a
+ * design nobody chose for them.
+ *
+ * The player's own choice still wins outright and still persists. There is
+ * deliberately no third "follow the OS" state any more: with dark as the
+ * default it would render identically to 'dark', so the toggle would have had
+ * a press that visibly did nothing.
  */
 export function getActiveTheme() {
-  const override = getTheme();
-  if (override) return override;
+  return getTheme() || 'dark';
+}
 
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    return 'light';
-  }
-  return 'dark';
+/**
+ * Put the active theme on the document. The single place the class is
+ * applied, because it was previously hand-rolled in two - App.jsx's mount
+ * effect and StartScreen's toggle - and the toggle's copy removed
+ * `.dark-theme` for any value that was not exactly 'dark'. That was already
+ * wrong for a dark-preferring OS on the "auto" setting, and the dark default
+ * would have made it wrong on every press through that state.
+ */
+export function applyTheme(theme = getActiveTheme()) {
+  const root = document.documentElement;
+  root.classList.toggle('dark-theme', theme === 'dark');
+  return theme;
 }
