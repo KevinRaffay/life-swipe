@@ -21009,5 +21009,939 @@
         ]
       }
     }
+  },
+  {
+    "id": "demo_college_swears_the_5am",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:coworker}} swears the 5am gym slot slaps and will absolutely change your life. A three-month commitment, non-refundable.",
+    "leftLabel": "I'm so in",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "money": -120,
+      "health": 15,
+      "happiness": -5,
+      "flags": [
+        "gym_committed"
+      ],
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": 10
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": -5
+      }
+    }
+  },
+  {
+    "id": "demo_college_says_their_uncle",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:classmate}} says their uncle pays $400 cash to move boxes on Saturday mornings and you definitely do not need to ask what's in them.",
+    "leftLabel": "Ask no questions",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": 400,
+      "happiness": -5,
+      "flags": [
+        "did_the_job"
+      ],
+      "risk": {
+        "probability": 0.12,
+        "outcome": "injury",
+        "description": "Turns out the boxes were not the only thing the uncle needed moved, and now you know things that are inconvenient to know."
+      },
+      "relationship": {
+        "name": "{{new:classmate}}",
+        "role": "classmate",
+        "qualityDelta": 5
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "turned_down_easy_money"
+      ]
+    }
+  },
+  {
+    "id": "demo_early_the_couch_is_2",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The couch is free, it is yours if you can get it out of a fourth-floor walkup by noon. You have one friend available and zero upper body credibility.",
+    "leftLabel": "Claim the couch",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "money": 0,
+      "health": -5,
+      "happiness": 10,
+      "flags": [
+        "has_real_couch"
+      ],
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": -10,
+        "flags": [
+          "owes_them_one"
+        ]
+      }
+    },
+    "rightEffects": {
+      "happiness": -5
+    }
+  },
+  {
+    "id": "demo_early_your_aunt_is_2",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your aunt is offering $4,000 to help with your rent — but she'd like to be added to your lease as an emergency contact, and she will use that.",
+    "leftLabel": "Take the money",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": 4000,
+      "happiness": -10,
+      "flags": [
+        "aunt_has_access"
+      ]
+    },
+    "rightEffects": {
+      "money": -200,
+      "happiness": 8
+    }
+  },
+  {
+    "id": "demo_early_you_ve_been_2",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "You've been texting {{new:match}} for two weeks. They just asked what you're doing Saturday. You have not confirmed what any of this is.",
+    "leftLabel": "Say yes",
+    "rightLabel": "Ask first",
+    "leftEffects": {
+      "money": -60,
+      "happiness": 15,
+      "flags": [
+        "skipped_the_talk"
+      ],
+      "relationship": {
+        "name": "{{new:match}}",
+        "role": "match",
+        "qualityDelta": 20
+      }
+    },
+    "rightEffects": {
+      "happiness": -5,
+      "flags": [
+        "asked_the_question"
+      ],
+      "relationship": {
+        "name": "{{new:match}}",
+        "role": "match",
+        "qualityDelta": 10
+      }
+    }
+  },
+  {
+    "id": "demo_family_your_ex_has",
+    "source": "demo-generated",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      36
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your ex has followed you on a new account, liked a photo from three years ago, and then immediately unliked it. You saw the notification.",
+    "leftLabel": "Follow back",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": -6,
+      "flags": [
+        "ex_back_in_orbit"
+      ],
+      "relationship": {
+        "name": "{{new:ex}}",
+        "role": "ex",
+        "qualityDelta": 10
+      }
+    },
+    "rightEffects": {
+      "happiness": 8,
+      "flags": [
+        "ex_ignored"
+      ]
+    }
+  },
+  {
+    "id": "demo_college_says_they_can_2",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:coworker}} says they can get you on the schedule as a no-show for shifts you never work. Easy money, as long as nobody checks.",
+    "leftLabel": "Hard pass",
+    "rightLabel": "Get on the schedule",
+    "leftEffects": {
+      "happiness": -3,
+      "flags": [
+        "turned_down_fraud"
+      ],
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": -10
+      }
+    },
+    "rightEffects": {
+      "money": 300,
+      "flags": [
+        "payroll_fraud"
+      ],
+      "risk": {
+        "probability": 0.18,
+        "outcome": "death",
+        "description": "HR finds the discrepancy during an audit, you are terminated and referred to your employer's legal team, and the word 'restitution' starts appearing in emails."
+      }
+    }
+  },
+  {
+    "id": "demo_early_someone_you_just",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Someone you just met at this party is offering you something they say is just a micro dose. You have never tried it. Tomorrow is technically a day off.",
+    "leftLabel": "Take it",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "health": -5,
+      "happiness": 15,
+      "flags": [
+        "tried_psychedelics"
+      ],
+      "risk": {
+        "probability": 0.07,
+        "outcome": "injury",
+        "description": "It was not a micro dose and you end up in urgent care by 4am."
+      }
+    },
+    "rightEffects": {
+      "health": 5,
+      "happiness": -5
+    }
+  },
+  {
+    "id": "demo_early_your_landlord_is_6",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your landlord is coming Friday. The place is cooked. {{new:roommate}} left a project consuming the entire kitchen counter and has not responded in two days.",
+    "leftLabel": "Clean it yourself",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "money": 0,
+      "happiness": -15,
+      "relationship": {
+        "name": "{{new:roommate}}",
+        "role": "roommate",
+        "qualityDelta": -10,
+        "flags": [
+          "messy"
+        ]
+      }
+    },
+    "rightEffects": {
+      "money": -400,
+      "happiness": -10,
+      "flags": [
+        "landlord_complaint"
+      ]
+    }
+  },
+  {
+    "id": "demo_early_the_artist_has",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The artist has a cancellation and can squeeze you in tonight. The flash tattoo is mid but the placement is perfect and it is sixty percent off.",
+    "leftLabel": "Get it done",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": -80,
+      "happiness": 5,
+      "flags": [
+        "got_the_tattoo"
+      ],
+      "risk": {
+        "probability": 0.08,
+        "outcome": "injury",
+        "description": "The studio's equipment was not as clean as the price suggested and the thing gets infected."
+      }
+    },
+    "rightEffects": {
+      "happiness": -5
+    }
+  },
+  {
+    "id": "demo_early_someone_you_just_2",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Someone you just met at this party opens their palm. It's not something you've tried before. Everyone around you is fine, seemingly.",
+    "leftLabel": "Try it",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "health": -10,
+      "happiness": 15,
+      "flags": [
+        "tried_unknown_substance"
+      ],
+      "risk": {
+        "probability": 0.05,
+        "outcome": "injury",
+        "description": "Your body has strong opinions about this decision and you spend the next six hours convincing a stranger to not call an ambulance."
+      }
+    },
+    "rightEffects": {
+      "happiness": -5
+    }
+  },
+  {
+    "id": "demo_early_the_job_is",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "The job is real, the salary is $18k more, and the company will cover moving costs. It is also in a city where you know exactly nobody.",
+    "leftLabel": "Take it",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "money": 2000,
+      "happiness": -10,
+      "flags": [
+        "relocated_for_work"
+      ],
+      "career": {
+        "title": "Associate",
+        "salary": 62000
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "turned_down_offer"
+      ]
+    }
+  },
+  {
+    "id": "demo_early_needs_400_to_2",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:friend}} needs $400 to cover a gap before a paycheck. You have it. They have not mentioned paying it back and are already moving on to a different topic.",
+    "leftLabel": "Lend it",
+    "rightLabel": "Decline",
+    "leftEffects": {
+      "money": -400,
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": 15,
+        "flags": [
+          "owes_you_money"
+        ]
+      }
+    },
+    "rightEffects": {
+      "happiness": -10,
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": -15
+      }
+    }
+  },
+  {
+    "id": "demo_early_says_the_company",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:coworker}} says the company reimburses mileage and nobody checks the logs. They want you to add fifty miles a week to yours. Split the difference.",
+    "leftLabel": "Pad the logs",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": 200,
+      "happiness": -5,
+      "flags": [
+        "expense_fraud"
+      ],
+      "risk": {
+        "probability": 0.15,
+        "outcome": "injury",
+        "description": "Finance audits the travel logs. HR wants a meeting Monday."
+      },
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": 15
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "relationship": {
+        "name": "{{new:coworker}}",
+        "role": "coworker",
+        "qualityDelta": -10
+      }
+    }
+  },
+  {
+    "id": "demo_early_someone_at_the_2",
+    "source": "demo-generated",
+    "stages": [
+      "early"
+    ],
+    "life_stage": [
+      22,
+      30
+    ],
+    "modes": [
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Someone at the party is passing around something that is definitely not a multivitamin. Your coworker {{new:coworker}} is already three deep and waving you over.",
+    "leftLabel": "Hard pass",
+    "rightLabel": "One can't hurt",
+    "leftEffects": {
+      "happiness": -5,
+      "flags": [
+        "sober_at_the_party"
+      ]
+    },
+    "rightEffects": {
+      "money": -20,
+      "health": -10,
+      "happiness": 15,
+      "flags": [
+        "recreational_drug_use"
+      ],
+      "risk": {
+        "probability": 0.05,
+        "outcome": "injury",
+        "description": "Whatever that was, it disagreed with you severely and you spent the night in urgent care."
+      }
+    }
+  },
+  {
+    "id": "demo_college_your_aunt_will_2",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your aunt will cover one semester's tuition — $6,200 — if you switch to a major she considers practical. Yours is not on her list.",
+    "leftLabel": "Switch it",
+    "rightLabel": "Decline",
+    "leftEffects": {
+      "money": 6200,
+      "happiness": -15,
+      "flags": [
+        "in_school",
+        "family_strings_attached"
+      ],
+      "education": "Switched major under family pressure"
+    },
+    "rightEffects": {
+      "money": -6200,
+      "happiness": 10,
+      "flags": [
+        "in_school",
+        "student_debt",
+        "kept_own_major"
+      ]
+    }
+  },
+  {
+    "id": "demo_college_can_get_your",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:coworker}} can get your name on a delivery route that pays cash, no taxes filed, no questions. The dispatcher has a tattoo of a gavel and it is not ironic.",
+    "leftLabel": "I'm in",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": 400,
+      "happiness": -10,
+      "flags": [
+        "off_books_income"
+      ],
+      "risk": {
+        "probability": 0.1,
+        "outcome": "injury",
+        "description": "The route turns out to involve people who want to discuss the merchandise, loudly, using your car."
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "turned_down_the_route"
+      ]
+    }
+  },
+  {
+    "id": "demo_college_someone_at_this_6",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Someone at this party is handing out something small and yellow and says it just makes the music sound better. {{new:friend}} already took one and seems fine.",
+    "leftLabel": "Take it",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "health": -15,
+      "happiness": 15,
+      "flags": [
+        "substance_use"
+      ],
+      "risk": {
+        "probability": 0.05,
+        "outcome": "injury",
+        "description": "The music does not, in fact, sound better. The next four hours are not something you can fully account for."
+      },
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": 10
+      }
+    },
+    "rightEffects": {
+      "health": 5,
+      "happiness": -5,
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": 0
+      }
+    }
+  },
+  {
+    "id": "demo_college_needs_180_for_2",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:friend}} needs $180 for a bus ticket home. They say they will Venmo it back Friday. This is the third Friday that has been invoked.",
+    "leftLabel": "Send it",
+    "rightLabel": "Hard pass",
+    "leftEffects": {
+      "money": -180,
+      "happiness": -10,
+      "flags": [
+        "lent_money_to_friend"
+      ],
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": 10
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "relationship": {
+        "name": "{{new:friend}}",
+        "role": "friend",
+        "qualityDelta": -15
+      }
+    }
+  },
+  {
+    "id": "demo_family_a_recruiter_has",
+    "source": "demo-generated",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      36
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A recruiter has a role that pays $22,000 more than you make now. It is in Denver. You have never been to Denver.",
+    "leftLabel": "Take the call",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "happiness": 10,
+      "flags": [
+        "considering_relocation"
+      ],
+      "career": {
+        "title": "Senior Analyst",
+        "salary": 94000
+      }
+    },
+    "rightEffects": {
+      "happiness": -10,
+      "flags": [
+        "stayed_put"
+      ]
+    }
+  },
+  {
+    "id": "demo_family_your_aunt_is",
+    "source": "demo-generated",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      36
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your aunt is offering you $15,000 toward a down payment. The condition is that you move back within forty minutes of where she lives.",
+    "leftLabel": "Take the money",
+    "rightLabel": "Decline",
+    "leftEffects": {
+      "money": 15000,
+      "happiness": -10,
+      "flags": [
+        "aunt_loan_strings"
+      ]
+    },
+    "rightEffects": {
+      "happiness": 10,
+      "flags": [
+        "turned_down_family_money"
+      ]
+    }
+  },
+  {
+    "id": "demo_family_is_here_in",
+    "source": "demo-generated",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      36
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:landlord}} is here in forty minutes for an annual inspection. The place is, and this is being generous, mid.",
+    "leftLabel": "Speed clean it",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": -10
+    },
+    "rightEffects": {
+      "money": -200,
+      "happiness": 5,
+      "risk": {
+        "probability": 0.2,
+        "outcome": "injury",
+        "description": "{{new:landlord}} flags several lease violations and starts the paperwork to keep your deposit."
+      }
+    }
+  },
+  {
+    "id": "demo_family_is_redoing_three",
+    "source": "demo-generated",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      36
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "{{new:contractor}} is redoing three units in your building and mentions the permits are, quote, handled. The work costs half what anyone else quoted.",
+    "leftLabel": "Sign with them",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "money": -4000,
+      "flags": [
+        "unpermitted_work"
+      ],
+      "risk": {
+        "probability": 0.2,
+        "outcome": "injury",
+        "description": "The city inspects, the work fails, and you are on the hook for a stop-work order and a fine that costs more than the savings."
+      },
+      "relationship": {
+        "name": "{{new:contractor}}",
+        "role": "contractor",
+        "qualityDelta": -5,
+        "flags": [
+          "sketchy_deal"
+        ]
+      }
+    },
+    "rightEffects": {
+      "money": -8500,
+      "happiness": 5,
+      "flags": [
+        "paid_full_price"
+      ]
+    }
+  },
+  {
+    "id": "demo_family_your_landlord_is",
+    "source": "demo-generated",
+    "stages": [
+      "family"
+    ],
+    "life_stage": [
+      30,
+      36
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "Your landlord is doing a walkthrough in two hours. The state of this apartment is a personal statement, and not a good one.",
+    "leftLabel": "Speed clean",
+    "rightLabel": "Leave it",
+    "leftEffects": {
+      "happiness": -8,
+      "flags": [
+        "good_inspection"
+      ]
+    },
+    "rightEffects": {
+      "money": -200,
+      "happiness": 5,
+      "flags": [
+        "bad_inspection"
+      ]
+    }
+  },
+  {
+    "id": "demo_college_a_company_in_2",
+    "source": "demo-generated",
+    "stages": [
+      "college"
+    ],
+    "life_stage": [
+      18,
+      22
+    ],
+    "modes": [
+      "safe",
+      "mature"
+    ],
+    "weight": "minor",
+    "prompt": "A company in Austin wants to hire you at $58k, fully in-person, starting in three weeks. You do not know a single person in Texas.",
+    "leftLabel": "Take it",
+    "rightLabel": "Pass",
+    "leftEffects": {
+      "money": 800,
+      "happiness": -10,
+      "flags": [
+        "relocated",
+        "first_real_job"
+      ],
+      "career": {
+        "title": "Junior Associate",
+        "salary": 58000
+      }
+    },
+    "rightEffects": {
+      "happiness": 5,
+      "flags": [
+        "turned_down_offer"
+      ]
+    }
   }
 ]
