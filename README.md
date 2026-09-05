@@ -402,8 +402,8 @@ sample of the game rather than a third permanent mode:
 
 - the **"Just show me"** link under the Begin button on the start screen;
 - **`http://localhost:8787/?demo=1`**, for a kiosk;
-- **<https://kevinraffay.github.io/life-swipe/?demo=1>**, the same link on a
-  public static host — see "Playing it on GitHub Pages" below.
+- **<https://kevinraffay.github.io/life-swipe/>**, where the demo is the whole
+  site and Begin starts it — see "Playing it on GitHub Pages" below.
 
 Neither bypasses the age gate. Demo mode forces mature content, so it goes
 through the same 18-or-older confirmation the Mature pill does — the kiosk link
@@ -435,13 +435,20 @@ zero.
 
 ### Playing it on GitHub Pages
 
-<https://kevinraffay.github.io/life-swipe/?demo=1>
+<https://kevinraffay.github.io/life-swipe/>
 
 Because a demo life never calls a model, and because every card it draws is
 bundled into the JavaScript at build time, the demo needs no server at all —
-so the player client is published to GitHub Pages, and demo mode is reached
-there through the same kiosk link it already had. Ten swipes in a browser
-make zero network requests once the page has loaded.
+so it is published to GitHub Pages. A whole session there makes zero network
+requests once the page has loaded.
+
+That build is **demo-only**: Begin starts the demo, and the Safe/Mature picker
+and the "Just show me" link are not rendered, because there is no storyteller
+behind a full life on a static host. It is one build-time flag
+(`VITE_STATIC_DEMO=1`, `client/src/staticDemo.js`) set by the workflow and
+nothing else, so `npm run dev` and `npm start` always give you the whole game.
+The age gate still runs — Begin goes through the same confirmation the demo
+link does.
 
 `.github/workflows/pages.yml` publishes it on every push to `main`: install,
 `npm run demo-check` as a gate, then build with `VITE_BASE=/life-swipe/` and
@@ -450,14 +457,12 @@ that changes — it is the subpath the site is served from, and it is `/` for a
 custom domain or a user page. Locally:
 
 ```bash
-VITE_BASE=/life-swipe/ npm run build   # the Pages build
-npm run build                          # base "/", what `npm start` needs
+VITE_BASE=/life-swipe/ VITE_STATIC_DEMO=1 npm run build   # the Pages build
+npm run build                                            # the full game
 ```
 
-The bare URL — without `?demo=1` — still offers a full life. There is no
-storyteller behind it on a static host, so it runs on the hand-written seed
-deck and says so ("Storyteller offline"). The two API probes the client makes
-on load 404 there, are caught, and are what produce that message.
+(In Git Bash, MSYS rewrites `/life-swipe/` into a Windows path — use
+PowerShell, or prefix with `MSYS_NO_PATHCONV=1`.)
 
 ### The demo content pool
 

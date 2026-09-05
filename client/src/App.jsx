@@ -15,9 +15,10 @@ import { BAL } from '@shared/balance.js';
 import { fetchScenarios, getConfig, fetchRegion, fetchIntroBeat } from './api.js';
 import {
   getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen, beginLife,
-  getActiveRegion, getDetectedRegion, setDetectedRegion, getActiveTheme,
+  getActiveRegion, getDetectedRegion, setDetectedRegion, applyTheme,
   hasConfirmedAge,
 } from './prefs.js';
+import { STATIC_DEMO } from './staticDemo.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import { classifyConsequence } from './severity.js';
 import CardStack from './components/CardStack.jsx';
@@ -57,24 +58,28 @@ export default function App() {
   introCardsRef.current = introCards;
   introStepRef.current = introStep;
 
-  useEffect(() => { getConfig().then(setConfig); }, []);
-
-  // Apply theme class to document root, update when theme preference changes.
+  // Skipped on a demo-only build: there is no server to answer it, so the
+  // initial `llmEnabled: false` above is already the right answer and asking
+  // only spends a request on a guaranteed 404.
   useEffect(() => {
-    const root = document.documentElement;
-    const theme = getActiveTheme();
-    if (theme === 'dark') {
-      root.classList.add('dark-theme');
-    } else {
-      root.classList.remove('dark-theme');
-    }
+    if (STATIC_DEMO) return;
+    getConfig().then(setConfig);
   }, []);
+
+  // Apply the theme class to the document root, once on mount. Dark unless
+  // the player has chosen otherwise; StartScreen's toggle calls the same
+  // `applyTheme` rather than reimplementing the class logic.
+  useEffect(() => { applyTheme(); }, []);
 
   // Ask the server where this player probably is, once, and only if we have
   // not already been told. The answer is a suggested default that the settings
   // dropdown overrides; a failure leaves it null and names fall back to
   // era-only selection. Nothing here blocks the game starting.
   useEffect(() => {
+    // Same reason as the config call above: a demo-only build has no server
+    // to ask, and region only ever tilted a draw the demo has already
+    // narrowed to one origin.
+    if (STATIC_DEMO) return;
     if (getDetectedRegion()) return;
     let cancelled = false;
     fetchRegion().then((code) => {
@@ -293,6 +298,7 @@ export default function App() {
           onStart={start}
           onStartDemo={startDemo}
           demoRequested={demoRequested}
+          staticDemo={STATIC_DEMO}
           llmEnabled={config.llmEnabled}
           model={config.model}
         />
