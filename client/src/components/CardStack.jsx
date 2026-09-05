@@ -11,6 +11,22 @@ const EXIT_MS = 260;
  */
 
 /**
+ * Which tier a card actually RENDERS as, read off the fields that are present
+ * rather than off `card.weight`. The two agree in the content files, but the
+ * layout cares about what is on the screen, and a card whose beat failed
+ * validation is a bare prompt however it was labelled.
+ *
+ * Used only for a class name, so the CSS can stop a prompt-only card being
+ * dealt the height a four-field major needs.
+ */
+export function renderedTier(card) {
+  if (!card) return 'minor';
+  if (card.beat || card.dialogue) return 'major';
+  if (card.setting) return 'standard';
+  return 'minor';
+}
+
+/**
  * A card is written in tiers: minor is a bare prompt, standard adds a setting,
  * major adds a beat and one line of dialogue. Every field is optional except
  * the prompt, so a minor card renders as a single line with no empty scaffolding.
@@ -216,14 +232,14 @@ export default function CardStack({ card, peek, onDecide, disabled }) {
   return (
     <div className="card-stack">
       {peek && (
-        <article className="card card--peek" aria-hidden="true" ref={peekRef}>
+        <article className={`card card--peek card--${renderedTier(peek)}`} aria-hidden="true" ref={peekRef}>
           <ScenarioBody card={peek} />
         </article>
       )}
 
       <article
         ref={cardRef}
-        className={`card card--top${exiting ? ' is-exiting' : ''}`}
+        className={`card card--top card--${renderedTier(card)}${exiting ? ' is-exiting' : ''}`}
         style={style}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}

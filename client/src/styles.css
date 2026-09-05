@@ -259,6 +259,23 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
+/* A minor card is a bare prompt, and stretching one to the height a
+   four-field major needs is what put a paragraph of text in the middle of an
+   empty white slab. It takes the height of its own content instead, still
+   centred in the stack (inset + margin:auto), so the space that used to sit
+   INSIDE the card now sits around it - and the choice buttons below get room
+   to breathe without moving.
+
+   Bounded at both ends: min-height so a one-line prompt still reads as a card
+   rather than a banner, and the inherited max-height so a long prompt grows to
+   the same ceiling as before and then lets useFitToCard shrink the type, which
+   is the behaviour that was already there. Standard and major cards are
+   deliberately untouched - they are written to fill the space. */
+.card--minor {
+  height: fit-content;
+  min-height: 220px;
+}
+
 .card::before {
   display: none;
 }
@@ -328,7 +345,11 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 
 /* -------------------------------------------------------------- choices */
 
-.choices { display: flex; gap: 11px; }
+/* The extra top margin is on top of .app's 12px gap. The buttons sit directly
+   under the card and are the thing you are reaching for while reading it; at
+   12px they crowded the card's bottom edge, which reads as one block rather
+   than a question and its answers. */
+.choices { display: flex; gap: 11px; margin-top: 12px; }
 
 .choice {
   flex: 1;
