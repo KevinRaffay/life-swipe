@@ -1,17 +1,17 @@
 # Publish the player build to GitHub Pages.
 #
-# This deploys the WHOLE player client, with demo mode reached through its
-# existing kiosk link:
+# This deploys a DEMO-ONLY build of the player client:
 #
-#   https://kevinraffay.github.io/life-swipe/?demo=1
+#   https://kevinraffay.github.io/life-swipe/
 #
 # There is no server behind it and there cannot be. That is fine for the demo
 # and only for the demo: a demo life makes zero provider calls by construction
 # (shared/deck.js's refill gate, Obituary.jsx's skipped fetch, and no intro
-# phase), and every card it draws is bundled into the JS at build time. The
-# bare URL still offers a full life; on a static host that runs on the seed
-# deck alone and says so ("Storyteller offline"), which is honest but is not
-# what this deployment is for.
+# phase), and every card it draws is bundled into the JS at build time. A full
+# 16-to-death life would be the game with its storyteller removed, so
+# VITE_STATIC_DEMO below takes it off this build's start screen rather than
+# offering it and disappointing. `?demo=1` still works; it is just no longer
+# the way in.
 #
 # The admin cannot reach this artifact: `npm run build` never sees admin/ (it
 # is a separate Vite root building to dist-admin/), so the exclusion is
@@ -65,6 +65,11 @@ jobs:
         run: npm run build
         env:
           VITE_BASE: /life-swipe/
+          # Demo-only build: Begin starts the demo, and the mode picker and
+          # the separate "Just show me" link are gone. Set HERE and nowhere
+          # else, so a local build is always the full game. See
+          # client/src/staticDemo.js.
+          VITE_STATIC_DEMO: '1'
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   getContentMode, setContentMode, hasConfirmedAge, confirmAge,
   getRegionChoice, setRegionChoice, getDetectedRegion, getTheme, setTheme, getActiveTheme,
+  applyTheme,
 } from '../prefs.js';
 import { US_REGIONS, labelFor } from '@shared/regions.js';
 import { BAL } from '@shared/balance.js';
@@ -12,7 +13,19 @@ import { BAL } from '@shared/balance.js';
 // radiogroup would say otherwise. `demoRequested` is the /?demo=1 kiosk link
 // arriving with the age gate not yet satisfied - the gate still runs, it just
 // opens by itself.
-export default function StartScreen({ onStart, onStartDemo, demoRequested = false, llmEnabled, model }) {
+//
+// `staticDemo` is the demo-only build (client/src/staticDemo.js): the
+// deployed GitHub Pages site, which has no server and therefore no
+// storyteller. It collapses this screen to the one thing that build can
+// actually deliver - Begin starts the demo, and the mode picker and the
+// separate "Just show me" link both go, since a picker that cannot change
+// anything and a second door to the room you are already in are both worse
+// than not being there. Everything else on the screen is unchanged, and so
+// is every path behind it: Begin still goes through `beginDemo`, so it still
+// goes through the age gate.
+export default function StartScreen({
+  onStart, onStartDemo, demoRequested = false, staticDemo = false, llmEnabled, model,
+}) {
   const [mode, setMode] = useState(getContentMode);
   // null = closed. 'mature' = confirming to pick mature mode. 'demo' = confirming
   // to start a demo life. One dialog, two callers, because the confirmation
@@ -31,6 +44,10 @@ export default function StartScreen({ onStart, onStartDemo, demoRequested = fals
     if (demoRequested) setAskingAge('demo');
   }, [demoRequested]);
   const [region, setRegion] = useState(getRegionChoice);
+  // `theme` is the stored choice and exists to force a re-render when the
+  // toggle writes one - nothing reads it directly. What the screen shows is
+  // `activeTheme`, read back through prefs.js so the dark default lives in
+  // exactly one place rather than being spelled out again here.
   const [theme, setThemeLocal] = useState(getTheme);
   const detected = getDetectedRegion();
   const activeTheme = getActiveTheme();
@@ -40,16 +57,15 @@ export default function StartScreen({ onStart, onStartDemo, demoRequested = fals
     setRegionChoice(value);
   };
 
+  // Two states, not three. "Follow the OS" was the third, and it renders
+  // identically to dark now that dark is the default (prefs.js), so keeping it
+  // would have given the toggle a press that appeared to do nothing. Every
+  // press writes an explicit choice, which is what the player just made.
   const toggleTheme = () => {
-    const next = theme === 'light' ? 'dark' : theme === 'dark' ? null : 'light';
+    const next = activeTheme === 'dark' ? 'light' : 'dark';
     setThemeLocal(next);
     setTheme(next);
-    const root = document.documentElement;
-    if (next === 'dark') {
-      root.classList.add('dark-theme');
-    } else {
-      root.classList.remove('dark-theme');
-    }
+    applyTheme(next);
   };
 
   const chooseMode = (next) => {
@@ -107,7 +123,7 @@ export default function StartScreen({ onStart, onStartDemo, demoRequested = fals
             <button className="btn btn--primary" onClick={acceptAge}>I am 18 or older</button>
           </div>
         </div>
-      ) : (
+      ) : staticDemo ? null : (
         <div className="modes" role="radiogroup" aria-label="Content mode">
           {['safe', 'mature'].map((m) => (
             <button
@@ -154,7 +170,7 @@ export default function StartScreen({ onStart, onStartDemo, demoRequested = fals
 
       <div className="theme-toggle">
         <label htmlFor="theme-btn" className="theme-toggle__label">
-          {theme === null ? 'Light/dark' : theme === 'light' ? 'Light' : 'Dark'}
+          {activeTheme === 'light' ? 'Light' : 'Dark'}
         </label>
         <button
           id="theme-btn"
@@ -168,29 +184,50 @@ export default function StartScreen({ onStart, onStartDemo, demoRequested = fals
       </div>
 
       <ul className="start__rules">
-        <li>You start at 16. The clock does not stop.</li>
+        {staticDemo
+          ? <li>You start at 18. {BAL.DEMO.maxSwipes} swipes, a few minutes.</li>
+          : <li>You start at 16. The clock does not stop.</li>}
         <li>Swipe left or right. There is no third option.</li>
         <li>Every choice compounds. Some of them wait years.</li>
       </ul>
 
-      <button className="btn btn--primary btn--large" onClick={() => onStart(mode)}>Begin</button>
+      <button
+        className="btn btn--primary btn--large"
+        onClick={staticDemo ? beginDemo : () => onStart(mode)}
+      >
+        Begin
+      </button>
 
       {/* Below the fold of the real game, behind a rule, in smaller type: a
           demo is a sample, not a fourth thing to weigh up against Safe and
-          Mature. Deliberately NOT a mode pill. */}
-      <div className="start__demo">
-        <span className="start__demo-rule" />
-        <button className="start__demo-link" onClick={beginDemo}>
-          Just show me &mdash; {BAL.DEMO.maxSwipes} swipes, a few minutes
-        </button>
-        <p className="start__demo-note">
+          Mature. Deliberately NOT a mode pill. Gone entirely on the demo-only
+          build, where Begin above already starts it and this would be a
+          second door into the room you are standing in. */}
+      {staticDemo ? null : (
+        <div className="start__demo">
+          <span className="start__demo-rule" />
+          <button className="start__demo-link" onClick={beginDemo}>
+            Just show me &mdash; {BAL.DEMO.maxSwipes} swipes, a few minutes
+          </button>
+          <p className="start__demo-note">
+            A short mature-only life starting at 18. No storyteller, no waiting.
+          </p>
+        </div>
+      )}
+
+      {/* "Storyteller offline" explains why the model is not writing. On the
+          demo-only build there was never going to be one, and the line would
+          read as a fault rather than a fact - so it says what the build IS
+          instead. */}
+      {staticDemo ? (
+        <p className="start__status start__status--offline">
           A short mature-only life starting at 18. No storyteller, no waiting.
         </p>
-      </div>
-
-      <p className={`start__status start__status--${llmEnabled ? 'live' : 'offline'}`}>
-        {llmEnabled ? `Storyteller: ${model}` : 'Storyteller offline - playing hand-written scenarios'}
-      </p>
+      ) : (
+        <p className={`start__status start__status--${llmEnabled ? 'live' : 'offline'}`}>
+          {llmEnabled ? `Storyteller: ${model}` : 'Storyteller offline - playing hand-written scenarios'}
+        </p>
+      )}
     </div>
   );
 }
