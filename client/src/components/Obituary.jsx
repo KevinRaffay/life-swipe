@@ -2,10 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { fetchObituary } from '../api.js';
 import { money } from './Hud.jsx';
 
-// Written locally when there is no API key, or when the model does not answer.
+// Written locally when there is no API key, when the model does not answer -
+// and ALWAYS in demo mode, which never calls the model at all (see below).
 function localObituary(stats) {
   const rich = stats.money > 500000;
   const broke = stats.ending === 'bankrupt';
+  // A demo life that reached the swipe cap did not die, so it does not get an
+  // obituary that says it did. `alive` is true here and `ending` is 'demo';
+  // this is the closing card for the format, written to land as an ending
+  // rather than as the game stopping.
+  if (stats.ending === 'demo') {
+    return {
+      headline: `Still Alive At ${stats.age}, Which Is More Than Most Get Here`,
+      obituary: [
+        `You are not dead. You got ${stats.turns} swipes, which is what a demo is, and you spent them getting from 18 to ${stats.age} with ${money(stats.money)} and a job title that reads ${stats.career}.`,
+        `Along the way you accumulated ${stats.flags.filter((f) => f !== 'lives_with_parents').length} things worth writing down${stats.relationships.length ? `, and ${stats.relationships.slice(0, 3).join(', ')}` : ', and nobody in particular'}. The rest of it - the mortgage, the diagnosis, the part where everyone you know turns fifty - is in the full game.`,
+        `Health ${stats.health}/100, mood ${stats.happiness}/100. Not bad for a sample.`,
+      ].join('\n\n'),
+      epitaph: 'To be continued, allegedly.',
+      source: 'local',
+    };
+  }
   const headline = broke
     ? `Outlived By Their Own Debt At ${stats.age}`
     : `Dead At ${stats.age}, ${rich ? 'Comfortably' : 'Approximately On Schedule'}`;
@@ -36,7 +53,9 @@ function shareText(stats, obit) {
     'FATE',
     obit.headline,
     '',
-    `Died at ${stats.age} - ${stats.ending === 'bankrupt' ? 'broke' : stats.cause}`,
+    stats.ending === 'demo'
+      ? `Survived the demo to ${stats.age}`
+      : `Died at ${stats.age} - ${stats.ending === 'bankrupt' ? 'broke' : stats.cause}`,
     `Money: ${money(stats.money)}`,
     `Health ${stats.health}/100 - Mood ${stats.happiness}/100`,
     `Career: ${stats.career}`,
@@ -48,7 +67,7 @@ function shareText(stats, obit) {
   return lines.filter((l) => l !== undefined).join('\n');
 }
 
-export default function Obituary({ stats, history, onRestart }) {
+export default function Obituary({ stats, history, demoMode = false, onRestart }) {
   const [obit, setObit] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -56,13 +75,23 @@ export default function Obituary({ stats, history, onRestart }) {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    // DEMO MODE MAKES NO PROVIDER CALL, here or anywhere else. The deck's
+    // refill gate covers play; this covers the one call that happens after
+    // it. "Zero API calls" is the point of the format, and an obituary
+    // request would be a call - so the demo takes the locally written one,
+    // which is also instant, which a demo booth wants anyway.
+    if (demoMode) {
+      setObit(localObituary(stats));
+      setLoading(false);
+      return () => { cancelled = true; };
+    }
     fetchObituary(stats, history).then((remote) => {
       if (cancelled) return;
       setObit(remote || localObituary(stats));
       setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [stats, history]);
+  }, [stats, history, demoMode]);
 
   const onShare = async () => {
     const text = shareText(stats, obit);
@@ -87,7 +116,9 @@ export default function Obituary({ stats, history, onRestart }) {
   return (
     <div className="obituary">
       <div className="obituary__stone">
-        <p className="obituary__dates">16 &ndash; {stats.age}</p>
+        <p className="obituary__dates">
+          {demoMode ? `18 - ${stats.age}` : `16 - ${stats.age}`}
+        </p>
         <h1 className="obituary__headline">{obit.headline}</h1>
         {obit.epitaph && <p className="obituary__epitaph">&ldquo;{obit.epitaph}&rdquo;</p>}
       </div>
@@ -114,12 +145,20 @@ export default function Obituary({ stats, history, onRestart }) {
         <button className="btn btn--ghost" onClick={onShare}>
           {copied ? 'Copied' : 'Share as text'}
         </button>
-        <button className="btn btn--primary" onClick={onRestart}>Live again</button>
+        <button className="btn btn--primary" onClick={onRestart}>
+          {demoMode ? 'Run the demo again' : 'Live again'}
+        </button>
       </div>
 
-      {obit.source === 'local' && (
+      {obit.source === 'local' && !demoMode && (
         <p className="obituary__footnote">
           Written locally. Set ANTHROPIC_API_KEY for an obituary with opinions.
+        </p>
+      )}
+      {demoMode && (
+        <p className="obituary__footnote">
+          That was the demo &mdash; a fixed deck, no model, no network. The full
+          game runs from 16 until it actually ends.
         </p>
       )}
     </div>

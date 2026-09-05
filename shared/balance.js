@@ -189,6 +189,105 @@ export const BAL = {
       comfortable: 700,
     },
   },
+
+  // Demo mode: a short, mature-only, static life for a demo booth or a link
+  // somebody clicks once. Every number here is read ONLY when
+  // `state.demoMode` is true, so nothing in this block can move an ordinary
+  // life by a cent. See CLAUDE.md's "Demo mode" section.
+  DEMO: {
+    // 18, not 16, and set through createState's `startAge` rather than by
+    // fast-forwarding the clock afterwards. This SATISFIES the age invariant
+    // rather than working around it: effectiveTier({age: 18, contentMode:
+    // 'mature'}) is 'mature' on its own terms, so no demo card is ever a
+    // mature card shown to a minor.
+    startAge: 18,
+
+    // The hard ceiling on a demo life, in swipes. Reached, the engine ends
+    // the life gracefully through the same `finish` path bankruptcy and death
+    // use (see applyChoice) - never an abrupt cutoff, and never a target: a
+    // demo life that goes broke or dies at swipe 12 ends at swipe 12.
+    //
+    // 30 IS A MEASURED NUMBER, and it was measured twice.
+    //
+    // The first guess was 40, from a rough "a minor card is ~20 words, call
+    // it 6 seconds". `npm run demo-check` against a pilot pool put the median
+    // session at 5m33s - outside the 1-5 minute brief - because a real card
+    // is longer than that guess, and at 3.6 words/second plus 2.4 seconds to
+    // decide it costs ~8.8 seconds, not 6. That took it to 32.
+    //
+    // Then the actual 300-card pool arrived with a median card of 25 words
+    // rather than the pilot's 23, and 32 swipes measured at 5m04s - four
+    // seconds over. Hence 30, which lands at ~4m45s. Four seconds is well
+    // inside the error bars of a reading-rate assumption, and the number was
+    // trimmed anyway: the brief is the brief, and arguing with the harness
+    // that is telling you the answer is how a constant goes stale.
+    //
+    // demo-check recomputes that estimate from the pool's real word counts on
+    // every run and says so when the median leaves the window, so this stays
+    // honest as the pool changes. The two reading-rate assumptions behind it
+    // sit at the top of that script rather than here, because they are the
+    // part most worth arguing with, and they are deliberately CONSERVATIVE -
+    // 3.6 words/second is about 216wpm against a typical adult's ~240.
+    maxSwipes: 30,
+
+    // Months per swipe INSTEAD of BAL.TIME, for demo lives only.
+    //
+    // At the ordinary minor rate (1 month) a 32-swipe demo covers under three
+    // years and ends at 20, which reads as a fragment rather than a life. At
+    // 5 months it covers ~13 years and ends around 31 - college, first job,
+    // first real money, the beginning of the rest of it - which is the arc a
+    // demo is actually trying to show, and which is why the demo pool has
+    // three age bands reaching to 36 rather than one.
+    //
+    // 5 rather than 4 because maxSwipes came DOWN on measurement (see above)
+    // and the age reached has to be held where the pool's bands are: 30 x 5
+    // months lands at 30.5, just inside the third band, where 30 x 4 would
+    // land at 28 and make that band's cards unreachable entirely. The product
+    // of these two constants is the real setting; either one alone is half an
+    // answer, so re-check the age line demo-check prints after touching
+    // either. The third band is lightly used by design - about one draw per
+    // demo - which is why it is the smallest share in STAGE_SHARE.
+    //
+    // This does NOT make organic death likely, and nothing in this range
+    // could: Gompertz mortality between 18 and 31 is a fraction of a percent
+    // a year, and reaching a meaningful chance inside 32 swipes would need
+    // ~1.5 years per swipe, which no minor card - "a moment or a week" - can
+    // carry without the fiction collapsing. The forced cap ending is the
+    // normal demo ending by design and is written for, in the obituary
+    // screen's own `ending === 'demo'` branch. Bankruptcy remains a genuine
+    // early exit and does fire.
+    //
+    // Same key names as BAL.TIME, and the engine's own clamps still apply on
+    // top - `timeCostMonths` runs the result through CLAMP.timeMonths and the
+    // stage cap exactly as it does for a real life.
+    time: {
+      minor: 5,
+      standard: 9,
+      major: 18,
+      trivial: 5,
+    },
+
+    // Which name origins a demo life may draw from, as a hard allow-list
+    // handed to `assignName`'s `categoryAllow`. Null or [] would mean "no
+    // restriction", which is what every ordinary life passes.
+    //
+    // This is a DEMO-ONLY narrowing and it is deliberately the opposite of
+    // what the main game wants. The pool exists because an authored list of
+    // names converged on the same narrow band life after life, and the
+    // category draw is weighted by real birth counts precisely so a player
+    // meets the country rather than one origin of it. A demo is a different
+    // job: thirty swipes seen once, often by somebody reading over a
+    // stranger's shoulder at a booth, where an unfamiliar name is a beat
+    // spent on "how do I say that" instead of on the joke.
+    //
+    // It costs nothing structurally - `categoryAllow` is applied inside
+    // `assignName`'s eligibility filter, ahead of every random draw, so it
+    // changes WHICH name a draw lands on and never how many randoms it
+    // consumes (invariant 6, the same rule region and deactivation follow).
+    // 632 active anglo names is far more than a 30-swipe life can spend, so
+    // no degradation tier is reachable through this.
+    nameCategories: ['anglo'],
+  },
 };
 
 export default BAL;

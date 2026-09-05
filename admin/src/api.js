@@ -123,6 +123,14 @@ async function ndjson(path, body, onEvent = () => {}, signal = undefined) {
 export const generateSeeds = (mode, target, force = false, onEvent = () => {}, signal = undefined) =>
   ndjson('/generate-seeds', { mode, target, force }, onEvent, signal);
 
+// The DEMO pool's bulk generator. Volume-driven rather than coverage-driven,
+// so its only knob is how many candidates to aim for - there is no mode (demo
+// is mature-only by definition) and no force (nothing to be already-covered
+// against). Streams like the other two long runs; a thousand-card run is
+// hours of sequential model calls.
+export const generateDemoSeeds = (total, onEvent = () => {}, signal = undefined) =>
+  ndjson('/generate-demo-seeds', { total }, onEvent, signal);
+
 // One on-demand harvest over a slice of the LLM request log. `seeds` and
 // `patterns` pick which draft queues the run feeds; the library path is the
 // only half that calls a model, so a seeds-only run works with no API key.
