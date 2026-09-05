@@ -18,7 +18,11 @@ import fs from 'node:fs';
 import { read, write, serialise, fileOf } from '../server/admin/store.js';
 
 const WRITE = process.argv.includes('--write');
-const TARGETS = ['library', 'seeds'];
+// The demo pool is a seed-shaped file written by the same store, so it takes
+// the same canonical key order. It is generated rather than hand-authored, so
+// it starts canonical and this is a no-op on it - which is the point: if it
+// ever stops being canonical, that is worth seeing.
+const TARGETS = ['library', 'seeds', 'demoSeeds'];
 
 /** Deep key-sorted JSON, so two values compare equal whatever order they hold. */
 function canonical(value) {

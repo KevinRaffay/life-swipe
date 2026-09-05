@@ -148,6 +148,9 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
 }
 .hud__storyteller--live { color: var(--right); }
 .hud__storyteller--thinking { color: var(--violet); }
+/* Demo mode. Gold rather than green: this is not the storyteller working,
+   it is the storyteller deliberately absent, which is a different fact. */
+.hud__storyteller--demo { color: var(--gold); }
 
 /* --------------------------------------------------------- stage banner */
 
@@ -413,6 +416,33 @@ button { font: inherit; color: inherit; cursor: pointer; border: none; backgroun
   content: ''; position: absolute; left: 0; top: 0.55em;
   width: 6px; height: 6px; border-radius: 99px;
   background: linear-gradient(135deg, var(--violet), var(--left));
+}
+
+/* ------------------------------------------------------- demo entry point */
+
+/* Below the Begin button, behind a rule, in quieter type. The demo is a
+   sample of the game, not a third mode to weigh against Safe and Mature, so
+   it deliberately does not look like a mode pill or a primary button. */
+.start__demo {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  margin: 2px 0 0; max-width: 330px; width: 100%;
+}
+.start__demo-rule {
+  width: 40px; height: 1px; margin-bottom: 6px;
+  background: var(--color-border);
+}
+.start__demo-link {
+  appearance: none; background: none; border: 0; padding: 2px 4px;
+  font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--color-text-muted); cursor: pointer;
+  border-bottom: 1px dashed var(--color-border);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.start__demo-link:hover,
+.start__demo-link:focus-visible { color: var(--gold); border-bottom-color: var(--gold); }
+.start__demo-note {
+  margin: 0; font-size: 11px; line-height: 1.45;
+  color: var(--color-text-muted); opacity: 0.75; text-align: center;
 }
 
 .start__status {

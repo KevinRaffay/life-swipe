@@ -15,7 +15,7 @@
 // stats view can show. It is a signal to watch, never a limit anything
 // enforces.
 
-export const SOURCES = ['hand-authored', 'extracted', 'generated', 'harvested'];
+export const SOURCES = ['hand-authored', 'extracted', 'generated', 'harvested', 'demo-generated'];
 
 /** Written by a person, in the admin forms or straight into the JSON file. */
 export const HAND_AUTHORED = 'hand-authored';
@@ -25,6 +25,17 @@ export const EXTRACTED = 'extracted';
 export const GENERATED = 'generated';
 /** server/harvest.js, mined from the LLM request log after live play. */
 export const HARVESTED = 'harvested';
+/**
+ * server/demo-seed-generation.js, bulk drafting for the DEMO pool
+ * (data/demo-seed-scenarios.json).
+ *
+ * Its own value rather than a reuse of 'generated' because the two pools are
+ * separate content sets with separate registers, and a demo card that ever
+ * turned up in data/scenarios-seed.json - through a mis-aimed approve, a
+ * hand-merge, a future tool - should be visible as one at a glance rather
+ * than indistinguishable from a main-deck draft.
+ */
+export const DEMO_GENERATED = 'demo-generated';
 
 export const isSource = (value) => SOURCES.includes(value);
 

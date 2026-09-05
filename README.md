@@ -5,6 +5,11 @@ You start at 16. You swipe left or right. The run ends when you die or go broke.
 
 Reigns, crossed with an actuarial table.
 
+> The game is **displayed** as **FATE** — that is the title on the start
+> screen, the browser tab and the share text. `life-swipe` remains the
+> repository, the npm package and the `lifeswipe.*` localStorage prefix, so
+> both names appear here on purpose.
+
 ---
 
 ## Quick start
@@ -18,7 +23,8 @@ Then open **http://localhost:8787**.
 
 `npm start` builds the client and serves it from the same Express process that
 proxies the API. The game is fully playable with no API key at all — it ships
-with 26 hand-authored scenarios and 27 procedural templates.
+with 286 seed scenarios (162 hand-authored, 124 harvested from live play and
+approved), 140 situation-library patterns and 27 procedural templates.
 
 ### Adding your API key
 
@@ -57,10 +63,28 @@ instead of `Storyteller offline`.
 ### Other commands
 
 ```bash
-npm run dev       # Vite dev server on :5173 + API on :8787, both hot-reloading
-npm run serve     # serve an existing build without rebuilding
-npm run simulate  # play 100 random lives headlessly and print balance stats
+npm run dev                # Vite dev server on :5173 + API on :8787, both hot-reloading
+npm run serve              # serve an existing build without rebuilding
+npm run simulate           # play 100 random lives headlessly and print balance stats
+npm run demo-check         # demo-mode assertions (see "Demo mode" below)
+npm run coverage           # seed coverage per age bucket and mode
+npm run names              # validate the name pool and measure its spread
+
+npm run admin              # build the admin UI, serve it, open :8787/admin
+npm run dev:admin          # admin Vite + API, for working on the admin itself
+
+npm run generate-seeds      -- --mode=both --target=15   # draft seed scenarios
+npm run generate-demo-seeds -- --total=1000              # draft demo-pool cards
+npm run extract-patterns    -- source.txt                # draft library patterns
+npm run normalise-content                                # canonical key order
+
+npm run build-name-pool       -- <ssa-dir>   # regenerate the name pool from SSA data
+npm run build-region-weights  -- <ssa-dir>   # regenerate regional name weights
 ```
+
+None of the three drafting commands ever merge: each writes a `.draft.json`
+file and stops. Content enters the game through the admin's review queues,
+by a person.
 
 ---
 
@@ -115,24 +139,52 @@ which the deck already knows how to handle.
 ## Project layout
 
 ```
-shared/          # runs in BOTH the browser and Node - the engine is the same code
-  engine.js      #   state, economics, mortality, clamping, the act of choosing
-  balance.js     #   every tunable number, in one file
-  schema.js      #   structural validation of anything claiming to be a scenario
-  deck.js        #   buffering, eligibility, background refill
-  fallback.js    #   27 procedural templates for offline play
-  rng.js         #   seeded, serializable PRNG (a run can be replayed exactly)
+shared/            # runs in BOTH the browser and Node - the engine is the same code
+  engine.js        #   state, economics, mortality, clamping, the act of choosing
+  balance.js       #   every tunable number, in one file (BAL.DEMO included)
+  schema.js        #   structural validation of anything claiming to be a scenario
+  content.js       #   content-mode policy, the under-18 rule, the dark-arc budget
+  scenario-format.js #  weight tiers and which narrative fields each carries
+  deck.js          #   buffering, eligibility, background refill, the demo gate
+  fallback.js      #   27 procedural templates for offline play
+  library.js       #   situation-library selection and rarity weighting
+  intro.js         #   the two authored identity choices at the start of a life
+  names.js         #   name pool reader, era/region weighting, tag resolution
+  regions.js       #   region codes and labels
+  provenance.js    #   where a piece of content came from
+  rng.js           #   seeded, serializable PRNG (a run can be replayed exactly)
 server/
-  index.js       #   Express: serves dist/, proxies Anthropic
-  anthropic.js   #   Messages API client (no SDK dependency)
-  prompt.js      #   system + user prompts, including delayed-consequence rules
-client/src/      # React, plain CSS, no UI framework
-  App.jsx        #   wiring: engine + deck + phases
+  index.js         #   Express: serves dist/, the /api/* routes, mounts the admin
+  provider.js      #   THE LLM SEAM - the only importer of a backend client
+  anthropic.js     #   Messages API client (no SDK dependency)
+  ollama.js        #   local Ollama client, same interface
+  llm.js           #   request/response logging around the provider call
+  log-store.js     #   the log file: append, gzip rotation, filtered reads
+  prompt.js        #   system + user prompts, including delayed-consequence rules
+  demo-prompt.js   #   the DEMO storyteller prompts and content register
+  seed-generation.js      # bulk seed drafting for coverage-thin buckets
+  demo-seed-generation.js # bulk DEMO pool drafting
+  extraction.js    #   library-pattern extraction from pasted source text
+  harvest.js       #   mining the request log for content worth keeping
+  geo.js           #   offline IP -> region (holds the privacy contract)
+  name-pool.json   #   993 names from SSA birth records
+  situation-library.json  # 140 anonymised life-event shapes
+  admin/           #   the content admin API - localhost only, no auth
+client/src/        # React, plain CSS, no UI framework
+  App.jsx          #   wiring: engine + deck + phases, and the demo entry path
+  prefs.js         #   per-player cross-life memory in localStorage
   components/CardStack.jsx   # the swipe gesture
+  components/StartScreen.jsx # modes, age gate, region, theme, demo entry
+  components/Obituary.jsx    # the ending screen
+admin/             # the admin React app - its own Vite root, never in the player build
 data/
-  scenarios-seed.json        # 26 hand-authored early-life scenarios
+  scenarios-seed.json        # 286 seed scenarios
+  demo-seed-scenarios.json   # the DEMO pool, a separate content set
 scripts/
-  simulate.js    # headless balance harness
+  simulate.js      # headless balance harness
+  demo-check.js    # demo-mode assertions
+  coverage.js      # seed coverage per bucket and mode
+  name-check.js    # name pool validation and spread measurement
 ```
 
 ---
@@ -193,14 +245,20 @@ It plays random lives headlessly with no API in the loop and prints lifespan
 percentiles, swipes per life, the money distribution, credits, and a ranked
 table of causes of death.
 
-Current numbers for **random** play (a thoughtful player does noticeably
-better):
+Current numbers for **random** play, safe mode, 400 lives (a thoughtful player
+does noticeably better):
 
 ```
-LIFESPAN     mean 60.3   median 63   p10 39   p90 77
-SWIPES       mean 53.2   median 55   p10 25   p90 76      target 40-80
-MONEY        p25 $116k   p50 $651k   p90 $2.2M   broke endings 14%
+LIFESPAN     mean 61.4   median 66   p10 34   p90 83
+SWIPES       mean 77.0   median 81   p10 32   p90 117     target 40-80
+MONEY        p25 -$86k   p50 $308k   p90 $2.1M   broke endings 31%
 ```
+
+Swipes per life and the broke rate have both drifted up since these were last
+written down, and the seed deck growing from 26 cards to 286 is why: a longer
+deck means fewer forced repeats and more cards before a life resolves. The
+`target 40-80` line is the spec's, not a measurement — the median sits above
+it today.
 
 Every knob the sim responds to lives in `shared/balance.js`. Change one number,
 re-run, see what it did.
@@ -329,6 +387,110 @@ outranks them:
 | `ec_firstjob` | 2 | sets the first real salary |
 
 Add `"priority": 1` to any seed that has to fire for later cards to make sense.
+
+---
+
+## Demo mode
+
+A short, mature-only, **entirely static** life — one to five minutes, capped at
+30 swipes, starting at 18, drawing from its own dedicated pool and **never
+calling a model**. Meant for a demo booth, a link somebody clicks once, or
+anyone who wants to see what the game is without committing to a whole life.
+
+Two ways in, both distinct from the Safe/Mature picker, because a demo is a
+sample of the game rather than a third permanent mode:
+
+- the **"Just show me"** link under the Begin button on the start screen;
+- **`http://localhost:8787/?demo=1`**, for a kiosk.
+
+Neither bypasses the age gate. Demo mode forces mature content, so it goes
+through the same 18-or-older confirmation the Mature pill does — the kiosk link
+just opens that dialog for you and starts once you accept.
+
+What is different from an ordinary life, and nothing else is:
+
+| | ordinary life | demo life |
+| --- | --- | --- |
+| starts at | 16 | 18 |
+| content mode | your pick | forced `mature` |
+| intro sequence | two identity cards + a generated grounding beat | skipped entirely |
+| card source | `data/scenarios-seed.json` + live generation | `data/demo-seed-scenarios.json` only |
+| provider calls | scenarios, intro beat, obituary | **none, ever** |
+| time per minor swipe | 1 month | 5 months |
+| ends when | you die or go broke | you die, go broke, **or** hit 30 swipes |
+
+The swipe cap is a ceiling, not a target: a demo life that goes broke on swipe
+twelve ends on swipe twelve. Reaching the cap ends the life through the same
+path death and bankruptcy use, so you get the ending screen rather than a
+cutoff — and since nothing killed you, it does not pretend otherwise. The HUD
+counts `swipe 12 of 30` so the ending is never a surprise.
+
+**Zero provider calls is enforced, not preferred.** `Deck.maybeRefill` returns
+on the demo flag before it looks at whether a fetcher was even configured, and
+the obituary is written locally too. `npm run demo-check` proves it by handing
+the deck a fetcher that counts being called and asserting the count stayed at
+zero.
+
+### The demo content pool
+
+`data/demo-seed-scenarios.json` is its own content set and is never mixed with
+the seed deck. Every card is minor-tier (a bare prompt — the demo lives on
+rhythm), written for ages 18–36, tagged `source: "demo-generated"`.
+
+It is generated offline and reviewed like everything else here:
+
+```bash
+npm run generate-demo-seeds -- --total=1000
+```
+
+That writes `demo-seed-scenarios.draft.json` and stops. Runs accumulate: a
+second run de-duplicates against both the existing queue and anything already
+approved, so topping up is safe. Review and approve in the admin's **Demo
+pool** tab (`npm run admin`), which has the same approve / edit-and-approve /
+reject controls as the other queues plus "Approve all without warnings" and
+"Reject all with warnings" for the volume.
+
+Expect diminishing returns rather than a linear pool: measured, 300 candidates
+yielded ~300 distinct situations and the next 700 yielded only ~290 more, with
+the rest flagged as repeats of something already queued. The model runs out of
+situations before it runs out of words. More themes in `DEMO_THEMES` moves that
+number; a bigger `--total` mostly does not.
+
+Generation runs through `server/provider.js` like every other model call, so it
+works on Anthropic or Ollama according to `LLM_PROVIDER`, and through the same
+`shared/schema.js` and `shared/content.js` validators as any other card — a
+demo card has to be structurally valid and content-mode compliant like anything
+else.
+
+**On the register.** The demo is written to be flirty and unserious: innuendo
+and double entendre, lines that read innocently and land somewhere cheekier a
+half-second later, in current gen-z voice. That is a **comedic register**, not
+a content category. It does not relax the game's "no explicit sexual content in
+either mode" rule, which applies here identically — and on top of the prompt
+saying so, the generator hard-drops any candidate that crosses it, along with
+any card whose cast is not clearly adult. Every character in the demo pool is
+18 or over.
+
+### Checking it
+
+```bash
+npm run demo-check              # 300 demo lives
+npm run demo-check -- 1000 x
+```
+
+Three hard assertions: every demo life ends at or under the swipe cap; no demo
+life attempts a live provider call; no card is dealt below 18 at a non-safe
+tier. That last one should be structurally impossible — a demo starts at 18 and
+the clock only moves forward — which is exactly why it is asserted rather than
+assumed.
+
+It also reports the numbers the 30-swipe cap was tuned against, including an
+estimated session length computed from the pool's real word counts.
+
+`npm run names` checks the demo pool as well as the seed deck for cards that
+hardcode a person's name instead of using a `{{new:role}}` tag — the engine
+names every character, and a card that names one itself would be the same
+person in every life.
 
 ---
 

@@ -11,6 +11,7 @@ import { makeFallbackScenario } from './fallback.js';
 import { validateBatch } from './schema.js';
 import { nextRandom } from './rng.js';
 import { hasNameTag, resolveCardNames, createNameLedger, NAMED_FIELDS } from './names.js';
+import { BAL } from './balance.js';
 
 // Must stay smaller than the smallest per-stage pool, or every candidate ends
 // up "recent" and the deck is forced to repeat itself.
@@ -44,6 +45,7 @@ export class Deck {
    * @param {Function} [opts.fetchBatch]   async (state) => raw scenario array
    * @param {number}   [opts.lookahead]    refill when buffer drops below this
    *   (a live batch takes ~20s, so keep this well above one swipe of runway)
+   * @param {boolean}  [opts.demoMode]     a demo deck: NEVER calls a provider
    */
   constructor({
     seedScenarios = [],
@@ -54,8 +56,15 @@ export class Deck {
     onSeedShown = null,
     warn = (msg) => console.warn(msg),
     region = null,
+    demoMode = false,
   } = {}) {
     this.seeds = validateBatch(seedScenarios).scenarios.map((s) => ({ ...s, source: 'seed' }));
+    // A demo deck NEVER calls a provider - unconditionally, not as a
+    // preference. The whole point of demo mode is zero API calls during play,
+    // so this is enforced here (maybeRefill returns immediately) rather than
+    // left to every caller remembering to pass fetchBatch: null. The caller
+    // passes null as well; this is the half that cannot be forgotten.
+    this.demoMode = demoMode === true;
     this.fetchBatch = fetchBatch;
     // Returns a pattern to brief the storyteller with, or null for free generation.
     this.onLibrarySlot = onLibrarySlot;
@@ -248,6 +257,10 @@ export class Deck {
       age: ageOf(state),
       rng: () => nextRandom(state),
       region: this.region,
+      // Read off state, not off this.demoMode, for the same reason the rest
+      // of this method does: the state is what the referee owns. Null for
+      // every ordinary life - see BAL.DEMO.nameCategories.
+      categoryAllow: state.demoMode ? BAL.DEMO.nameCategories : null,
     });
     for (const entry of assigned) noteAssignedName(state, entry);
     return resolved;
@@ -265,6 +278,11 @@ export class Deck {
   // Fire-and-forget. Errors are swallowed on purpose: a failed fetch just means
   // the next draw comes from seeds or fallbacks, which is a fine game.
   maybeRefill(state) {
+    // Demo mode: no live generation, ever. First line of the method on
+    // purpose - a demo life draws from the demo seed pool and, if that were
+    // ever somehow exhausted mid-life, from the procedural fallback
+    // templates, and from nothing else.
+    if (this.demoMode) return;
     if (!this.fetchBatch || this.inFlight) return;
     if (this.stocked(state) >= this.lookahead) return;
 

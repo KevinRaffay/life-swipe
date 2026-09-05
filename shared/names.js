@@ -305,6 +305,14 @@ export function nameFrequency(entry, {
  * already a weight applied only to already-eligible candidates (see
  * `regionalWeight`), never a filter, so deactivating one changes nothing here
  * - it has nothing to drop.
+ *
+ * `categoryAllow` joins that same hard filter: an optional allow-list of
+ * origins the caller will accept, null (the default) meaning all of them.
+ * Nothing in an ordinary life passes it - it exists for demo mode, which
+ * narrows to one origin on purpose (see BAL.DEMO.nameCategories for why that
+ * is the right call there and the wrong one everywhere else). Because it sits
+ * in the eligibility filter, ahead of both draws, it changes which name comes
+ * up and never how many randoms the selection consumes (invariant 6).
  */
 export function assignName({
   pool = NAME_POOL,
@@ -315,10 +323,14 @@ export function assignName({
   rng = Math.random,
   region = null,
   controls = NAME_POOL_CONTROLS,
+  categoryAllow = null,
 } = {}) {
   const want = hintFor(role).gender;
   const free = (e) => !taken.has(firstName(e.name));
-  const eligible = (e) => isNameEligible(e, controls);
+  // An empty list means the caller had nothing to restrict, not that it wants
+  // an empty pool - the one reading that could never be what anybody meant.
+  const allow = categoryAllow && categoryAllow.length ? new Set(categoryAllow) : null;
+  const eligible = (e) => isNameEligible(e, controls) && (!allow || allow.has(e.category));
 
   const passes = [
     (e) => eligible(e) && free(e) && eraOk(e, birthYear) && genderOk(e, want),
@@ -339,7 +351,7 @@ export function assignName({
     if (candidates.length) { tier = i; break; }
   }
   if (tier === passes.length - 1) {
-    console.warn(`[names] pool-wide deactivation left no untaken candidate for role "${role}" - reusing a name already in play`);
+    console.warn(`[names] no untaken candidate left for role "${role}" after deactivation${allow ? ' and the caller\'s origin allow-list' : ''} - reusing a name already in play`);
   }
   // 187 names against a life that names a few dozen people at most, so an
   // empty EVERY-tier result is unreachable without extreme deactivation - but
@@ -498,6 +510,8 @@ export const NAMED_FIELDS = ['setting', 'beat', 'dialogue', 'prompt', 'scenario'
  * @param {number} opts.age           the player's age, for era plausibility
  * @param {Function} opts.rng         () => [0,1), the run's own RNG
  * @param {string}   [opts.region]    the player's region code, or null for none
+ * @param {Array}    [opts.categoryAllow] origins the caller will accept, or
+ *                                    null for all of them. Demo mode only.
  * @returns {{ card: object, assigned: Array }}
  */
 export function resolveCardNames(card, {
@@ -509,6 +523,7 @@ export function resolveCardNames(card, {
   pool = NAME_POOL,
   region = null,
   controls = NAME_POOL_CONTROLS,
+  categoryAllow = null,
 } = {}) {
   const assigned = [];
   const pending = {};
@@ -542,6 +557,7 @@ export function resolveCardNames(card, {
       rng,
       region,
       controls,
+      categoryAllow,
     });
     // A pool with nothing left to give is not a reason to show the player a
     // card with braces in it; fall back to the role itself, capitalised.

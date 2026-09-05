@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import seedScenarios from '@data/scenarios-seed.json';
+import demoSeedScenarios from '@data/demo-seed-scenarios.json';
 import situationLibrary from '@library';
 import { Deck } from '@shared/deck.js';
 import {
@@ -9,10 +10,13 @@ import {
 import { nextRandom } from '@shared/rng.js';
 import { buildIdentityCard, fallbackGroundingBeat, INTRO_CARD_ORDER, pickFramingLine } from '@shared/intro.js';
 
+import { BAL } from '@shared/balance.js';
+
 import { fetchScenarios, getConfig, fetchRegion, fetchIntroBeat } from './api.js';
 import {
   getSeenPatterns, markPatternSeen, getSeenSeedIds, markSeedSeen, beginLife,
   getActiveRegion, getDetectedRegion, setDetectedRegion, getActiveTheme,
+  hasConfirmedAge,
 } from './prefs.js';
 import { librarySlotDue, scheduleNextSlot, selectPattern } from '@shared/library.js';
 import { classifyConsequence } from './severity.js';
@@ -131,6 +135,60 @@ export default function App() {
     setPhase('intro');
   }, [makeDeck]);
 
+  // A DEMO life. Three things make it different from `start` above, and
+  // nothing else does - it is the same engine, the same deck class and the
+  // same game loop:
+  //
+  //  1. Its deck reads the DEMO POOL and passes `demoMode`, so no swipe can
+  //     ever trigger a live provider call. `fetchBatch` is left null as well;
+  //     the flag is the half that cannot be forgotten (shared/deck.js).
+  //  2. The life starts at 18 in mature mode. The age gate that guards mature
+  //     selection has already been satisfied before this runs - StartScreen
+  //     will not call it otherwise - and 18 SATISFIES the age invariant
+  //     rather than dodging it, so `effectiveTier` is untouched.
+  //  3. There is no intro phase. Demo mode goes straight to the first card,
+  //     which is also why it makes no `/api/intro` call: skipping the phase
+  //     skips the one generation call that sequence contains.
+  //
+  // The library slot is deliberately absent too: its only consumer is
+  // `fetchBatch`, so a demo deck has nothing to brief.
+  const startDemo = useCallback(() => {
+    beginLife();
+    const deck = new Deck({
+      seedScenarios: demoSeedScenarios,
+      demoMode: true,
+      fetchBatch: null,
+      seenSeedIds: getSeenSeedIds(),
+      onSeedShown: markSeedSeen,
+      region: getActiveRegion(),
+    });
+    deckRef.current = deck;
+    const fresh = createState({
+      seed: `demo-${Date.now()}-${Math.random()}`,
+      contentMode: 'mature',
+      startAge: BAL.DEMO.startAge,
+      demoMode: true,
+      region: getActiveRegion(),
+    });
+    setState(fresh);
+    setEvents([]);
+    setSeverity('standard');
+    setCards([deck.draw(fresh), deck.draw(fresh)]);
+    setPhase('playing');
+  }, []);
+
+  // A demo-booth / kiosk link: /?demo=1 starts a demo life on load. It does
+  // NOT bypass the age gate - an unconfirmed visitor lands on the start
+  // screen with the mature confirmation open, and the demo begins when they
+  // accept. Read once on mount; the parameter is not watched afterwards.
+  const [demoRequested, setDemoRequested] = useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('demo')) return;
+    if (hasConfirmedAge()) startDemo();
+    else setDemoRequested(true);
+  }, [startDemo]);
+
   // Dismiss the opening framing modal and advance to the first identity card.
   const dismissFraming = useCallback(() => {
     if (phaseRef.current !== 'intro') return;
@@ -231,7 +289,13 @@ export default function App() {
   if (phase === 'title') {
     return (
       <main className="app">
-        <StartScreen onStart={start} llmEnabled={config.llmEnabled} model={config.model} />
+        <StartScreen
+          onStart={start}
+          onStartDemo={startDemo}
+          demoRequested={demoRequested}
+          llmEnabled={config.llmEnabled}
+          model={config.model}
+        />
       </main>
     );
   }
@@ -258,20 +322,31 @@ export default function App() {
         <Obituary
           stats={finalStats(state)}
           history={state.history}
-          onRestart={() => start(state.contentMode)}
+          demoMode={state.demoMode === true}
+          onRestart={() => (state.demoMode ? startDemo() : start(state.contentMode))}
         />
       </main>
     );
   }
 
   const deck = deckRef.current;
-  const storyteller = config.llmEnabled
-    ? { mode: deck && deck.ready() ? 'live' : 'thinking', label: deck && deck.ready() ? 'storyteller ready' : 'storyteller writing ahead' }
-    : { mode: 'offline', label: 'offline deck' };
+  // A demo life has no storyteller at all, and says so rather than borrowing
+  // the "offline" label - offline means the model was unreachable, which is a
+  // degraded state. This one is the design.
+  const storyteller = state.demoMode
+    ? { mode: 'demo', label: 'demo deck - no storyteller' }
+    : config.llmEnabled
+      ? { mode: deck && deck.ready() ? 'live' : 'thinking', label: deck && deck.ready() ? 'storyteller ready' : 'storyteller writing ahead' }
+      : { mode: 'offline', label: 'offline deck' };
 
   return (
     <main className="app">
-      <Hud state={state} storyteller={storyteller} tier={contentTier(state)} />
+      <Hud
+        state={state}
+        storyteller={storyteller}
+        tier={contentTier(state)}
+        swipeCap={state.demoMode ? BAL.DEMO.maxSwipes : null}
+      />
 
       <div className="stage-banner">
         <span className="stage-banner__rule" />

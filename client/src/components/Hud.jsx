@@ -24,7 +24,12 @@ function Meter({ label, value, tone }) {
   );
 }
 
-export default function Hud({ state, storyteller, tier }) {
+// `swipeCap` is set only in demo mode (BAL.DEMO.maxSwipes). It turns the
+// swipe counter into "swipe 12 of 40", which is what stops the demo's forced
+// ending reading as the game breaking: a player who can see the end coming
+// experiences the cap as the format, not as a cutoff. An ordinary life has no
+// cap and the counter is unchanged.
+export default function Hud({ state, storyteller, tier, swipeCap = null }) {
   const age = Math.floor(state.ageMonths / 12);
   const broke = state.money < 0;
 
@@ -35,7 +40,9 @@ export default function Hud({ state, storyteller, tier }) {
           <span className="hud__age-number">{age}</span>
           <span className="hud__age-label">years</span>
         </div>
-        <span className="hud__turn">swipe {state.turn + 1}</span>
+        <span className="hud__turn">
+          swipe {state.turn + 1}{swipeCap ? ` of ${swipeCap}` : ''}
+        </span>
         <div className={`hud__money${broke ? ' is-broke' : ''}`}>{money(state.money)}</div>
       </div>
 

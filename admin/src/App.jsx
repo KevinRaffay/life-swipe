@@ -7,6 +7,7 @@ import PatternForm from './components/PatternForm.jsx';
 import SeedForm from './components/SeedForm.jsx';
 import Extraction from './components/Extraction.jsx';
 import SeedGeneration from './components/SeedGeneration.jsx';
+import DemoPool from './components/DemoPool.jsx';
 import Harvest from './components/Harvest.jsx';
 import Preview from './components/Preview.jsx';
 import Stats from './components/Stats.jsx';
@@ -20,6 +21,7 @@ const TABS = [
   ['names', 'Name pool'],
   ['extraction', 'Extract & drafts'],
   ['seed-gen', 'Generate seeds'],
+  ['demo-pool', 'Demo pool'],
   ['harvest', 'Harvest'],
   ['preview', 'Preview'],
   ['stats', 'Stats'],
@@ -268,6 +270,7 @@ export default function App() {
               {label}
               {key === 'extraction' && boot.drafts.length > 0 && <span className="count">{boot.drafts.length}</span>}
               {key === 'seed-gen' && boot.seedDrafts.length > 0 && <span className="count">{boot.seedDrafts.length}</span>}
+              {key === 'demo-pool' && boot.demoDrafts.length > 0 && <span className="count">{boot.demoDrafts.length}</span>}
               {key === 'harvest' && harvestedWaiting > 0 && <span className="count">{harvestedWaiting}</span>}
             </button>
           ))}
@@ -374,6 +377,16 @@ export default function App() {
       {tab === 'seed-gen' && (
         <SeedGeneration
           seedDrafts={boot.seedDrafts}
+          llmEnabled={boot.llmEnabled}
+          onChanged={(next) => { patch(next); revalidate(); }}
+        />
+      )}
+
+      {tab === 'demo-pool' && (
+        <DemoPool
+          demoSeeds={boot.demoSeeds}
+          demoDrafts={boot.demoDrafts}
+          defaultTotal={boot.demoDefaultTotal}
           llmEnabled={boot.llmEnabled}
           onChanged={(next) => { patch(next); revalidate(); }}
         />

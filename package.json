@@ -12,6 +12,8 @@
     "simulate": "node scripts/simulate.js",
     "extract-patterns": "node scripts/extract-patterns.js",
     "generate-seeds": "node scripts/generate-seed-scenarios.js",
+    "generate-demo-seeds": "node scripts/generate-demo-seeds.js",
+    "demo-check": "node scripts/demo-check.js",
     "coverage": "node scripts/coverage.js",
     "names": "node scripts/name-check.js",
     "build-region-weights": "node scripts/build-region-weights.js",
