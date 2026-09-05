@@ -266,6 +266,27 @@ export const BAL = {
       major: 18,
       trivial: 5,
     },
+
+    // Which name origins a demo life may draw from, as a hard allow-list
+    // handed to `assignName`'s `categoryAllow`. Null or [] would mean "no
+    // restriction", which is what every ordinary life passes.
+    //
+    // This is a DEMO-ONLY narrowing and it is deliberately the opposite of
+    // what the main game wants. The pool exists because an authored list of
+    // names converged on the same narrow band life after life, and the
+    // category draw is weighted by real birth counts precisely so a player
+    // meets the country rather than one origin of it. A demo is a different
+    // job: thirty swipes seen once, often by somebody reading over a
+    // stranger's shoulder at a booth, where an unfamiliar name is a beat
+    // spent on "how do I say that" instead of on the joke.
+    //
+    // It costs nothing structurally - `categoryAllow` is applied inside
+    // `assignName`'s eligibility filter, ahead of every random draw, so it
+    // changes WHICH name a draw lands on and never how many randoms it
+    // consumes (invariant 6, the same rule region and deactivation follow).
+    // 632 active anglo names is far more than a 30-swipe life can spend, so
+    // no degradation tier is reachable through this.
+    nameCategories: ['anglo'],
   },
 };
 

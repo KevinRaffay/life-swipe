@@ -14,7 +14,7 @@
 // check is a short list of properties the format promises, and this asserts
 // exactly those.
 //
-// THREE HARD ASSERTIONS (exit 1 on any failure):
+// FOUR HARD ASSERTIONS (exit 1 on any failure):
 //
 //   1. Every demo life ends at or under BAL.DEMO.maxSwipes.
 //   2. No demo life EVER attempts a live provider call. Checked by handing
@@ -27,6 +27,11 @@
 //      instead of assumed - "impossible" is a claim, and an unasserted claim
 //      is how the under-18 rule would quietly stop being true if the start
 //      age were ever lowered.
+//   4. Every name a demo life hands out comes from BAL.DEMO.nameCategories.
+//      Read off the engine's own origin tally rather than by re-deriving a
+//      category from the name string, so there is no second copy of the
+//      lookup to disagree with the first. Skipped, with a note, if that list
+//      is empty - which is what "no restriction" looks like.
 //
 // It also REPORTS the numbers BAL.DEMO.maxSwipes was picked from - swipe
 // counts, ages reached, how the lives ended, and an estimated wall-clock read
@@ -116,9 +121,17 @@ function playOne(seed) {
     state = applyChoice(state, card, side).state;
   }
 
+  // Assertion 4, read off the ledger the engine itself writes rather than by
+  // re-deriving a category from the name. `noteAssignedName` tallies the
+  // origin of every name the engine hands out, so an origin outside the
+  // allow-list appearing as a key here IS the restriction having failed -
+  // there is no path that names somebody without going through that tally.
+  const originsUsed = Object.keys((state.names && state.names.categories) || {});
+
   const totalWords = wordsRead.reduce((a, b) => a + b, 0);
   return {
     stats: finalStats(state),
+    originsUsed,
     ending: state.ending,
     turns: state.turn,
     finalAge: ageOf(state),
@@ -214,6 +227,26 @@ if (contentViolations.length === 0) {
   for (const [kind, list] of byKind) {
     console.log(`  FAIL  ${kind}: ${list.length} occurrence(s)`);
     for (const v of list.slice(0, 5)) console.log(`          age ${v.age}  ${v.id}`);
+  }
+  failed = true;
+}
+
+const allowed = new Set(BAL.DEMO.nameCategories || []);
+const strayOrigins = new Map();
+for (const r of runs) {
+  for (const origin of r.originsUsed) {
+    if (!allowed.has(origin)) strayOrigins.set(origin, (strayOrigins.get(origin) || 0) + 1);
+  }
+}
+if (!allowed.size) {
+  console.log('  note  BAL.DEMO.nameCategories is empty - demo lives draw from the whole pool, so there is nothing to assert');
+} else if (strayOrigins.size === 0) {
+  const used = new Set(runs.flatMap((r) => r.originsUsed));
+  console.log(`  PASS  every name a demo life handed out came from ${[...allowed].join('/')} (origins seen: ${[...used].join(', ') || 'none'})`);
+} else {
+  console.log(`  FAIL  demo lives named characters from ${strayOrigins.size} origin(s) outside BAL.DEMO.nameCategories:`);
+  for (const [origin, n] of [...strayOrigins.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)) {
+    console.log(`          ${origin}: in ${n} life/lives`);
   }
   failed = true;
 }

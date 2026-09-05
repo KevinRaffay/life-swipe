@@ -11,6 +11,7 @@ import { makeFallbackScenario } from './fallback.js';
 import { validateBatch } from './schema.js';
 import { nextRandom } from './rng.js';
 import { hasNameTag, resolveCardNames, createNameLedger, NAMED_FIELDS } from './names.js';
+import { BAL } from './balance.js';
 
 // Must stay smaller than the smallest per-stage pool, or every candidate ends
 // up "recent" and the deck is forced to repeat itself.
@@ -256,6 +257,10 @@ export class Deck {
       age: ageOf(state),
       rng: () => nextRandom(state),
       region: this.region,
+      // Read off state, not off this.demoMode, for the same reason the rest
+      // of this method does: the state is what the referee owns. Null for
+      // every ordinary life - see BAL.DEMO.nameCategories.
+      categoryAllow: state.demoMode ? BAL.DEMO.nameCategories : null,
     });
     for (const entry of assigned) noteAssignedName(state, entry);
     return resolved;

@@ -116,6 +116,10 @@ export function createState({
     taken: new Set(Object.keys(state.relationships).map((n) => n.toLowerCase())),
     rng: () => nextRandom(state),
     region,
+    // Demo lives narrow the pool to one origin; every ordinary life passes
+    // null and draws from all of it. The filter sits inside assignName ahead
+    // of both draws, so this cannot cost an ordinary life an RNG step.
+    categoryAllow: state.demoMode ? BAL.DEMO.nameCategories : null,
   });
   if (friend) {
     state.relationships[friend.name] = { role: 'best friend', quality: 80, flags: [] };

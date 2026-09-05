@@ -76,7 +76,7 @@ Breaking any of these is a bug regardless of what the tests say.
 | `shared/schema.js` | structural validation + mode compliance. Runs server-side *and* client-side. |
 | `shared/content.js` | content-mode policy, the minor rule, keyword detection, dark-arc budget. |
 | `shared/scenario-format.js` | weight tiers and which narrative fields each carries. |
-| `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check, pool-wide activation filtering. |
+| `shared/names.js` | the name pool reader, era filter, diversity and regional weighting, tag resolution, drift check, pool-wide activation filtering, and the optional caller-supplied origin allow-list (`categoryAllow`, used only by demo mode). |
 | `shared/regions.js` | region codes and labels, shared by the server resolver and the settings dropdown. |
 | `server/name-pool.json` | 993 names across 49 origins, generated from SSA birth records, with era, gender, national births, per-region frequency (all on the 2025 archive vintage) and an `active` flag. Data only. |
 | `server/name-pool-controls.json` | pool-wide deactivation lists (category / region / gender_assoc), each entry carrying a required reason and timestamp. Data only. |
@@ -504,7 +504,7 @@ Plus one more once demo mode is in play, since none of the three above
 exercise it — the simulator plays ordinary lives and never sets `demoMode`:
 
 ```bash
-npm run demo-check                      # three demo assertions (see "Demo mode")
+npm run demo-check                      # four demo assertions (see "Demo mode")
 ```
 
 The assertions are:
@@ -699,7 +699,8 @@ without stating you checked all three.
 | Logs tab row detail moved to Modal | shipped | on `dev` — see the "Admin edit forms open in a modal dialog" row above; this is the fix that closed the last inline-below-grid holdout, plus an audit confirming no others remained (Library/Seeds/Name Pool/draft-review grids already opened in `Modal.jsx`; Preview and Stats render single result blocks, not row-selectable grids, so they were never in scope) |
 | Bulk approve-clean / reject-warned in Harvest + Generate Seeds | shipped | on `dev` — two new bulk actions, "Approve all without warnings" and "Reject all with warnings", added to the seed-draft review queues in the Generate Seeds tab (`admin/src/components/SeedGeneration.jsx`) and the Harvest tab's harvested-seed-drafts queue (`admin/src/components/Harvest.jsx`); both act only on the currently-listed drafts (whatever the tab is showing right now, same "acts on the current view" rule the Name Pool bulk-select already follows) split by whether `validationWarnings` is empty, leaving the other half untouched either way. Each is a loop over the existing single-draft `POST /admin/api/seedDrafts/:id/approve` / `/reject` endpoints (`api.approveDraft`/`api.rejectDraft`) — no new routes — and both require a click-through confirmation step first, the same pending/Confirm/Cancel shape `GroupControls.jsx`'s bulk deactivate already uses, since one click can now approve or reject many drafts. `SeedGeneration.jsx`'s pre-existing "Approve all without warnings" (which previously ran with no confirmation) gained the same confirmation step for consistency. Deliberately scoped to seed drafts only, not the Harvest tab's harvested-library-pattern queue: a pattern draft carries no persisted `validationWarnings` field (only transient anonymity/duplicate findings from the run that produced it), and inventing a stored warning concept for patterns would be new warning-detection logic, which this pass does not touch. No change to validation, warning-detection, or the approve/reject route contracts |
 | Game renamed to FATE (display only) | shipped | on `rename-to-fate` — cosmetic-only rename of the displayed game name from "Life Swipe" to "FATE": `client/index.html` (title, meta description), `client/src/components/StartScreen.jsx`'s title heading, `client/src/components/Obituary.jsx`'s share text and `navigator.share` title, `admin/index.html` title and `admin/src/App.jsx`'s header both renamed too, since they carry the same product branding. Internal-only occurrences left untouched on purpose: `localStorage` keys in `prefs.js` (all `lifeswipe.*`), the `life-swipe` npm package name, CLAUDE.md/README.md, and the `styles.css` file-header comment — none of those are UI. No engine, logic, or data changes. |
-| Demo mode (static short life + 1000-card demo pool) | shipped | on `demo-mode` — a second ENTRY PATH into the same game, not a second game. `state.demoMode` (new, on `createState`, alongside a new plain `startAge` parameter) is read in exactly four places: the swipe cap in `applyChoice`, the time table in `timeCostMonths`, the refill gate in `shared/deck.js`, and presentation branches in `App.jsx`/`Obituary.jsx`/`Hud.jsx` — each an `if (demoMode)` around otherwise byte-identical behaviour, false for every ordinary life. A demo life starts at 18 (which SATISFIES invariant 2 rather than dodging it — `effectiveTier` is untouched), forces `contentMode: 'mature'` THROUGH the existing age gate rather than around it (`StartScreen`'s `askingAge` is now `null`/`'mature'`/`'demo'`, one dialog two callers; `/?demo=1` opens the gate rather than bypassing it), skips the `'intro'` phase entirely (which also removes its `POST /api/intro` call), and ends at `BAL.DEMO.maxSwipes` (30) via the same `finish` path bankruptcy and death use — checked LAST among the ending conditions so a life that goes broke on swipe 30 ends as broke. `ending: 'demo'` keeps `alive` true (nothing killed them) and `Obituary.jsx` writes a closing card for the format instead of an obituary. `BAL.DEMO.time` advances 5 months per minor swipe so the demo covers ~18→31 instead of 18→20; faster time was CONSIDERED for making organic death common and rejected as impossible — Gompertz mortality at those ages needs ~1.5 years per swipe, which no minor card can carry. Both constants were MEASURED, twice: 40 swipes / 4 months put the median session at 5m33s and 32 put it at 5m04s, both outside the 1-5 minute brief, so 30 / 5 months shipped at ~4m45s. ZERO PROVIDER CALLS is enforced, not preferred: `Deck.maybeRefill` returns on `demoMode` as its first line, before it reads `fetchBatch` (which `App.jsx` also passes null), and `Obituary.jsx` skips its fetch too. New content set `data/demo-seed-scenarios.json` (never `scenarios-seed.json`), `source: 'demo-generated'` (a fifth `shared/provenance.js` value), minor-tier only, three age bands 18-22/22-30/30-36. `modes` is COMPUTED, not stamped `["mature"]` — a uniformly mature-only pool would be gated behind the 1-3 dark-arc budget and throttle 1000 cards to 3. New `server/demo-prompt.js` + `server/demo-seed-generation.js` (siblings of `prompt.js`/`seed-generation.js`, not modes inside them: coverage-driven vs volume-driven targeting), through the unchanged `server/provider.js` seam and the unchanged `shared/schema.js`/`shared/content.js` validators. The content register is innuendo-driven comedic writing, NOT explicit content, and relaxes the "no explicit sexual content in either mode" rule by nothing; an authoring-side screen hard-drops explicit content, non-adult casts, tagged parents (invariant 8 — the model reached for `{{new:parent}}` in the first pilot), empty role tags and non-minor weights, and warns on word count, dated slang, gendered pronouns beside a name tag, generic labels and British spelling. A corpus-wide near-duplicate pass warns (never drops) on same-situation repeats that word overlap cannot see — measured at 0.23 Jaccard on two obviously identical cards. New CLI `npm run generate-demo-seeds` and admin "Demo pool" tab (`admin/src/components/DemoPool.jsx`) — a third draft/target pair through the SAME `draftRoutes` factory and `DraftQueue.jsx`, parametrised not duplicated, with the existing bulk approve-clean/reject-warned actions. Draft-only; nothing reaches the live pool without a human approve. New `npm run demo-check` asserts the cap holds, no provider call is attempted (by handing the deck a counting `fetchBatch`, so it tests the guard rather than the caller) and nothing non-safe is dealt under 18. NOT changed: the engine's effect resolution, the referee, `data/scenarios-seed.json`, `server/seed-generation.js`, `server/prompt.js`, `shared/content.js` or `effectiveTier`. |
+| Demo mode (static short life + 1000-card demo pool) | shipped | on `demo-mode` — a second ENTRY PATH into the same game, not a second game. `state.demoMode` (new, on `createState`, alongside a new plain `startAge` parameter) is read in exactly four places: the swipe cap in `applyChoice`, the time table in `timeCostMonths`, the refill gate in `shared/deck.js`, and presentation branches in `App.jsx`/`Obituary.jsx`/`Hud.jsx` (six as of "Demo mode draws names from one origin" below, which adds the two `categoryAllow` seams) — each an `if (demoMode)` around otherwise byte-identical behaviour, false for every ordinary life. A demo life starts at 18 (which SATISFIES invariant 2 rather than dodging it — `effectiveTier` is untouched), forces `contentMode: 'mature'` THROUGH the existing age gate rather than around it (`StartScreen`'s `askingAge` is now `null`/`'mature'`/`'demo'`, one dialog two callers; `/?demo=1` opens the gate rather than bypassing it), skips the `'intro'` phase entirely (which also removes its `POST /api/intro` call), and ends at `BAL.DEMO.maxSwipes` (30) via the same `finish` path bankruptcy and death use — checked LAST among the ending conditions so a life that goes broke on swipe 30 ends as broke. `ending: 'demo'` keeps `alive` true (nothing killed them) and `Obituary.jsx` writes a closing card for the format instead of an obituary. `BAL.DEMO.time` advances 5 months per minor swipe so the demo covers ~18→31 instead of 18→20; faster time was CONSIDERED for making organic death common and rejected as impossible — Gompertz mortality at those ages needs ~1.5 years per swipe, which no minor card can carry. Both constants were MEASURED, twice: 40 swipes / 4 months put the median session at 5m33s and 32 put it at 5m04s, both outside the 1-5 minute brief, so 30 / 5 months shipped at ~4m45s. ZERO PROVIDER CALLS is enforced, not preferred: `Deck.maybeRefill` returns on `demoMode` as its first line, before it reads `fetchBatch` (which `App.jsx` also passes null), and `Obituary.jsx` skips its fetch too. New content set `data/demo-seed-scenarios.json` (never `scenarios-seed.json`), `source: 'demo-generated'` (a fifth `shared/provenance.js` value), minor-tier only, three age bands 18-22/22-30/30-36. `modes` is COMPUTED, not stamped `["mature"]` — a uniformly mature-only pool would be gated behind the 1-3 dark-arc budget and throttle 1000 cards to 3. New `server/demo-prompt.js` + `server/demo-seed-generation.js` (siblings of `prompt.js`/`seed-generation.js`, not modes inside them: coverage-driven vs volume-driven targeting), through the unchanged `server/provider.js` seam and the unchanged `shared/schema.js`/`shared/content.js` validators. The content register is innuendo-driven comedic writing, NOT explicit content, and relaxes the "no explicit sexual content in either mode" rule by nothing; an authoring-side screen hard-drops explicit content, non-adult casts, tagged parents (invariant 8 — the model reached for `{{new:parent}}` in the first pilot), empty role tags and non-minor weights, and warns on word count, dated slang, gendered pronouns beside a name tag, generic labels and British spelling. A corpus-wide near-duplicate pass warns (never drops) on same-situation repeats that word overlap cannot see — measured at 0.23 Jaccard on two obviously identical cards. New CLI `npm run generate-demo-seeds` and admin "Demo pool" tab (`admin/src/components/DemoPool.jsx`) — a third draft/target pair through the SAME `draftRoutes` factory and `DraftQueue.jsx`, parametrised not duplicated, with the existing bulk approve-clean/reject-warned actions. Draft-only; nothing reaches the live pool without a human approve. New `npm run demo-check` asserts the cap holds, no provider call is attempted (by handing the deck a counting `fetchBatch`, so it tests the guard rather than the caller) and nothing non-safe is dealt under 18. NOT changed: the engine's effect resolution, the referee, `data/scenarios-seed.json`, `server/seed-generation.js`, `server/prompt.js`, `shared/content.js` or `effectiveTier`. |
+| Demo mode draws names from one origin | shipped | on `demo-mode` — a demo life now takes every name from `BAL.DEMO.nameCategories` (`['anglo']`, 632 active names against a 30-swipe life). Deliberately the opposite of the main game's design and scoped to say so: the pool is SSA-sourced and both draws are birth-count weighted precisely so a player meets the country rather than one origin of it, but a demo is thirty swipes seen once at a booth, where an unfamiliar name costs a beat on "how do I say that" instead of on the joke. One optional `categoryAllow` argument on `assignName` (passed through `resolveCardNames`), folded into the SAME hard eligibility filter `active`/category-deactivation/gender_assoc-deactivation already sit in — which is what puts it ahead of both random draws, so it changes which name a draw lands on and never how many randoms it consumes (invariant 6, the rule region and deactivation already follow). Null (every ordinary life) means no restriction, and an empty array reads as null. Two callers translate `state.demoMode` into it — `createState`'s best-friend assignment and `Deck.resolveNames` — taking the documented demoMode blast radius from four seams to six. `npm run demo-check` gained a fourth hard assertion reading the origin tally `noteAssignedName` already writes to `state.names.categories`, rather than re-deriving a category from the name string; both callers were reverted one at a time and confirmed to FAIL it (47 and 17 stray origins) before it was trusted. The `git worktree` regression diff was re-run and stays byte-identical across 300 ordinary lives in both modes. No change to the pool, era filtering, deactivation controls, the diversity/region weighting, the demo pool's content, or anything an ordinary life reads. |
 | Region weights rebuilt on one archive vintage | shipped | on `dev` — housekeeping with a real payoff. The pool had been sitting on TWO archive vintages: the 807 SSA-sourced entries were measured against the committed 2025 archive, while the 187 originals kept maps from an older one that predated Florida's inclusion, so not a single entry carried a `US-FL` key. `npm run build-region-weights -- ../ssa-state` re-run across all 993 entries puts every map on the same 2025 data. No code change at all — the script already mutated `region_frequency` in place rather than replacing the record, so `national_births`, `active` and every other field survived untouched (verified: 993 entries, 953 with `national_births`, key order intact). Results: 908 → 914 entries with a regional map, 23,417 region entries written, 50 → 51 distinct regions, and 360 entries now carry `US-FL`. Measured regional lift IMPROVED to 1.4-2.2x (was 1.4-1.9x), with US-HI now 2.2x. Florida itself turns out to tilt only mildly — caribbean 1.12x, latin-american 1.02x — and that is the data, not a bug: FL has 16 entries above 2x against Minnesota's 48, and 253 of its 360 entries sit BELOW 0.8x, which is what a high-migration state whose naming profile sits near the national average looks like. Its strongest signals are plausible (Joaquim 8.9x, Rafaela, Thiago; Winston; Valentina). No pool membership, era, deactivation, weighting-method or selection changes. |
 
 ---
@@ -1070,15 +1071,17 @@ It is a second entry path into the same game, not a second game. The engine,
 generation script are all untouched — every demo-specific behaviour hangs off
 one boolean.
 
-**`state.demoMode` is that boolean, and its blast radius is four places.**
+**`state.demoMode` is that boolean, and its blast radius is six places.**
 `createState` records it, and it is read by exactly: the swipe cap in
 `applyChoice`, the time table in `timeCostMonths`, the refill gate in
-`shared/deck.js`, and the presentation branches in `App.jsx`/`Obituary.jsx`.
-Every one of those is `if (demoMode)` around behaviour that is otherwise
-byte-identical, and `demoMode` is `false` for every ordinary life. Nothing in
-the demo path can move the main game, which is the property that made this
-safe to put in `shared/` at all rather than bolting a parallel engine beside
-it.
+`shared/deck.js`, the two `categoryAllow` arguments that narrow the name pool
+(`createState`'s best-friend `assignName` and `Deck.resolveNames` — see "One
+origin of names" below), and the presentation branches in
+`App.jsx`/`Obituary.jsx`. Every one of those is `if (demoMode)` around
+behaviour that is otherwise byte-identical, and `demoMode` is `false` for
+every ordinary life. Nothing in the demo path can move the main game, which is
+the property that made this safe to put in `shared/` at all rather than
+bolting a parallel engine beside it.
 
 **That claim was measured, not asserted.** `shared/engine.js` genuinely
 changed for this feature — `createState`, `timeCostMonths`, `applyChoice`'s
@@ -1088,9 +1091,10 @@ than believe. The check: a `git worktree` at the last pre-demo commit, then
 `node scripts/simulate.js 300 regression --mode=both` run in both trees with
 the same base seed, and the two outputs diffed. **Byte-identical**, across 300
 lives in both modes — lifespan, swipes, money, causes of death, card sources,
-every assertion. Re-run that diff after any future edit to those four seams; a
+every assertion. Re-run that diff after any future edit to those seams; a
 demo-guarded branch that has started costing the main game a single RNG draw
-will show up in it immediately, and nowhere else.
+will show up in it immediately, and nowhere else. It was re-run when the two
+`categoryAllow` seams were added, with the same result.
 
 **Age 18, through `createState`'s new `startAge` parameter — not by
 fast-forwarding.** `createState({ startAge: 18 })` is a plain parameter any
@@ -1203,6 +1207,40 @@ genuinely dark ones carry `["mature"]` and spend the arc budget as they should
 while the merely cheeky ones carry both and flow freely. **The demo is
 mature-only because `demoMode` forces `contentMode` to `"mature"`, not because
 of a string in this field.**
+
+### One origin of names
+
+A demo life draws every name from a single origin — `BAL.DEMO.nameCategories`,
+today `['anglo']` (632 active names, far more than thirty swipes can spend).
+
+**This is deliberately the opposite of what the main game wants**, which is why
+it lives in `BAL.DEMO` and nowhere near `shared/names.js`'s own logic. The pool
+was rebuilt from SSA birth records, and the category and within-category draws
+were both weighted by real birth counts, precisely so a player meets the
+country rather than one origin of it. None of that changes. A demo is a
+different job: thirty swipes, seen once, often over a stranger's shoulder at a
+booth, where an unfamiliar name costs a beat on "how do I say that" instead of
+on the joke. Narrow it for the sample, never for a life.
+
+**Mechanically it is one optional argument, `categoryAllow`, on `assignName`**
+(and passed through `resolveCardNames`), folded into the same hard eligibility
+filter that `active`, category deactivation and gender_assoc deactivation
+already sit in. Null — what every ordinary life passes — means no restriction,
+and an empty array is read as null too, since "the caller wants an empty pool"
+is never what anybody meant. Being inside the eligibility filter is what keeps
+it **ahead of both random draws**, so it changes which name a draw lands on and
+never how many randoms it consumes: invariant 6 holds, the same way it does for
+region and for deactivation. `assignName`'s existing degrade ladder is
+untouched and unreachable through this at 632 candidates.
+
+Two callers translate `state.demoMode` into it — `createState`'s best-friend
+`assignName` and `Deck.resolveNames` — and both are counted in the blast radius
+above. `npm run demo-check`'s fourth assertion covers them, reading the origin
+tally `noteAssignedName` writes into `state.names.categories` rather than
+re-deriving a category from the name string, so there is no second copy of the
+lookup to disagree with the first. **Both callers were reverted one at a time
+and confirmed to fail it** (47 stray origins with the deck seam removed, 17
+with the engine seam removed) before the assertion was trusted.
 
 ### Generation, and the content register
 
@@ -1337,13 +1375,15 @@ actions would be inert on the one queue that most needs them.
 ### Verification
 
 ```bash
-npm run demo-check                 # 300 demo lives, three hard assertions
+npm run demo-check                 # 300 demo lives, four hard assertions
 npm run demo-check -- 1000 seed
 ```
 
-Three assertions, all exit 1 on failure: every demo life ends at or under the
+Four assertions, all exit 1 on failure: every demo life ends at or under the
 cap; no demo life attempts a live provider call; no card is dealt below 18 at a
-non-safe tier.
+non-safe tier; every name handed out comes from `BAL.DEMO.nameCategories` (see
+"One origin of names" — skipped with a note if that list is emptied, which is
+what "no restriction" looks like).
 
 `npm run names` covers the demo pool too, with the same hardcoded-name check
 it runs on the seed deck - invariant 8 binds the demo pool identically, since
